@@ -1,38 +1,48 @@
 import re as re
 
 reserved = {
-    'else if': 'ELSEIF',
     'if': 'IF',
     'else': 'ELSE',
-    'while': 'WHILE'
+    'elseif': 'ELSEIF',
+    'while': 'WHILE',
+    'do': 'DO'
 }
 
 tokens = [
-             # Literals (identifier, integer constant, float constant, string constant)
-             'ID', 'INTEGER', 'FLOAT', 'STRING', 'NULL', 'BOOLEAN',
+             # Literals (identifier, integer, double, string, null, boolean, array)
+             'ID', 'INTEGER', 'DOUBLE', 'STRING', 'NULL', 'BOOLEAN', 'ARRAY',
 
-             # Data type declaration
-             'DATATYPE',
-
-             # Operators (+, -, *, /, %, %%, |, &, !, <, <=, >, >=, ==, !=)
-             'PLUS', 'MINUS','POW', 'TIMES', 'DIVIDE', 'IDIVIDE', 'MODULO',
+             # Operators
+             # +, -, *, **, /, %, %%
+             # ||, &&, !
+             # <, <=, >, >=, ==, !=)
+             #  TODO 'POW',
+             'PLUS', 'MINUS', 'POW', 'MUL', 'DIVIDE', 'INTDIVIDE', 'MODULO',
              'LOR', 'LAND', 'LNOT',
              'LT', 'LE', 'GT', 'GE', 'EQ', 'NE',
+             'RETURN',
 
              # Assignment (=)
              'EQUALS',
 
-             # Increment/decrement (++,--)
-             'INCREMENT', 'DECREMENT',
+             # Data type declaration
+             'DATATYPE',
 
-             # Delimeters ( ) [ ] { } , . ; :
+             # Function declaration
+             'FUNCTION',
+
+             # Delimeters
+             # ( )
+             # [ ]
+             # { }
+             # , . ; :
              'LPAREN', 'RPAREN',
              'LBRACKET', 'RBRACKET',
              'LBRACE', 'RBRACE',
              'COMMA', 'PERIOD', 'SEMI', 'COLON',
 
              # Comments
-             'CPPCOMMENT', 'COMMENT',
+             'COMMENT',
 
              # Other
              'NEWLINE'
@@ -42,12 +52,12 @@ tokens = [
 t_PLUS = r'\+'
 t_MINUS = r'-'
 t_POW = r'\*{2}'
-t_TIMES = r'\*'
+t_MUL = r'\*'
 t_DIVIDE = r'/'
-t_IDIVIDE = r'%'
+t_INTDIVIDE = r'%'
 t_MODULO = r'%%'
-t_LOR = r'\|{2}'
-t_LAND = r'&'
+t_LOR = r'\|\|'
+t_LAND = r'&&'
 t_LNOT = r'!'
 t_LT = r'<'
 t_GT = r'>'
@@ -59,10 +69,6 @@ t_NE = r'!='
 # Assignment operator
 
 t_EQUALS = r'='
-
-# Increment/decrement
-t_INCREMENT = r'\+\+'
-t_DECREMENT = r'--'
 
 # Delimeters
 t_LPAREN = r'\('
@@ -80,11 +86,13 @@ t_COLON = r':'
 # Identifiers
 def t_ID(t):
     r'[A-Za-z_][A-Za-z0-9_]*'
-    if (re.match(r'(int|string|float|array|boolean)', t.value)):
+    if(re.match(r'(int|string|double|array|boolean)', t.value)):
         t.type = 'DATATYPE'
-    elif (re.match(r'(true|false)', t.value)):
+    elif(re.match(r'function', t.value)):
+        t.type = 'FUNCTION'
+    elif(re.match(r'(true|false)', t.value)):
         t.type = 'BOOLEAN'
-    else:
+    elif not(re.match(r'return', t.value)):
         t.type = reserved.get(t.value, 'ID')
     return t
 
@@ -96,18 +104,13 @@ t_INTEGER = r'\d+([uU]|[lL]|[uU][lL]|[lL][uU])?'
 t_NULL = r'null'
 
 # Floating literal
-t_FLOAT = r'((\d+)(\.\d+)(e(\+|-)?(\d+))? | (\d+)e(\+|-)?(\d+))([lL]|[fF])?'
+t_DOUBLE = r'((\d+)(\.\d+)(e(\+|-)?(\d+))? | (\d+)e(\+|-)?(\d+))([lL]|[fF])?'
 
+# Return literal
+t_RETURN = r'return'
 
-# Comment (C-Style)
+# Comment //
 def t_COMMENT(t):
-    r'/\*(.|\n)*?\*/'
-    t.lexer.lineno += t.value.count('\n')
-    return t
-
-
-# Comment (C++-Style)
-def t_CPPCOMMENT(t):
     r'//.*\n'
     t.lexer.lineno += 1
     return t

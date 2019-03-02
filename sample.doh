@@ -1,5 +1,3 @@
-if (a || b) {
-    a = b;
-} else {
-    b = a;
+function int test(){
+    return 5;
 }
