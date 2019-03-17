@@ -10,5 +10,9 @@ function int test(){
         b = 'string';
         c = true;
     }
-    return d;
+    if (true) {
+        return d;
+    } else {
+        return null;
+    }
 }

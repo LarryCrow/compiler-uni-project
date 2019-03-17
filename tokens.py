@@ -9,6 +9,10 @@ reserved = {
     'continue': 'CONTINUE',
     'goto': 'GOTO',
     'break': 'BREAK',
+    'return': 'RETURN',
+    'function': 'FUNCTION',
+    'struct': 'STRUCTURE',
+    'null': 'NULL'
 }
 
 tokens = [
@@ -22,19 +26,12 @@ tokens = [
              'PLUS', 'MINUS', 'POW', 'MUL', 'DIVIDE', 'INTDIVIDE', 'MODULO',
              'LOR', 'LAND', 'LNOT',
              'LT', 'LE', 'GT', 'GE', 'EQ', 'NE',
-             'RETURN',
 
              # Assignment (=)
              'EQUALS',
 
              # Data type declaration
              'DATATYPE',
-
-             # Function declaration
-             'FUNCTION',
-
-             # Structure declaration
-             'STRUCTURE',
 
              # Delimeters
              # ( )
@@ -64,15 +61,12 @@ t_MODULO = r'%%'
 t_LOR = r'\|\|'
 t_LAND = r'&&'
 t_LNOT = r'!'
-t_LT = r'<'
-t_GT = r'>'
 t_LE = r'<='
 t_GE = r'>='
+t_LT = r'<'
+t_GT = r'>'
 t_EQ = r'=='
 t_NE = r'!='
-
-# Assignment operator
-
 t_EQUALS = r'='
 
 # Delimeters
@@ -87,19 +81,14 @@ t_PERIOD = r'\.'
 t_SEMI = r';'
 t_COLON = r':'
 
-
 # Identifiers
 def t_ID(t):
     r'[A-Za-z_][A-Za-z0-9_]*'
     if(re.match(r'(int|string|double|array|boolean)', t.value)):
         t.type = 'DATATYPE'
-    elif(re.match(r'function', t.value)):
-        t.type = 'FUNCTION'
-    elif(re.match(r'struct', t.value)):
-        t.type = 'STRUCTURE'
     elif(re.match(r'(true|false)', t.value)):
         t.type = 'BOOLEAN'
-    elif not(re.match(r'return', t.value)):
+    else:
         t.type = reserved.get(t.value, 'ID')
     return t
 
@@ -107,14 +96,9 @@ def t_ID(t):
 # Integer literal
 t_INTEGER = r'\d+([uU]|[lL]|[uU][lL]|[lL][uU])?'
 
-# Null literal
-t_NULL = r'null'
-
 # Floating literal
 t_DOUBLE = r'((\d+)(\.\d+)(e(\+|-)?(\d+))? | (\d+)e(\+|-)?(\d+))([lL]|[fF])?'
 
-# Return literal
-t_RETURN = r'return'
 
 # Comment //
 def t_COMMENT(t):
