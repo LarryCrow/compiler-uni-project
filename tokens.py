@@ -87,9 +87,9 @@ t_COLON = r':'
 # Identifiers
 def t_ID(t):
     r'[A-Za-z_][A-Za-z0-9_]*'
-    if(re.match(r'(int|string|double|array|boolean)', t.value)):
+    if(re.match(r'(\bint\b|\bstring\b|\bdouble\b|\barray\b|\bboolean\b)', t.value)):
         t.type = 'DATATYPE'
-    elif(re.match(r'(true|false)', t.value)):
+    elif(re.match(r'(\btrue\b|\bfalse\b)', t.value)):
         t.type = 'BOOLEAN'
     else:
         t.type = reserved.get(t.value, 'ID')
