@@ -1,15 +1,26 @@
 import ply.lex as lex
 from tokens import *
+import sys
+import argparse
 
+
+def createParser():
+    parser = argparse.ArgumentParser()
+    parser.add_argument('-parameters')
+
+    return parser
 
 lexer = lex.lex()
 
-with open("sample.doh", 'r', encoding="UTF-8") as f:
+parser = createParser()
+namespace = parser.parse_args(sys.argv[1:])
+
+with open(namespace.parameters, 'r', encoding="UTF-8") as f:
     data = f.read()
     lexer.input(data)
 
     tokens_arr = []
-    symbol_counter = 0
 
     for lexeme in lexer:
+        tokens_arr.append(lexeme)
         print(lexeme)

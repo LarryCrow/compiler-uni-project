@@ -1,5 +1,7 @@
 import re as re
 
+
+# An array of tokens and their definitions that we can uniquely identify
 reserved = {
     'if': 'IF',
     'else': 'ELSE',
@@ -15,9 +17,10 @@ reserved = {
     'null': 'NULL'
 }
 
+# An array of tokens that need complex regular expressions to define
 tokens = [
-             # Literals (identifier, integer, double, string, null, boolean, array)
-             'ID', 'INTEGER', 'DOUBLE', 'STRING', 'NULL', 'BOOLEAN', 'ARRAY',
+             # Literals (identifier, integer, double, string, boolean, array)
+             'ID', 'INTEGER', 'DOUBLE', 'STRING', 'BOOLEAN', 'ARRAY',
 
              # Operators
              # +, -, *, **, /, %, %%
@@ -47,7 +50,7 @@ tokens = [
              'COMMENT',
 
              # Other
-             'NEWLINE'
+             'NEWLINE', 'ERROR'
          ] + list(reserved.values())
 
 # Operators
@@ -127,5 +130,5 @@ t_ignore = ' \t'
 
 # Error handling rule
 def t_error(t):
-    print("Illegal character '%s'" % t.value[0])
+    print("Illegal character '%s' at row %d" % (t.value[0], t.lineno))
     t.lexer.skip(1)
