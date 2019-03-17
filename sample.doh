@@ -1,24 +1,7 @@
-function int RepetitionsNumber(string symbol, string str)
-{
-int amount = 0;
-int i = 0;
-while (i < len(str))
-{
-if (symbol == str[i])
-{
-amount = amount + 1;
-{
-i = i + 1;
+array[10] arr;
+
+arr[1] = 5;
+
+if (2 > 1 && arr[1] == 5) {
+    int b = 5 / 2;
 }
-return amount;
-}
-int result = RepetitionsNumber("т", "Тестовая строка");
-
-
-
-
-
-
-
-
-
