@@ -1,3 +1,14 @@
+struct Title {
+    int a;
+    string b;
+    boolean c;
+}
+
 function int test(){
-    return 5;
+    Title d = {
+        a = 1;
+        b = 'string';
+        c = true;
+    }
+    return d;
 }

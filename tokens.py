@@ -5,7 +5,10 @@ reserved = {
     'else': 'ELSE',
     'elseif': 'ELSEIF',
     'while': 'WHILE',
-    'do': 'DO'
+    'do': 'DO',
+    'continue': 'CONTINUE',
+    'goto': 'GOTO',
+    'break': 'BREAK',
 }
 
 tokens = [
@@ -16,7 +19,6 @@ tokens = [
              # +, -, *, **, /, %, %%
              # ||, &&, !
              # <, <=, >, >=, ==, !=)
-             #  TODO 'POW',
              'PLUS', 'MINUS', 'POW', 'MUL', 'DIVIDE', 'INTDIVIDE', 'MODULO',
              'LOR', 'LAND', 'LNOT',
              'LT', 'LE', 'GT', 'GE', 'EQ', 'NE',
@@ -30,6 +32,9 @@ tokens = [
 
              # Function declaration
              'FUNCTION',
+
+             # Structure declaration
+             'STRUCTURE',
 
              # Delimeters
              # ( )
@@ -90,6 +95,8 @@ def t_ID(t):
         t.type = 'DATATYPE'
     elif(re.match(r'function', t.value)):
         t.type = 'FUNCTION'
+    elif(re.match(r'struct', t.value)):
+        t.type = 'STRUCTURE'
     elif(re.match(r'(true|false)', t.value)):
         t.type = 'BOOLEAN'
     elif not(re.match(r'return', t.value)):
