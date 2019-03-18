@@ -14,7 +14,7 @@ lexer = lex.lex()
 
 parser = createParser()
 namespace = parser.parse_args(sys.argv[1:])
-
+# namespace.parameters
 with open(namespace.parameters, 'r', encoding="UTF-8") as f:
     data = f.read()
     lexer.input(data)
