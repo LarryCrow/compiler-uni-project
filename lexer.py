@@ -4,23 +4,27 @@ import sys
 import argparse
 
 
-def createParser():
+def create_parser():
     parser = argparse.ArgumentParser()
     parser.add_argument('-parameters')
 
     return parser
 
-lexer = lex.lex()
 
-parser = createParser()
+parser = create_parser()
 namespace = parser.parse_args(sys.argv[1:])
-# namespace.parameters
-with open(namespace.parameters, 'r', encoding="UTF-8") as f:
+lexer = lex.lex()
+with open('sample.doh', 'r', encoding="UTF-8") as f:
     data = f.read()
     lexer.input(data)
 
-    tokens_arr = []
-
+    tokens = []
+    symbol_counter = 0
     for lexeme in lexer:
-        tokens_arr.append(lexeme)
-        print(lexeme)
+        tokens.append(lexeme)
+        print('LexToken(' + lexeme.type + ',' + lexeme.value + ',' + str(lexeme.lineno) + ','
+              + str(lexeme.lexpos - symbol_counter) + ')')
+        if re.match(r'NEWLINE', lexeme.type):
+            symbol_counter = lexeme.lexpos + 1
+        if re.match(r'COMMENT', lexeme.type):
+            symbol_counter = lexeme.lexpos + len(lexeme.value)

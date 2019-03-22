@@ -122,7 +122,7 @@ def t_COMMENT(t):
 
 # Define a rule so we can track line numbers
 def t_NEWLINE(t):
-    r'\n+'
+    r'\n'
     t.lexer.lineno += len(t.value)
     t.value = "Newline"
     return t
