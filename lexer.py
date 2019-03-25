@@ -16,13 +16,15 @@ namespace = parser.parse_args(sys.argv[1:])
 lexer = lex.lex()
 with open('sample.doh', 'r', encoding="UTF-8") as f:
     data = f.read()
+    lexer.pos_in_line = 0
     lexer.input(data)
 
     tokens = []
     symbol_counter = 0
     for lexeme in lexer:
-        tokens.append(lexeme)
-        print('LexToken(' + lexeme.type + ',' + lexeme.value + ',' + str(lexeme.lineno) + ','
+        if lexeme.type != 'NEWLINE':
+            tokens.append(lexeme)
+            print('LexToken(' + lexeme.type + ',' + lexeme.value + ',' + str(lexeme.lineno) + ','
               + str(lexeme.lexpos - symbol_counter) + ')')
         if re.match(r'NEWLINE', lexeme.type):
             symbol_counter = lexeme.lexpos + 1

@@ -117,6 +117,7 @@ t_DOUBLE = r'[+|-]?[0-9]+.[0-9]+'
 def t_COMMENT(t):
     r'//.*\n'
     t.lexer.lineno += 1
+    t.lexer.pos_in_line = t.lexpos + len(t.value)
     return t
 
 
@@ -125,6 +126,7 @@ def t_NEWLINE(t):
     r'\n'
     t.lexer.lineno += len(t.value)
     t.value = "Newline"
+    t.lexer.pos_in_line = t.lexpos + 1
     return t
 
 
@@ -142,12 +144,12 @@ t_ignore = ' \t'
 def t_error(t):
     print("\n")
     if (re.match(r'(\'|\")', t.value[0])):
-      print("Unfinished string")
+      print("Unfinished string at row %d, %d" % (t.lineno, t.lexpos - t.lexer.pos_in_line))
     elif(re.match(r'(\[|\]|\{|\})', t.value[0])):
-      print("Unclosed bracket")
+      print("Unclosed bracket at row %d, %d", (t.lineno, t.lexpos - t.lexer.pos_in_line))
     elif(re.match(r'([+|-]?[0-9]+)', t.value)):
-      print("The number is too large")
+      print("The number is too large at row %d, %d", (t.lineno, t.lexpos - t.lexer.pos_in_line))
     else:
-      print("Illegal character '%s' at row %d" % (t.value[0], t.lineno))
+      print("Illegal character '%s' at row %d, %d" % (t.value[0], t.lineno, t.lexpos - t.lexer.pos_in_line))
     t.lexer.skip(1)
     print("\n")
