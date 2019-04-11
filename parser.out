@@ -1,0 +1,2373 @@
+Created by PLY version 3.11 (http://www.dabeaz.com/ply)
+
+Unused terminals:
+
+    ARRAY
+    BREAK
+    COLON
+    COMMENT
+    CONTINUE
+    DO
+    ELSE
+    ELSEIF
+    ERROR
+    FUNCTION
+    GOTO
+    IF
+    LBRACE
+    LBRACKET
+    NULL
+    PERIOD
+    RBRACE
+    RBRACKET
+    STRUCTURE
+    WHILE
+
+Grammar
+
+Rule 0     S' -> stmtList
+Rule 1     stmtList -> stmtList stmt
+Rule 2     stmtList -> stmt
+Rule 3     stmt -> expr SEMI
+Rule 4     stmt -> RETURN expr SEMI
+Rule 5     stmt -> assign
+Rule 6     func_params -> <empty>
+Rule 7     func_params -> func_param
+Rule 8     func_params -> func_params COMMA func_param
+Rule 9     func_param -> DATATYPE ID
+Rule 10    assign -> ID EQUALS expr SEMI
+Rule 11    expr -> expr PLUS expr
+Rule 12    expr -> expr MINUS expr
+Rule 13    expr -> expr MUL expr
+Rule 14    expr -> expr DIVIDE expr
+Rule 15    expr -> expr INTDIVIDE expr
+Rule 16    expr -> expr MODULO expr
+Rule 17    expr -> expr POW expr
+Rule 18    expr -> expr LE expr
+Rule 19    expr -> expr GE expr
+Rule 20    expr -> expr LT expr
+Rule 21    expr -> expr GT expr
+Rule 22    expr -> expr EQ expr
+Rule 23    expr -> expr NE expr
+Rule 24    expr -> MINUS expr
+Rule 25    expr -> expr LAND expr
+Rule 26    expr -> expr LOR expr
+Rule 27    expr -> LNOT expr
+Rule 28    expr -> id
+Rule 29    expr -> INTEGER
+Rule 30    expr -> DOUBLE
+Rule 31    expr -> BOOLEAN
+Rule 32    expr -> STRING
+Rule 33    expr -> LPAREN expr RPAREN
+Rule 34    datatype -> DATATYPE
+Rule 35    id -> ID
+
+Terminals, with rules where they appear
+
+ARRAY                : 
+BOOLEAN              : 31
+BREAK                : 
+COLON                : 
+COMMA                : 8
+COMMENT              : 
+CONTINUE             : 
+DATATYPE             : 9 34
+DIVIDE               : 14
+DO                   : 
+DOUBLE               : 30
+ELSE                 : 
+ELSEIF               : 
+EQ                   : 22
+EQUALS               : 10
+ERROR                : 
+FUNCTION             : 
+GE                   : 19
+GOTO                 : 
+GT                   : 21
+ID                   : 9 10 35
+IF                   : 
+INTDIVIDE            : 15
+INTEGER              : 29
+LAND                 : 25
+LBRACE               : 
+LBRACKET             : 
+LE                   : 18
+LNOT                 : 27
+LOR                  : 26
+LPAREN               : 33
+LT                   : 20
+MINUS                : 12 24
+MODULO               : 16
+MUL                  : 13
+NE                   : 23
+NULL                 : 
+PERIOD               : 
+PLUS                 : 11
+POW                  : 17
+RBRACE               : 
+RBRACKET             : 
+RETURN               : 4
+RPAREN               : 33
+SEMI                 : 3 4 10
+STRING               : 32
+STRUCTURE            : 
+WHILE                : 
+error                : 
+
+Nonterminals, with rules where they appear
+
+assign               : 5
+datatype             : 
+expr                 : 3 4 10 11 11 12 12 13 13 14 14 15 15 16 16 17 17 18 18 19 19 20 20 21 21 22 22 23 23 24 25 25 26 26 27 33
+func_param           : 7 8
+func_params          : 8
+id                   : 28
+stmt                 : 1 2
+stmtList             : 1 0
+
+Parsing method: LALR
+
+state 0
+
+    (0) S' -> . stmtList
+    (1) stmtList -> . stmtList stmt
+    (2) stmtList -> . stmt
+    (3) stmt -> . expr SEMI
+    (4) stmt -> . RETURN expr SEMI
+    (5) stmt -> . assign
+    (11) expr -> . expr PLUS expr
+    (12) expr -> . expr MINUS expr
+    (13) expr -> . expr MUL expr
+    (14) expr -> . expr DIVIDE expr
+    (15) expr -> . expr INTDIVIDE expr
+    (16) expr -> . expr MODULO expr
+    (17) expr -> . expr POW expr
+    (18) expr -> . expr LE expr
+    (19) expr -> . expr GE expr
+    (20) expr -> . expr LT expr
+    (21) expr -> . expr GT expr
+    (22) expr -> . expr EQ expr
+    (23) expr -> . expr NE expr
+    (24) expr -> . MINUS expr
+    (25) expr -> . expr LAND expr
+    (26) expr -> . expr LOR expr
+    (27) expr -> . LNOT expr
+    (28) expr -> . id
+    (29) expr -> . INTEGER
+    (30) expr -> . DOUBLE
+    (31) expr -> . BOOLEAN
+    (32) expr -> . STRING
+    (33) expr -> . LPAREN expr RPAREN
+    (10) assign -> . ID EQUALS expr SEMI
+    (35) id -> . ID
+
+    RETURN          shift and go to state 4
+    MINUS           shift and go to state 6
+    LNOT            shift and go to state 7
+    INTEGER         shift and go to state 9
+    DOUBLE          shift and go to state 10
+    BOOLEAN         shift and go to state 11
+    STRING          shift and go to state 12
+    LPAREN          shift and go to state 13
+    ID              shift and go to state 14
+
+    stmtList                       shift and go to state 1
+    stmt                           shift and go to state 2
+    expr                           shift and go to state 3
+    assign                         shift and go to state 5
+    id                             shift and go to state 8
+
+state 1
+
+    (0) S' -> stmtList .
+    (1) stmtList -> stmtList . stmt
+    (3) stmt -> . expr SEMI
+    (4) stmt -> . RETURN expr SEMI
+    (5) stmt -> . assign
+    (11) expr -> . expr PLUS expr
+    (12) expr -> . expr MINUS expr
+    (13) expr -> . expr MUL expr
+    (14) expr -> . expr DIVIDE expr
+    (15) expr -> . expr INTDIVIDE expr
+    (16) expr -> . expr MODULO expr
+    (17) expr -> . expr POW expr
+    (18) expr -> . expr LE expr
+    (19) expr -> . expr GE expr
+    (20) expr -> . expr LT expr
+    (21) expr -> . expr GT expr
+    (22) expr -> . expr EQ expr
+    (23) expr -> . expr NE expr
+    (24) expr -> . MINUS expr
+    (25) expr -> . expr LAND expr
+    (26) expr -> . expr LOR expr
+    (27) expr -> . LNOT expr
+    (28) expr -> . id
+    (29) expr -> . INTEGER
+    (30) expr -> . DOUBLE
+    (31) expr -> . BOOLEAN
+    (32) expr -> . STRING
+    (33) expr -> . LPAREN expr RPAREN
+    (10) assign -> . ID EQUALS expr SEMI
+    (35) id -> . ID
+
+    RETURN          shift and go to state 4
+    MINUS           shift and go to state 6
+    LNOT            shift and go to state 7
+    INTEGER         shift and go to state 9
+    DOUBLE          shift and go to state 10
+    BOOLEAN         shift and go to state 11
+    STRING          shift and go to state 12
+    LPAREN          shift and go to state 13
+    ID              shift and go to state 14
+
+    stmt                           shift and go to state 15
+    expr                           shift and go to state 3
+    assign                         shift and go to state 5
+    id                             shift and go to state 8
+
+state 2
+
+    (2) stmtList -> stmt .
+
+    RETURN          reduce using rule 2 (stmtList -> stmt .)
+    MINUS           reduce using rule 2 (stmtList -> stmt .)
+    LNOT            reduce using rule 2 (stmtList -> stmt .)
+    INTEGER         reduce using rule 2 (stmtList -> stmt .)
+    DOUBLE          reduce using rule 2 (stmtList -> stmt .)
+    BOOLEAN         reduce using rule 2 (stmtList -> stmt .)
+    STRING          reduce using rule 2 (stmtList -> stmt .)
+    LPAREN          reduce using rule 2 (stmtList -> stmt .)
+    ID              reduce using rule 2 (stmtList -> stmt .)
+    $end            reduce using rule 2 (stmtList -> stmt .)
+
+
+state 3
+
+    (3) stmt -> expr . SEMI
+    (11) expr -> expr . PLUS expr
+    (12) expr -> expr . MINUS expr
+    (13) expr -> expr . MUL expr
+    (14) expr -> expr . DIVIDE expr
+    (15) expr -> expr . INTDIVIDE expr
+    (16) expr -> expr . MODULO expr
+    (17) expr -> expr . POW expr
+    (18) expr -> expr . LE expr
+    (19) expr -> expr . GE expr
+    (20) expr -> expr . LT expr
+    (21) expr -> expr . GT expr
+    (22) expr -> expr . EQ expr
+    (23) expr -> expr . NE expr
+    (25) expr -> expr . LAND expr
+    (26) expr -> expr . LOR expr
+
+    SEMI            shift and go to state 16
+    PLUS            shift and go to state 17
+    MINUS           shift and go to state 18
+    MUL             shift and go to state 19
+    DIVIDE          shift and go to state 20
+    INTDIVIDE       shift and go to state 21
+    MODULO          shift and go to state 22
+    POW             shift and go to state 23
+    LE              shift and go to state 24
+    GE              shift and go to state 25
+    LT              shift and go to state 26
+    GT              shift and go to state 27
+    EQ              shift and go to state 28
+    NE              shift and go to state 29
+    LAND            shift and go to state 30
+    LOR             shift and go to state 31
+
+
+state 4
+
+    (4) stmt -> RETURN . expr SEMI
+    (11) expr -> . expr PLUS expr
+    (12) expr -> . expr MINUS expr
+    (13) expr -> . expr MUL expr
+    (14) expr -> . expr DIVIDE expr
+    (15) expr -> . expr INTDIVIDE expr
+    (16) expr -> . expr MODULO expr
+    (17) expr -> . expr POW expr
+    (18) expr -> . expr LE expr
+    (19) expr -> . expr GE expr
+    (20) expr -> . expr LT expr
+    (21) expr -> . expr GT expr
+    (22) expr -> . expr EQ expr
+    (23) expr -> . expr NE expr
+    (24) expr -> . MINUS expr
+    (25) expr -> . expr LAND expr
+    (26) expr -> . expr LOR expr
+    (27) expr -> . LNOT expr
+    (28) expr -> . id
+    (29) expr -> . INTEGER
+    (30) expr -> . DOUBLE
+    (31) expr -> . BOOLEAN
+    (32) expr -> . STRING
+    (33) expr -> . LPAREN expr RPAREN
+    (35) id -> . ID
+
+    MINUS           shift and go to state 6
+    LNOT            shift and go to state 7
+    INTEGER         shift and go to state 9
+    DOUBLE          shift and go to state 10
+    BOOLEAN         shift and go to state 11
+    STRING          shift and go to state 12
+    LPAREN          shift and go to state 13
+    ID              shift and go to state 33
+
+    expr                           shift and go to state 32
+    id                             shift and go to state 8
+
+state 5
+
+    (5) stmt -> assign .
+
+    RETURN          reduce using rule 5 (stmt -> assign .)
+    MINUS           reduce using rule 5 (stmt -> assign .)
+    LNOT            reduce using rule 5 (stmt -> assign .)
+    INTEGER         reduce using rule 5 (stmt -> assign .)
+    DOUBLE          reduce using rule 5 (stmt -> assign .)
+    BOOLEAN         reduce using rule 5 (stmt -> assign .)
+    STRING          reduce using rule 5 (stmt -> assign .)
+    LPAREN          reduce using rule 5 (stmt -> assign .)
+    ID              reduce using rule 5 (stmt -> assign .)
+    $end            reduce using rule 5 (stmt -> assign .)
+
+
+state 6
+
+    (24) expr -> MINUS . expr
+    (11) expr -> . expr PLUS expr
+    (12) expr -> . expr MINUS expr
+    (13) expr -> . expr MUL expr
+    (14) expr -> . expr DIVIDE expr
+    (15) expr -> . expr INTDIVIDE expr
+    (16) expr -> . expr MODULO expr
+    (17) expr -> . expr POW expr
+    (18) expr -> . expr LE expr
+    (19) expr -> . expr GE expr
+    (20) expr -> . expr LT expr
+    (21) expr -> . expr GT expr
+    (22) expr -> . expr EQ expr
+    (23) expr -> . expr NE expr
+    (24) expr -> . MINUS expr
+    (25) expr -> . expr LAND expr
+    (26) expr -> . expr LOR expr
+    (27) expr -> . LNOT expr
+    (28) expr -> . id
+    (29) expr -> . INTEGER
+    (30) expr -> . DOUBLE
+    (31) expr -> . BOOLEAN
+    (32) expr -> . STRING
+    (33) expr -> . LPAREN expr RPAREN
+    (35) id -> . ID
+
+    MINUS           shift and go to state 6
+    LNOT            shift and go to state 7
+    INTEGER         shift and go to state 9
+    DOUBLE          shift and go to state 10
+    BOOLEAN         shift and go to state 11
+    STRING          shift and go to state 12
+    LPAREN          shift and go to state 13
+    ID              shift and go to state 33
+
+    expr                           shift and go to state 34
+    id                             shift and go to state 8
+
+state 7
+
+    (27) expr -> LNOT . expr
+    (11) expr -> . expr PLUS expr
+    (12) expr -> . expr MINUS expr
+    (13) expr -> . expr MUL expr
+    (14) expr -> . expr DIVIDE expr
+    (15) expr -> . expr INTDIVIDE expr
+    (16) expr -> . expr MODULO expr
+    (17) expr -> . expr POW expr
+    (18) expr -> . expr LE expr
+    (19) expr -> . expr GE expr
+    (20) expr -> . expr LT expr
+    (21) expr -> . expr GT expr
+    (22) expr -> . expr EQ expr
+    (23) expr -> . expr NE expr
+    (24) expr -> . MINUS expr
+    (25) expr -> . expr LAND expr
+    (26) expr -> . expr LOR expr
+    (27) expr -> . LNOT expr
+    (28) expr -> . id
+    (29) expr -> . INTEGER
+    (30) expr -> . DOUBLE
+    (31) expr -> . BOOLEAN
+    (32) expr -> . STRING
+    (33) expr -> . LPAREN expr RPAREN
+    (35) id -> . ID
+
+    MINUS           shift and go to state 6
+    LNOT            shift and go to state 7
+    INTEGER         shift and go to state 9
+    DOUBLE          shift and go to state 10
+    BOOLEAN         shift and go to state 11
+    STRING          shift and go to state 12
+    LPAREN          shift and go to state 13
+    ID              shift and go to state 33
+
+    expr                           shift and go to state 35
+    id                             shift and go to state 8
+
+state 8
+
+    (28) expr -> id .
+
+    SEMI            reduce using rule 28 (expr -> id .)
+    PLUS            reduce using rule 28 (expr -> id .)
+    MINUS           reduce using rule 28 (expr -> id .)
+    MUL             reduce using rule 28 (expr -> id .)
+    DIVIDE          reduce using rule 28 (expr -> id .)
+    INTDIVIDE       reduce using rule 28 (expr -> id .)
+    MODULO          reduce using rule 28 (expr -> id .)
+    POW             reduce using rule 28 (expr -> id .)
+    LE              reduce using rule 28 (expr -> id .)
+    GE              reduce using rule 28 (expr -> id .)
+    LT              reduce using rule 28 (expr -> id .)
+    GT              reduce using rule 28 (expr -> id .)
+    EQ              reduce using rule 28 (expr -> id .)
+    NE              reduce using rule 28 (expr -> id .)
+    LAND            reduce using rule 28 (expr -> id .)
+    LOR             reduce using rule 28 (expr -> id .)
+    RPAREN          reduce using rule 28 (expr -> id .)
+
+
+state 9
+
+    (29) expr -> INTEGER .
+
+    SEMI            reduce using rule 29 (expr -> INTEGER .)
+    PLUS            reduce using rule 29 (expr -> INTEGER .)
+    MINUS           reduce using rule 29 (expr -> INTEGER .)
+    MUL             reduce using rule 29 (expr -> INTEGER .)
+    DIVIDE          reduce using rule 29 (expr -> INTEGER .)
+    INTDIVIDE       reduce using rule 29 (expr -> INTEGER .)
+    MODULO          reduce using rule 29 (expr -> INTEGER .)
+    POW             reduce using rule 29 (expr -> INTEGER .)
+    LE              reduce using rule 29 (expr -> INTEGER .)
+    GE              reduce using rule 29 (expr -> INTEGER .)
+    LT              reduce using rule 29 (expr -> INTEGER .)
+    GT              reduce using rule 29 (expr -> INTEGER .)
+    EQ              reduce using rule 29 (expr -> INTEGER .)
+    NE              reduce using rule 29 (expr -> INTEGER .)
+    LAND            reduce using rule 29 (expr -> INTEGER .)
+    LOR             reduce using rule 29 (expr -> INTEGER .)
+    RPAREN          reduce using rule 29 (expr -> INTEGER .)
+
+
+state 10
+
+    (30) expr -> DOUBLE .
+
+    SEMI            reduce using rule 30 (expr -> DOUBLE .)
+    PLUS            reduce using rule 30 (expr -> DOUBLE .)
+    MINUS           reduce using rule 30 (expr -> DOUBLE .)
+    MUL             reduce using rule 30 (expr -> DOUBLE .)
+    DIVIDE          reduce using rule 30 (expr -> DOUBLE .)
+    INTDIVIDE       reduce using rule 30 (expr -> DOUBLE .)
+    MODULO          reduce using rule 30 (expr -> DOUBLE .)
+    POW             reduce using rule 30 (expr -> DOUBLE .)
+    LE              reduce using rule 30 (expr -> DOUBLE .)
+    GE              reduce using rule 30 (expr -> DOUBLE .)
+    LT              reduce using rule 30 (expr -> DOUBLE .)
+    GT              reduce using rule 30 (expr -> DOUBLE .)
+    EQ              reduce using rule 30 (expr -> DOUBLE .)
+    NE              reduce using rule 30 (expr -> DOUBLE .)
+    LAND            reduce using rule 30 (expr -> DOUBLE .)
+    LOR             reduce using rule 30 (expr -> DOUBLE .)
+    RPAREN          reduce using rule 30 (expr -> DOUBLE .)
+
+
+state 11
+
+    (31) expr -> BOOLEAN .
+
+    SEMI            reduce using rule 31 (expr -> BOOLEAN .)
+    PLUS            reduce using rule 31 (expr -> BOOLEAN .)
+    MINUS           reduce using rule 31 (expr -> BOOLEAN .)
+    MUL             reduce using rule 31 (expr -> BOOLEAN .)
+    DIVIDE          reduce using rule 31 (expr -> BOOLEAN .)
+    INTDIVIDE       reduce using rule 31 (expr -> BOOLEAN .)
+    MODULO          reduce using rule 31 (expr -> BOOLEAN .)
+    POW             reduce using rule 31 (expr -> BOOLEAN .)
+    LE              reduce using rule 31 (expr -> BOOLEAN .)
+    GE              reduce using rule 31 (expr -> BOOLEAN .)
+    LT              reduce using rule 31 (expr -> BOOLEAN .)
+    GT              reduce using rule 31 (expr -> BOOLEAN .)
+    EQ              reduce using rule 31 (expr -> BOOLEAN .)
+    NE              reduce using rule 31 (expr -> BOOLEAN .)
+    LAND            reduce using rule 31 (expr -> BOOLEAN .)
+    LOR             reduce using rule 31 (expr -> BOOLEAN .)
+    RPAREN          reduce using rule 31 (expr -> BOOLEAN .)
+
+
+state 12
+
+    (32) expr -> STRING .
+
+    SEMI            reduce using rule 32 (expr -> STRING .)
+    PLUS            reduce using rule 32 (expr -> STRING .)
+    MINUS           reduce using rule 32 (expr -> STRING .)
+    MUL             reduce using rule 32 (expr -> STRING .)
+    DIVIDE          reduce using rule 32 (expr -> STRING .)
+    INTDIVIDE       reduce using rule 32 (expr -> STRING .)
+    MODULO          reduce using rule 32 (expr -> STRING .)
+    POW             reduce using rule 32 (expr -> STRING .)
+    LE              reduce using rule 32 (expr -> STRING .)
+    GE              reduce using rule 32 (expr -> STRING .)
+    LT              reduce using rule 32 (expr -> STRING .)
+    GT              reduce using rule 32 (expr -> STRING .)
+    EQ              reduce using rule 32 (expr -> STRING .)
+    NE              reduce using rule 32 (expr -> STRING .)
+    LAND            reduce using rule 32 (expr -> STRING .)
+    LOR             reduce using rule 32 (expr -> STRING .)
+    RPAREN          reduce using rule 32 (expr -> STRING .)
+
+
+state 13
+
+    (33) expr -> LPAREN . expr RPAREN
+    (11) expr -> . expr PLUS expr
+    (12) expr -> . expr MINUS expr
+    (13) expr -> . expr MUL expr
+    (14) expr -> . expr DIVIDE expr
+    (15) expr -> . expr INTDIVIDE expr
+    (16) expr -> . expr MODULO expr
+    (17) expr -> . expr POW expr
+    (18) expr -> . expr LE expr
+    (19) expr -> . expr GE expr
+    (20) expr -> . expr LT expr
+    (21) expr -> . expr GT expr
+    (22) expr -> . expr EQ expr
+    (23) expr -> . expr NE expr
+    (24) expr -> . MINUS expr
+    (25) expr -> . expr LAND expr
+    (26) expr -> . expr LOR expr
+    (27) expr -> . LNOT expr
+    (28) expr -> . id
+    (29) expr -> . INTEGER
+    (30) expr -> . DOUBLE
+    (31) expr -> . BOOLEAN
+    (32) expr -> . STRING
+    (33) expr -> . LPAREN expr RPAREN
+    (35) id -> . ID
+
+    MINUS           shift and go to state 6
+    LNOT            shift and go to state 7
+    INTEGER         shift and go to state 9
+    DOUBLE          shift and go to state 10
+    BOOLEAN         shift and go to state 11
+    STRING          shift and go to state 12
+    LPAREN          shift and go to state 13
+    ID              shift and go to state 33
+
+    expr                           shift and go to state 36
+    id                             shift and go to state 8
+
+state 14
+
+    (10) assign -> ID . EQUALS expr SEMI
+    (35) id -> ID .
+
+    EQUALS          shift and go to state 37
+    SEMI            reduce using rule 35 (id -> ID .)
+    PLUS            reduce using rule 35 (id -> ID .)
+    MINUS           reduce using rule 35 (id -> ID .)
+    MUL             reduce using rule 35 (id -> ID .)
+    DIVIDE          reduce using rule 35 (id -> ID .)
+    INTDIVIDE       reduce using rule 35 (id -> ID .)
+    MODULO          reduce using rule 35 (id -> ID .)
+    POW             reduce using rule 35 (id -> ID .)
+    LE              reduce using rule 35 (id -> ID .)
+    GE              reduce using rule 35 (id -> ID .)
+    LT              reduce using rule 35 (id -> ID .)
+    GT              reduce using rule 35 (id -> ID .)
+    EQ              reduce using rule 35 (id -> ID .)
+    NE              reduce using rule 35 (id -> ID .)
+    LAND            reduce using rule 35 (id -> ID .)
+    LOR             reduce using rule 35 (id -> ID .)
+
+
+state 15
+
+    (1) stmtList -> stmtList stmt .
+
+    RETURN          reduce using rule 1 (stmtList -> stmtList stmt .)
+    MINUS           reduce using rule 1 (stmtList -> stmtList stmt .)
+    LNOT            reduce using rule 1 (stmtList -> stmtList stmt .)
+    INTEGER         reduce using rule 1 (stmtList -> stmtList stmt .)
+    DOUBLE          reduce using rule 1 (stmtList -> stmtList stmt .)
+    BOOLEAN         reduce using rule 1 (stmtList -> stmtList stmt .)
+    STRING          reduce using rule 1 (stmtList -> stmtList stmt .)
+    LPAREN          reduce using rule 1 (stmtList -> stmtList stmt .)
+    ID              reduce using rule 1 (stmtList -> stmtList stmt .)
+    $end            reduce using rule 1 (stmtList -> stmtList stmt .)
+
+
+state 16
+
+    (3) stmt -> expr SEMI .
+
+    RETURN          reduce using rule 3 (stmt -> expr SEMI .)
+    MINUS           reduce using rule 3 (stmt -> expr SEMI .)
+    LNOT            reduce using rule 3 (stmt -> expr SEMI .)
+    INTEGER         reduce using rule 3 (stmt -> expr SEMI .)
+    DOUBLE          reduce using rule 3 (stmt -> expr SEMI .)
+    BOOLEAN         reduce using rule 3 (stmt -> expr SEMI .)
+    STRING          reduce using rule 3 (stmt -> expr SEMI .)
+    LPAREN          reduce using rule 3 (stmt -> expr SEMI .)
+    ID              reduce using rule 3 (stmt -> expr SEMI .)
+    $end            reduce using rule 3 (stmt -> expr SEMI .)
+
+
+state 17
+
+    (11) expr -> expr PLUS . expr
+    (11) expr -> . expr PLUS expr
+    (12) expr -> . expr MINUS expr
+    (13) expr -> . expr MUL expr
+    (14) expr -> . expr DIVIDE expr
+    (15) expr -> . expr INTDIVIDE expr
+    (16) expr -> . expr MODULO expr
+    (17) expr -> . expr POW expr
+    (18) expr -> . expr LE expr
+    (19) expr -> . expr GE expr
+    (20) expr -> . expr LT expr
+    (21) expr -> . expr GT expr
+    (22) expr -> . expr EQ expr
+    (23) expr -> . expr NE expr
+    (24) expr -> . MINUS expr
+    (25) expr -> . expr LAND expr
+    (26) expr -> . expr LOR expr
+    (27) expr -> . LNOT expr
+    (28) expr -> . id
+    (29) expr -> . INTEGER
+    (30) expr -> . DOUBLE
+    (31) expr -> . BOOLEAN
+    (32) expr -> . STRING
+    (33) expr -> . LPAREN expr RPAREN
+    (35) id -> . ID
+
+    MINUS           shift and go to state 6
+    LNOT            shift and go to state 7
+    INTEGER         shift and go to state 9
+    DOUBLE          shift and go to state 10
+    BOOLEAN         shift and go to state 11
+    STRING          shift and go to state 12
+    LPAREN          shift and go to state 13
+    ID              shift and go to state 33
+
+    expr                           shift and go to state 38
+    id                             shift and go to state 8
+
+state 18
+
+    (12) expr -> expr MINUS . expr
+    (11) expr -> . expr PLUS expr
+    (12) expr -> . expr MINUS expr
+    (13) expr -> . expr MUL expr
+    (14) expr -> . expr DIVIDE expr
+    (15) expr -> . expr INTDIVIDE expr
+    (16) expr -> . expr MODULO expr
+    (17) expr -> . expr POW expr
+    (18) expr -> . expr LE expr
+    (19) expr -> . expr GE expr
+    (20) expr -> . expr LT expr
+    (21) expr -> . expr GT expr
+    (22) expr -> . expr EQ expr
+    (23) expr -> . expr NE expr
+    (24) expr -> . MINUS expr
+    (25) expr -> . expr LAND expr
+    (26) expr -> . expr LOR expr
+    (27) expr -> . LNOT expr
+    (28) expr -> . id
+    (29) expr -> . INTEGER
+    (30) expr -> . DOUBLE
+    (31) expr -> . BOOLEAN
+    (32) expr -> . STRING
+    (33) expr -> . LPAREN expr RPAREN
+    (35) id -> . ID
+
+    MINUS           shift and go to state 6
+    LNOT            shift and go to state 7
+    INTEGER         shift and go to state 9
+    DOUBLE          shift and go to state 10
+    BOOLEAN         shift and go to state 11
+    STRING          shift and go to state 12
+    LPAREN          shift and go to state 13
+    ID              shift and go to state 33
+
+    expr                           shift and go to state 39
+    id                             shift and go to state 8
+
+state 19
+
+    (13) expr -> expr MUL . expr
+    (11) expr -> . expr PLUS expr
+    (12) expr -> . expr MINUS expr
+    (13) expr -> . expr MUL expr
+    (14) expr -> . expr DIVIDE expr
+    (15) expr -> . expr INTDIVIDE expr
+    (16) expr -> . expr MODULO expr
+    (17) expr -> . expr POW expr
+    (18) expr -> . expr LE expr
+    (19) expr -> . expr GE expr
+    (20) expr -> . expr LT expr
+    (21) expr -> . expr GT expr
+    (22) expr -> . expr EQ expr
+    (23) expr -> . expr NE expr
+    (24) expr -> . MINUS expr
+    (25) expr -> . expr LAND expr
+    (26) expr -> . expr LOR expr
+    (27) expr -> . LNOT expr
+    (28) expr -> . id
+    (29) expr -> . INTEGER
+    (30) expr -> . DOUBLE
+    (31) expr -> . BOOLEAN
+    (32) expr -> . STRING
+    (33) expr -> . LPAREN expr RPAREN
+    (35) id -> . ID
+
+    MINUS           shift and go to state 6
+    LNOT            shift and go to state 7
+    INTEGER         shift and go to state 9
+    DOUBLE          shift and go to state 10
+    BOOLEAN         shift and go to state 11
+    STRING          shift and go to state 12
+    LPAREN          shift and go to state 13
+    ID              shift and go to state 33
+
+    expr                           shift and go to state 40
+    id                             shift and go to state 8
+
+state 20
+
+    (14) expr -> expr DIVIDE . expr
+    (11) expr -> . expr PLUS expr
+    (12) expr -> . expr MINUS expr
+    (13) expr -> . expr MUL expr
+    (14) expr -> . expr DIVIDE expr
+    (15) expr -> . expr INTDIVIDE expr
+    (16) expr -> . expr MODULO expr
+    (17) expr -> . expr POW expr
+    (18) expr -> . expr LE expr
+    (19) expr -> . expr GE expr
+    (20) expr -> . expr LT expr
+    (21) expr -> . expr GT expr
+    (22) expr -> . expr EQ expr
+    (23) expr -> . expr NE expr
+    (24) expr -> . MINUS expr
+    (25) expr -> . expr LAND expr
+    (26) expr -> . expr LOR expr
+    (27) expr -> . LNOT expr
+    (28) expr -> . id
+    (29) expr -> . INTEGER
+    (30) expr -> . DOUBLE
+    (31) expr -> . BOOLEAN
+    (32) expr -> . STRING
+    (33) expr -> . LPAREN expr RPAREN
+    (35) id -> . ID
+
+    MINUS           shift and go to state 6
+    LNOT            shift and go to state 7
+    INTEGER         shift and go to state 9
+    DOUBLE          shift and go to state 10
+    BOOLEAN         shift and go to state 11
+    STRING          shift and go to state 12
+    LPAREN          shift and go to state 13
+    ID              shift and go to state 33
+
+    expr                           shift and go to state 41
+    id                             shift and go to state 8
+
+state 21
+
+    (15) expr -> expr INTDIVIDE . expr
+    (11) expr -> . expr PLUS expr
+    (12) expr -> . expr MINUS expr
+    (13) expr -> . expr MUL expr
+    (14) expr -> . expr DIVIDE expr
+    (15) expr -> . expr INTDIVIDE expr
+    (16) expr -> . expr MODULO expr
+    (17) expr -> . expr POW expr
+    (18) expr -> . expr LE expr
+    (19) expr -> . expr GE expr
+    (20) expr -> . expr LT expr
+    (21) expr -> . expr GT expr
+    (22) expr -> . expr EQ expr
+    (23) expr -> . expr NE expr
+    (24) expr -> . MINUS expr
+    (25) expr -> . expr LAND expr
+    (26) expr -> . expr LOR expr
+    (27) expr -> . LNOT expr
+    (28) expr -> . id
+    (29) expr -> . INTEGER
+    (30) expr -> . DOUBLE
+    (31) expr -> . BOOLEAN
+    (32) expr -> . STRING
+    (33) expr -> . LPAREN expr RPAREN
+    (35) id -> . ID
+
+    MINUS           shift and go to state 6
+    LNOT            shift and go to state 7
+    INTEGER         shift and go to state 9
+    DOUBLE          shift and go to state 10
+    BOOLEAN         shift and go to state 11
+    STRING          shift and go to state 12
+    LPAREN          shift and go to state 13
+    ID              shift and go to state 33
+
+    expr                           shift and go to state 42
+    id                             shift and go to state 8
+
+state 22
+
+    (16) expr -> expr MODULO . expr
+    (11) expr -> . expr PLUS expr
+    (12) expr -> . expr MINUS expr
+    (13) expr -> . expr MUL expr
+    (14) expr -> . expr DIVIDE expr
+    (15) expr -> . expr INTDIVIDE expr
+    (16) expr -> . expr MODULO expr
+    (17) expr -> . expr POW expr
+    (18) expr -> . expr LE expr
+    (19) expr -> . expr GE expr
+    (20) expr -> . expr LT expr
+    (21) expr -> . expr GT expr
+    (22) expr -> . expr EQ expr
+    (23) expr -> . expr NE expr
+    (24) expr -> . MINUS expr
+    (25) expr -> . expr LAND expr
+    (26) expr -> . expr LOR expr
+    (27) expr -> . LNOT expr
+    (28) expr -> . id
+    (29) expr -> . INTEGER
+    (30) expr -> . DOUBLE
+    (31) expr -> . BOOLEAN
+    (32) expr -> . STRING
+    (33) expr -> . LPAREN expr RPAREN
+    (35) id -> . ID
+
+    MINUS           shift and go to state 6
+    LNOT            shift and go to state 7
+    INTEGER         shift and go to state 9
+    DOUBLE          shift and go to state 10
+    BOOLEAN         shift and go to state 11
+    STRING          shift and go to state 12
+    LPAREN          shift and go to state 13
+    ID              shift and go to state 33
+
+    expr                           shift and go to state 43
+    id                             shift and go to state 8
+
+state 23
+
+    (17) expr -> expr POW . expr
+    (11) expr -> . expr PLUS expr
+    (12) expr -> . expr MINUS expr
+    (13) expr -> . expr MUL expr
+    (14) expr -> . expr DIVIDE expr
+    (15) expr -> . expr INTDIVIDE expr
+    (16) expr -> . expr MODULO expr
+    (17) expr -> . expr POW expr
+    (18) expr -> . expr LE expr
+    (19) expr -> . expr GE expr
+    (20) expr -> . expr LT expr
+    (21) expr -> . expr GT expr
+    (22) expr -> . expr EQ expr
+    (23) expr -> . expr NE expr
+    (24) expr -> . MINUS expr
+    (25) expr -> . expr LAND expr
+    (26) expr -> . expr LOR expr
+    (27) expr -> . LNOT expr
+    (28) expr -> . id
+    (29) expr -> . INTEGER
+    (30) expr -> . DOUBLE
+    (31) expr -> . BOOLEAN
+    (32) expr -> . STRING
+    (33) expr -> . LPAREN expr RPAREN
+    (35) id -> . ID
+
+    MINUS           shift and go to state 6
+    LNOT            shift and go to state 7
+    INTEGER         shift and go to state 9
+    DOUBLE          shift and go to state 10
+    BOOLEAN         shift and go to state 11
+    STRING          shift and go to state 12
+    LPAREN          shift and go to state 13
+    ID              shift and go to state 33
+
+    expr                           shift and go to state 44
+    id                             shift and go to state 8
+
+state 24
+
+    (18) expr -> expr LE . expr
+    (11) expr -> . expr PLUS expr
+    (12) expr -> . expr MINUS expr
+    (13) expr -> . expr MUL expr
+    (14) expr -> . expr DIVIDE expr
+    (15) expr -> . expr INTDIVIDE expr
+    (16) expr -> . expr MODULO expr
+    (17) expr -> . expr POW expr
+    (18) expr -> . expr LE expr
+    (19) expr -> . expr GE expr
+    (20) expr -> . expr LT expr
+    (21) expr -> . expr GT expr
+    (22) expr -> . expr EQ expr
+    (23) expr -> . expr NE expr
+    (24) expr -> . MINUS expr
+    (25) expr -> . expr LAND expr
+    (26) expr -> . expr LOR expr
+    (27) expr -> . LNOT expr
+    (28) expr -> . id
+    (29) expr -> . INTEGER
+    (30) expr -> . DOUBLE
+    (31) expr -> . BOOLEAN
+    (32) expr -> . STRING
+    (33) expr -> . LPAREN expr RPAREN
+    (35) id -> . ID
+
+    MINUS           shift and go to state 6
+    LNOT            shift and go to state 7
+    INTEGER         shift and go to state 9
+    DOUBLE          shift and go to state 10
+    BOOLEAN         shift and go to state 11
+    STRING          shift and go to state 12
+    LPAREN          shift and go to state 13
+    ID              shift and go to state 33
+
+    expr                           shift and go to state 45
+    id                             shift and go to state 8
+
+state 25
+
+    (19) expr -> expr GE . expr
+    (11) expr -> . expr PLUS expr
+    (12) expr -> . expr MINUS expr
+    (13) expr -> . expr MUL expr
+    (14) expr -> . expr DIVIDE expr
+    (15) expr -> . expr INTDIVIDE expr
+    (16) expr -> . expr MODULO expr
+    (17) expr -> . expr POW expr
+    (18) expr -> . expr LE expr
+    (19) expr -> . expr GE expr
+    (20) expr -> . expr LT expr
+    (21) expr -> . expr GT expr
+    (22) expr -> . expr EQ expr
+    (23) expr -> . expr NE expr
+    (24) expr -> . MINUS expr
+    (25) expr -> . expr LAND expr
+    (26) expr -> . expr LOR expr
+    (27) expr -> . LNOT expr
+    (28) expr -> . id
+    (29) expr -> . INTEGER
+    (30) expr -> . DOUBLE
+    (31) expr -> . BOOLEAN
+    (32) expr -> . STRING
+    (33) expr -> . LPAREN expr RPAREN
+    (35) id -> . ID
+
+    MINUS           shift and go to state 6
+    LNOT            shift and go to state 7
+    INTEGER         shift and go to state 9
+    DOUBLE          shift and go to state 10
+    BOOLEAN         shift and go to state 11
+    STRING          shift and go to state 12
+    LPAREN          shift and go to state 13
+    ID              shift and go to state 33
+
+    expr                           shift and go to state 46
+    id                             shift and go to state 8
+
+state 26
+
+    (20) expr -> expr LT . expr
+    (11) expr -> . expr PLUS expr
+    (12) expr -> . expr MINUS expr
+    (13) expr -> . expr MUL expr
+    (14) expr -> . expr DIVIDE expr
+    (15) expr -> . expr INTDIVIDE expr
+    (16) expr -> . expr MODULO expr
+    (17) expr -> . expr POW expr
+    (18) expr -> . expr LE expr
+    (19) expr -> . expr GE expr
+    (20) expr -> . expr LT expr
+    (21) expr -> . expr GT expr
+    (22) expr -> . expr EQ expr
+    (23) expr -> . expr NE expr
+    (24) expr -> . MINUS expr
+    (25) expr -> . expr LAND expr
+    (26) expr -> . expr LOR expr
+    (27) expr -> . LNOT expr
+    (28) expr -> . id
+    (29) expr -> . INTEGER
+    (30) expr -> . DOUBLE
+    (31) expr -> . BOOLEAN
+    (32) expr -> . STRING
+    (33) expr -> . LPAREN expr RPAREN
+    (35) id -> . ID
+
+    MINUS           shift and go to state 6
+    LNOT            shift and go to state 7
+    INTEGER         shift and go to state 9
+    DOUBLE          shift and go to state 10
+    BOOLEAN         shift and go to state 11
+    STRING          shift and go to state 12
+    LPAREN          shift and go to state 13
+    ID              shift and go to state 33
+
+    expr                           shift and go to state 47
+    id                             shift and go to state 8
+
+state 27
+
+    (21) expr -> expr GT . expr
+    (11) expr -> . expr PLUS expr
+    (12) expr -> . expr MINUS expr
+    (13) expr -> . expr MUL expr
+    (14) expr -> . expr DIVIDE expr
+    (15) expr -> . expr INTDIVIDE expr
+    (16) expr -> . expr MODULO expr
+    (17) expr -> . expr POW expr
+    (18) expr -> . expr LE expr
+    (19) expr -> . expr GE expr
+    (20) expr -> . expr LT expr
+    (21) expr -> . expr GT expr
+    (22) expr -> . expr EQ expr
+    (23) expr -> . expr NE expr
+    (24) expr -> . MINUS expr
+    (25) expr -> . expr LAND expr
+    (26) expr -> . expr LOR expr
+    (27) expr -> . LNOT expr
+    (28) expr -> . id
+    (29) expr -> . INTEGER
+    (30) expr -> . DOUBLE
+    (31) expr -> . BOOLEAN
+    (32) expr -> . STRING
+    (33) expr -> . LPAREN expr RPAREN
+    (35) id -> . ID
+
+    MINUS           shift and go to state 6
+    LNOT            shift and go to state 7
+    INTEGER         shift and go to state 9
+    DOUBLE          shift and go to state 10
+    BOOLEAN         shift and go to state 11
+    STRING          shift and go to state 12
+    LPAREN          shift and go to state 13
+    ID              shift and go to state 33
+
+    expr                           shift and go to state 48
+    id                             shift and go to state 8
+
+state 28
+
+    (22) expr -> expr EQ . expr
+    (11) expr -> . expr PLUS expr
+    (12) expr -> . expr MINUS expr
+    (13) expr -> . expr MUL expr
+    (14) expr -> . expr DIVIDE expr
+    (15) expr -> . expr INTDIVIDE expr
+    (16) expr -> . expr MODULO expr
+    (17) expr -> . expr POW expr
+    (18) expr -> . expr LE expr
+    (19) expr -> . expr GE expr
+    (20) expr -> . expr LT expr
+    (21) expr -> . expr GT expr
+    (22) expr -> . expr EQ expr
+    (23) expr -> . expr NE expr
+    (24) expr -> . MINUS expr
+    (25) expr -> . expr LAND expr
+    (26) expr -> . expr LOR expr
+    (27) expr -> . LNOT expr
+    (28) expr -> . id
+    (29) expr -> . INTEGER
+    (30) expr -> . DOUBLE
+    (31) expr -> . BOOLEAN
+    (32) expr -> . STRING
+    (33) expr -> . LPAREN expr RPAREN
+    (35) id -> . ID
+
+    MINUS           shift and go to state 6
+    LNOT            shift and go to state 7
+    INTEGER         shift and go to state 9
+    DOUBLE          shift and go to state 10
+    BOOLEAN         shift and go to state 11
+    STRING          shift and go to state 12
+    LPAREN          shift and go to state 13
+    ID              shift and go to state 33
+
+    expr                           shift and go to state 49
+    id                             shift and go to state 8
+
+state 29
+
+    (23) expr -> expr NE . expr
+    (11) expr -> . expr PLUS expr
+    (12) expr -> . expr MINUS expr
+    (13) expr -> . expr MUL expr
+    (14) expr -> . expr DIVIDE expr
+    (15) expr -> . expr INTDIVIDE expr
+    (16) expr -> . expr MODULO expr
+    (17) expr -> . expr POW expr
+    (18) expr -> . expr LE expr
+    (19) expr -> . expr GE expr
+    (20) expr -> . expr LT expr
+    (21) expr -> . expr GT expr
+    (22) expr -> . expr EQ expr
+    (23) expr -> . expr NE expr
+    (24) expr -> . MINUS expr
+    (25) expr -> . expr LAND expr
+    (26) expr -> . expr LOR expr
+    (27) expr -> . LNOT expr
+    (28) expr -> . id
+    (29) expr -> . INTEGER
+    (30) expr -> . DOUBLE
+    (31) expr -> . BOOLEAN
+    (32) expr -> . STRING
+    (33) expr -> . LPAREN expr RPAREN
+    (35) id -> . ID
+
+    MINUS           shift and go to state 6
+    LNOT            shift and go to state 7
+    INTEGER         shift and go to state 9
+    DOUBLE          shift and go to state 10
+    BOOLEAN         shift and go to state 11
+    STRING          shift and go to state 12
+    LPAREN          shift and go to state 13
+    ID              shift and go to state 33
+
+    expr                           shift and go to state 50
+    id                             shift and go to state 8
+
+state 30
+
+    (25) expr -> expr LAND . expr
+    (11) expr -> . expr PLUS expr
+    (12) expr -> . expr MINUS expr
+    (13) expr -> . expr MUL expr
+    (14) expr -> . expr DIVIDE expr
+    (15) expr -> . expr INTDIVIDE expr
+    (16) expr -> . expr MODULO expr
+    (17) expr -> . expr POW expr
+    (18) expr -> . expr LE expr
+    (19) expr -> . expr GE expr
+    (20) expr -> . expr LT expr
+    (21) expr -> . expr GT expr
+    (22) expr -> . expr EQ expr
+    (23) expr -> . expr NE expr
+    (24) expr -> . MINUS expr
+    (25) expr -> . expr LAND expr
+    (26) expr -> . expr LOR expr
+    (27) expr -> . LNOT expr
+    (28) expr -> . id
+    (29) expr -> . INTEGER
+    (30) expr -> . DOUBLE
+    (31) expr -> . BOOLEAN
+    (32) expr -> . STRING
+    (33) expr -> . LPAREN expr RPAREN
+    (35) id -> . ID
+
+    MINUS           shift and go to state 6
+    LNOT            shift and go to state 7
+    INTEGER         shift and go to state 9
+    DOUBLE          shift and go to state 10
+    BOOLEAN         shift and go to state 11
+    STRING          shift and go to state 12
+    LPAREN          shift and go to state 13
+    ID              shift and go to state 33
+
+    expr                           shift and go to state 51
+    id                             shift and go to state 8
+
+state 31
+
+    (26) expr -> expr LOR . expr
+    (11) expr -> . expr PLUS expr
+    (12) expr -> . expr MINUS expr
+    (13) expr -> . expr MUL expr
+    (14) expr -> . expr DIVIDE expr
+    (15) expr -> . expr INTDIVIDE expr
+    (16) expr -> . expr MODULO expr
+    (17) expr -> . expr POW expr
+    (18) expr -> . expr LE expr
+    (19) expr -> . expr GE expr
+    (20) expr -> . expr LT expr
+    (21) expr -> . expr GT expr
+    (22) expr -> . expr EQ expr
+    (23) expr -> . expr NE expr
+    (24) expr -> . MINUS expr
+    (25) expr -> . expr LAND expr
+    (26) expr -> . expr LOR expr
+    (27) expr -> . LNOT expr
+    (28) expr -> . id
+    (29) expr -> . INTEGER
+    (30) expr -> . DOUBLE
+    (31) expr -> . BOOLEAN
+    (32) expr -> . STRING
+    (33) expr -> . LPAREN expr RPAREN
+    (35) id -> . ID
+
+    MINUS           shift and go to state 6
+    LNOT            shift and go to state 7
+    INTEGER         shift and go to state 9
+    DOUBLE          shift and go to state 10
+    BOOLEAN         shift and go to state 11
+    STRING          shift and go to state 12
+    LPAREN          shift and go to state 13
+    ID              shift and go to state 33
+
+    expr                           shift and go to state 52
+    id                             shift and go to state 8
+
+state 32
+
+    (4) stmt -> RETURN expr . SEMI
+    (11) expr -> expr . PLUS expr
+    (12) expr -> expr . MINUS expr
+    (13) expr -> expr . MUL expr
+    (14) expr -> expr . DIVIDE expr
+    (15) expr -> expr . INTDIVIDE expr
+    (16) expr -> expr . MODULO expr
+    (17) expr -> expr . POW expr
+    (18) expr -> expr . LE expr
+    (19) expr -> expr . GE expr
+    (20) expr -> expr . LT expr
+    (21) expr -> expr . GT expr
+    (22) expr -> expr . EQ expr
+    (23) expr -> expr . NE expr
+    (25) expr -> expr . LAND expr
+    (26) expr -> expr . LOR expr
+
+    SEMI            shift and go to state 53
+    PLUS            shift and go to state 17
+    MINUS           shift and go to state 18
+    MUL             shift and go to state 19
+    DIVIDE          shift and go to state 20
+    INTDIVIDE       shift and go to state 21
+    MODULO          shift and go to state 22
+    POW             shift and go to state 23
+    LE              shift and go to state 24
+    GE              shift and go to state 25
+    LT              shift and go to state 26
+    GT              shift and go to state 27
+    EQ              shift and go to state 28
+    NE              shift and go to state 29
+    LAND            shift and go to state 30
+    LOR             shift and go to state 31
+
+
+state 33
+
+    (35) id -> ID .
+
+    SEMI            reduce using rule 35 (id -> ID .)
+    PLUS            reduce using rule 35 (id -> ID .)
+    MINUS           reduce using rule 35 (id -> ID .)
+    MUL             reduce using rule 35 (id -> ID .)
+    DIVIDE          reduce using rule 35 (id -> ID .)
+    INTDIVIDE       reduce using rule 35 (id -> ID .)
+    MODULO          reduce using rule 35 (id -> ID .)
+    POW             reduce using rule 35 (id -> ID .)
+    LE              reduce using rule 35 (id -> ID .)
+    GE              reduce using rule 35 (id -> ID .)
+    LT              reduce using rule 35 (id -> ID .)
+    GT              reduce using rule 35 (id -> ID .)
+    EQ              reduce using rule 35 (id -> ID .)
+    NE              reduce using rule 35 (id -> ID .)
+    LAND            reduce using rule 35 (id -> ID .)
+    LOR             reduce using rule 35 (id -> ID .)
+    RPAREN          reduce using rule 35 (id -> ID .)
+
+
+state 34
+
+    (24) expr -> MINUS expr .
+    (11) expr -> expr . PLUS expr
+    (12) expr -> expr . MINUS expr
+    (13) expr -> expr . MUL expr
+    (14) expr -> expr . DIVIDE expr
+    (15) expr -> expr . INTDIVIDE expr
+    (16) expr -> expr . MODULO expr
+    (17) expr -> expr . POW expr
+    (18) expr -> expr . LE expr
+    (19) expr -> expr . GE expr
+    (20) expr -> expr . LT expr
+    (21) expr -> expr . GT expr
+    (22) expr -> expr . EQ expr
+    (23) expr -> expr . NE expr
+    (25) expr -> expr . LAND expr
+    (26) expr -> expr . LOR expr
+
+    SEMI            reduce using rule 24 (expr -> MINUS expr .)
+    PLUS            reduce using rule 24 (expr -> MINUS expr .)
+    MINUS           reduce using rule 24 (expr -> MINUS expr .)
+    MUL             reduce using rule 24 (expr -> MINUS expr .)
+    DIVIDE          reduce using rule 24 (expr -> MINUS expr .)
+    INTDIVIDE       reduce using rule 24 (expr -> MINUS expr .)
+    MODULO          reduce using rule 24 (expr -> MINUS expr .)
+    POW             reduce using rule 24 (expr -> MINUS expr .)
+    LE              reduce using rule 24 (expr -> MINUS expr .)
+    GE              reduce using rule 24 (expr -> MINUS expr .)
+    LT              reduce using rule 24 (expr -> MINUS expr .)
+    GT              reduce using rule 24 (expr -> MINUS expr .)
+    EQ              reduce using rule 24 (expr -> MINUS expr .)
+    NE              reduce using rule 24 (expr -> MINUS expr .)
+    LAND            reduce using rule 24 (expr -> MINUS expr .)
+    LOR             reduce using rule 24 (expr -> MINUS expr .)
+    RPAREN          reduce using rule 24 (expr -> MINUS expr .)
+
+  ! PLUS            [ shift and go to state 17 ]
+  ! MINUS           [ shift and go to state 18 ]
+  ! MUL             [ shift and go to state 19 ]
+  ! DIVIDE          [ shift and go to state 20 ]
+  ! INTDIVIDE       [ shift and go to state 21 ]
+  ! MODULO          [ shift and go to state 22 ]
+  ! POW             [ shift and go to state 23 ]
+  ! LE              [ shift and go to state 24 ]
+  ! GE              [ shift and go to state 25 ]
+  ! LT              [ shift and go to state 26 ]
+  ! GT              [ shift and go to state 27 ]
+  ! EQ              [ shift and go to state 28 ]
+  ! NE              [ shift and go to state 29 ]
+  ! LAND            [ shift and go to state 30 ]
+  ! LOR             [ shift and go to state 31 ]
+
+
+state 35
+
+    (27) expr -> LNOT expr .
+    (11) expr -> expr . PLUS expr
+    (12) expr -> expr . MINUS expr
+    (13) expr -> expr . MUL expr
+    (14) expr -> expr . DIVIDE expr
+    (15) expr -> expr . INTDIVIDE expr
+    (16) expr -> expr . MODULO expr
+    (17) expr -> expr . POW expr
+    (18) expr -> expr . LE expr
+    (19) expr -> expr . GE expr
+    (20) expr -> expr . LT expr
+    (21) expr -> expr . GT expr
+    (22) expr -> expr . EQ expr
+    (23) expr -> expr . NE expr
+    (25) expr -> expr . LAND expr
+    (26) expr -> expr . LOR expr
+
+    SEMI            reduce using rule 27 (expr -> LNOT expr .)
+    PLUS            reduce using rule 27 (expr -> LNOT expr .)
+    MINUS           reduce using rule 27 (expr -> LNOT expr .)
+    MUL             reduce using rule 27 (expr -> LNOT expr .)
+    DIVIDE          reduce using rule 27 (expr -> LNOT expr .)
+    INTDIVIDE       reduce using rule 27 (expr -> LNOT expr .)
+    MODULO          reduce using rule 27 (expr -> LNOT expr .)
+    POW             reduce using rule 27 (expr -> LNOT expr .)
+    LE              reduce using rule 27 (expr -> LNOT expr .)
+    GE              reduce using rule 27 (expr -> LNOT expr .)
+    LT              reduce using rule 27 (expr -> LNOT expr .)
+    GT              reduce using rule 27 (expr -> LNOT expr .)
+    EQ              reduce using rule 27 (expr -> LNOT expr .)
+    NE              reduce using rule 27 (expr -> LNOT expr .)
+    LAND            reduce using rule 27 (expr -> LNOT expr .)
+    LOR             reduce using rule 27 (expr -> LNOT expr .)
+    RPAREN          reduce using rule 27 (expr -> LNOT expr .)
+
+  ! PLUS            [ shift and go to state 17 ]
+  ! MINUS           [ shift and go to state 18 ]
+  ! MUL             [ shift and go to state 19 ]
+  ! DIVIDE          [ shift and go to state 20 ]
+  ! INTDIVIDE       [ shift and go to state 21 ]
+  ! MODULO          [ shift and go to state 22 ]
+  ! POW             [ shift and go to state 23 ]
+  ! LE              [ shift and go to state 24 ]
+  ! GE              [ shift and go to state 25 ]
+  ! LT              [ shift and go to state 26 ]
+  ! GT              [ shift and go to state 27 ]
+  ! EQ              [ shift and go to state 28 ]
+  ! NE              [ shift and go to state 29 ]
+  ! LAND            [ shift and go to state 30 ]
+  ! LOR             [ shift and go to state 31 ]
+
+
+state 36
+
+    (33) expr -> LPAREN expr . RPAREN
+    (11) expr -> expr . PLUS expr
+    (12) expr -> expr . MINUS expr
+    (13) expr -> expr . MUL expr
+    (14) expr -> expr . DIVIDE expr
+    (15) expr -> expr . INTDIVIDE expr
+    (16) expr -> expr . MODULO expr
+    (17) expr -> expr . POW expr
+    (18) expr -> expr . LE expr
+    (19) expr -> expr . GE expr
+    (20) expr -> expr . LT expr
+    (21) expr -> expr . GT expr
+    (22) expr -> expr . EQ expr
+    (23) expr -> expr . NE expr
+    (25) expr -> expr . LAND expr
+    (26) expr -> expr . LOR expr
+
+    RPAREN          shift and go to state 54
+    PLUS            shift and go to state 17
+    MINUS           shift and go to state 18
+    MUL             shift and go to state 19
+    DIVIDE          shift and go to state 20
+    INTDIVIDE       shift and go to state 21
+    MODULO          shift and go to state 22
+    POW             shift and go to state 23
+    LE              shift and go to state 24
+    GE              shift and go to state 25
+    LT              shift and go to state 26
+    GT              shift and go to state 27
+    EQ              shift and go to state 28
+    NE              shift and go to state 29
+    LAND            shift and go to state 30
+    LOR             shift and go to state 31
+
+
+state 37
+
+    (10) assign -> ID EQUALS . expr SEMI
+    (11) expr -> . expr PLUS expr
+    (12) expr -> . expr MINUS expr
+    (13) expr -> . expr MUL expr
+    (14) expr -> . expr DIVIDE expr
+    (15) expr -> . expr INTDIVIDE expr
+    (16) expr -> . expr MODULO expr
+    (17) expr -> . expr POW expr
+    (18) expr -> . expr LE expr
+    (19) expr -> . expr GE expr
+    (20) expr -> . expr LT expr
+    (21) expr -> . expr GT expr
+    (22) expr -> . expr EQ expr
+    (23) expr -> . expr NE expr
+    (24) expr -> . MINUS expr
+    (25) expr -> . expr LAND expr
+    (26) expr -> . expr LOR expr
+    (27) expr -> . LNOT expr
+    (28) expr -> . id
+    (29) expr -> . INTEGER
+    (30) expr -> . DOUBLE
+    (31) expr -> . BOOLEAN
+    (32) expr -> . STRING
+    (33) expr -> . LPAREN expr RPAREN
+    (35) id -> . ID
+
+    MINUS           shift and go to state 6
+    LNOT            shift and go to state 7
+    INTEGER         shift and go to state 9
+    DOUBLE          shift and go to state 10
+    BOOLEAN         shift and go to state 11
+    STRING          shift and go to state 12
+    LPAREN          shift and go to state 13
+    ID              shift and go to state 33
+
+    expr                           shift and go to state 55
+    id                             shift and go to state 8
+
+state 38
+
+    (11) expr -> expr PLUS expr .
+    (11) expr -> expr . PLUS expr
+    (12) expr -> expr . MINUS expr
+    (13) expr -> expr . MUL expr
+    (14) expr -> expr . DIVIDE expr
+    (15) expr -> expr . INTDIVIDE expr
+    (16) expr -> expr . MODULO expr
+    (17) expr -> expr . POW expr
+    (18) expr -> expr . LE expr
+    (19) expr -> expr . GE expr
+    (20) expr -> expr . LT expr
+    (21) expr -> expr . GT expr
+    (22) expr -> expr . EQ expr
+    (23) expr -> expr . NE expr
+    (25) expr -> expr . LAND expr
+    (26) expr -> expr . LOR expr
+
+    SEMI            reduce using rule 11 (expr -> expr PLUS expr .)
+    PLUS            reduce using rule 11 (expr -> expr PLUS expr .)
+    MINUS           reduce using rule 11 (expr -> expr PLUS expr .)
+    LE              reduce using rule 11 (expr -> expr PLUS expr .)
+    GE              reduce using rule 11 (expr -> expr PLUS expr .)
+    LT              reduce using rule 11 (expr -> expr PLUS expr .)
+    GT              reduce using rule 11 (expr -> expr PLUS expr .)
+    EQ              reduce using rule 11 (expr -> expr PLUS expr .)
+    NE              reduce using rule 11 (expr -> expr PLUS expr .)
+    LAND            reduce using rule 11 (expr -> expr PLUS expr .)
+    LOR             reduce using rule 11 (expr -> expr PLUS expr .)
+    RPAREN          reduce using rule 11 (expr -> expr PLUS expr .)
+    MUL             shift and go to state 19
+    DIVIDE          shift and go to state 20
+    INTDIVIDE       shift and go to state 21
+    MODULO          shift and go to state 22
+    POW             shift and go to state 23
+
+  ! MUL             [ reduce using rule 11 (expr -> expr PLUS expr .) ]
+  ! DIVIDE          [ reduce using rule 11 (expr -> expr PLUS expr .) ]
+  ! INTDIVIDE       [ reduce using rule 11 (expr -> expr PLUS expr .) ]
+  ! MODULO          [ reduce using rule 11 (expr -> expr PLUS expr .) ]
+  ! POW             [ reduce using rule 11 (expr -> expr PLUS expr .) ]
+  ! PLUS            [ shift and go to state 17 ]
+  ! MINUS           [ shift and go to state 18 ]
+  ! LE              [ shift and go to state 24 ]
+  ! GE              [ shift and go to state 25 ]
+  ! LT              [ shift and go to state 26 ]
+  ! GT              [ shift and go to state 27 ]
+  ! EQ              [ shift and go to state 28 ]
+  ! NE              [ shift and go to state 29 ]
+  ! LAND            [ shift and go to state 30 ]
+  ! LOR             [ shift and go to state 31 ]
+
+
+state 39
+
+    (12) expr -> expr MINUS expr .
+    (11) expr -> expr . PLUS expr
+    (12) expr -> expr . MINUS expr
+    (13) expr -> expr . MUL expr
+    (14) expr -> expr . DIVIDE expr
+    (15) expr -> expr . INTDIVIDE expr
+    (16) expr -> expr . MODULO expr
+    (17) expr -> expr . POW expr
+    (18) expr -> expr . LE expr
+    (19) expr -> expr . GE expr
+    (20) expr -> expr . LT expr
+    (21) expr -> expr . GT expr
+    (22) expr -> expr . EQ expr
+    (23) expr -> expr . NE expr
+    (25) expr -> expr . LAND expr
+    (26) expr -> expr . LOR expr
+
+    SEMI            reduce using rule 12 (expr -> expr MINUS expr .)
+    PLUS            reduce using rule 12 (expr -> expr MINUS expr .)
+    MINUS           reduce using rule 12 (expr -> expr MINUS expr .)
+    LE              reduce using rule 12 (expr -> expr MINUS expr .)
+    GE              reduce using rule 12 (expr -> expr MINUS expr .)
+    LT              reduce using rule 12 (expr -> expr MINUS expr .)
+    GT              reduce using rule 12 (expr -> expr MINUS expr .)
+    EQ              reduce using rule 12 (expr -> expr MINUS expr .)
+    NE              reduce using rule 12 (expr -> expr MINUS expr .)
+    LAND            reduce using rule 12 (expr -> expr MINUS expr .)
+    LOR             reduce using rule 12 (expr -> expr MINUS expr .)
+    RPAREN          reduce using rule 12 (expr -> expr MINUS expr .)
+    MUL             shift and go to state 19
+    DIVIDE          shift and go to state 20
+    INTDIVIDE       shift and go to state 21
+    MODULO          shift and go to state 22
+    POW             shift and go to state 23
+
+  ! MUL             [ reduce using rule 12 (expr -> expr MINUS expr .) ]
+  ! DIVIDE          [ reduce using rule 12 (expr -> expr MINUS expr .) ]
+  ! INTDIVIDE       [ reduce using rule 12 (expr -> expr MINUS expr .) ]
+  ! MODULO          [ reduce using rule 12 (expr -> expr MINUS expr .) ]
+  ! POW             [ reduce using rule 12 (expr -> expr MINUS expr .) ]
+  ! PLUS            [ shift and go to state 17 ]
+  ! MINUS           [ shift and go to state 18 ]
+  ! LE              [ shift and go to state 24 ]
+  ! GE              [ shift and go to state 25 ]
+  ! LT              [ shift and go to state 26 ]
+  ! GT              [ shift and go to state 27 ]
+  ! EQ              [ shift and go to state 28 ]
+  ! NE              [ shift and go to state 29 ]
+  ! LAND            [ shift and go to state 30 ]
+  ! LOR             [ shift and go to state 31 ]
+
+
+state 40
+
+    (13) expr -> expr MUL expr .
+    (11) expr -> expr . PLUS expr
+    (12) expr -> expr . MINUS expr
+    (13) expr -> expr . MUL expr
+    (14) expr -> expr . DIVIDE expr
+    (15) expr -> expr . INTDIVIDE expr
+    (16) expr -> expr . MODULO expr
+    (17) expr -> expr . POW expr
+    (18) expr -> expr . LE expr
+    (19) expr -> expr . GE expr
+    (20) expr -> expr . LT expr
+    (21) expr -> expr . GT expr
+    (22) expr -> expr . EQ expr
+    (23) expr -> expr . NE expr
+    (25) expr -> expr . LAND expr
+    (26) expr -> expr . LOR expr
+
+    SEMI            reduce using rule 13 (expr -> expr MUL expr .)
+    PLUS            reduce using rule 13 (expr -> expr MUL expr .)
+    MINUS           reduce using rule 13 (expr -> expr MUL expr .)
+    MUL             reduce using rule 13 (expr -> expr MUL expr .)
+    DIVIDE          reduce using rule 13 (expr -> expr MUL expr .)
+    INTDIVIDE       reduce using rule 13 (expr -> expr MUL expr .)
+    MODULO          reduce using rule 13 (expr -> expr MUL expr .)
+    LE              reduce using rule 13 (expr -> expr MUL expr .)
+    GE              reduce using rule 13 (expr -> expr MUL expr .)
+    LT              reduce using rule 13 (expr -> expr MUL expr .)
+    GT              reduce using rule 13 (expr -> expr MUL expr .)
+    EQ              reduce using rule 13 (expr -> expr MUL expr .)
+    NE              reduce using rule 13 (expr -> expr MUL expr .)
+    LAND            reduce using rule 13 (expr -> expr MUL expr .)
+    LOR             reduce using rule 13 (expr -> expr MUL expr .)
+    RPAREN          reduce using rule 13 (expr -> expr MUL expr .)
+    POW             shift and go to state 23
+
+  ! POW             [ reduce using rule 13 (expr -> expr MUL expr .) ]
+  ! PLUS            [ shift and go to state 17 ]
+  ! MINUS           [ shift and go to state 18 ]
+  ! MUL             [ shift and go to state 19 ]
+  ! DIVIDE          [ shift and go to state 20 ]
+  ! INTDIVIDE       [ shift and go to state 21 ]
+  ! MODULO          [ shift and go to state 22 ]
+  ! LE              [ shift and go to state 24 ]
+  ! GE              [ shift and go to state 25 ]
+  ! LT              [ shift and go to state 26 ]
+  ! GT              [ shift and go to state 27 ]
+  ! EQ              [ shift and go to state 28 ]
+  ! NE              [ shift and go to state 29 ]
+  ! LAND            [ shift and go to state 30 ]
+  ! LOR             [ shift and go to state 31 ]
+
+
+state 41
+
+    (14) expr -> expr DIVIDE expr .
+    (11) expr -> expr . PLUS expr
+    (12) expr -> expr . MINUS expr
+    (13) expr -> expr . MUL expr
+    (14) expr -> expr . DIVIDE expr
+    (15) expr -> expr . INTDIVIDE expr
+    (16) expr -> expr . MODULO expr
+    (17) expr -> expr . POW expr
+    (18) expr -> expr . LE expr
+    (19) expr -> expr . GE expr
+    (20) expr -> expr . LT expr
+    (21) expr -> expr . GT expr
+    (22) expr -> expr . EQ expr
+    (23) expr -> expr . NE expr
+    (25) expr -> expr . LAND expr
+    (26) expr -> expr . LOR expr
+
+    SEMI            reduce using rule 14 (expr -> expr DIVIDE expr .)
+    PLUS            reduce using rule 14 (expr -> expr DIVIDE expr .)
+    MINUS           reduce using rule 14 (expr -> expr DIVIDE expr .)
+    MUL             reduce using rule 14 (expr -> expr DIVIDE expr .)
+    DIVIDE          reduce using rule 14 (expr -> expr DIVIDE expr .)
+    INTDIVIDE       reduce using rule 14 (expr -> expr DIVIDE expr .)
+    MODULO          reduce using rule 14 (expr -> expr DIVIDE expr .)
+    LE              reduce using rule 14 (expr -> expr DIVIDE expr .)
+    GE              reduce using rule 14 (expr -> expr DIVIDE expr .)
+    LT              reduce using rule 14 (expr -> expr DIVIDE expr .)
+    GT              reduce using rule 14 (expr -> expr DIVIDE expr .)
+    EQ              reduce using rule 14 (expr -> expr DIVIDE expr .)
+    NE              reduce using rule 14 (expr -> expr DIVIDE expr .)
+    LAND            reduce using rule 14 (expr -> expr DIVIDE expr .)
+    LOR             reduce using rule 14 (expr -> expr DIVIDE expr .)
+    RPAREN          reduce using rule 14 (expr -> expr DIVIDE expr .)
+    POW             shift and go to state 23
+
+  ! POW             [ reduce using rule 14 (expr -> expr DIVIDE expr .) ]
+  ! PLUS            [ shift and go to state 17 ]
+  ! MINUS           [ shift and go to state 18 ]
+  ! MUL             [ shift and go to state 19 ]
+  ! DIVIDE          [ shift and go to state 20 ]
+  ! INTDIVIDE       [ shift and go to state 21 ]
+  ! MODULO          [ shift and go to state 22 ]
+  ! LE              [ shift and go to state 24 ]
+  ! GE              [ shift and go to state 25 ]
+  ! LT              [ shift and go to state 26 ]
+  ! GT              [ shift and go to state 27 ]
+  ! EQ              [ shift and go to state 28 ]
+  ! NE              [ shift and go to state 29 ]
+  ! LAND            [ shift and go to state 30 ]
+  ! LOR             [ shift and go to state 31 ]
+
+
+state 42
+
+    (15) expr -> expr INTDIVIDE expr .
+    (11) expr -> expr . PLUS expr
+    (12) expr -> expr . MINUS expr
+    (13) expr -> expr . MUL expr
+    (14) expr -> expr . DIVIDE expr
+    (15) expr -> expr . INTDIVIDE expr
+    (16) expr -> expr . MODULO expr
+    (17) expr -> expr . POW expr
+    (18) expr -> expr . LE expr
+    (19) expr -> expr . GE expr
+    (20) expr -> expr . LT expr
+    (21) expr -> expr . GT expr
+    (22) expr -> expr . EQ expr
+    (23) expr -> expr . NE expr
+    (25) expr -> expr . LAND expr
+    (26) expr -> expr . LOR expr
+
+    SEMI            reduce using rule 15 (expr -> expr INTDIVIDE expr .)
+    PLUS            reduce using rule 15 (expr -> expr INTDIVIDE expr .)
+    MINUS           reduce using rule 15 (expr -> expr INTDIVIDE expr .)
+    MUL             reduce using rule 15 (expr -> expr INTDIVIDE expr .)
+    DIVIDE          reduce using rule 15 (expr -> expr INTDIVIDE expr .)
+    INTDIVIDE       reduce using rule 15 (expr -> expr INTDIVIDE expr .)
+    MODULO          reduce using rule 15 (expr -> expr INTDIVIDE expr .)
+    LE              reduce using rule 15 (expr -> expr INTDIVIDE expr .)
+    GE              reduce using rule 15 (expr -> expr INTDIVIDE expr .)
+    LT              reduce using rule 15 (expr -> expr INTDIVIDE expr .)
+    GT              reduce using rule 15 (expr -> expr INTDIVIDE expr .)
+    EQ              reduce using rule 15 (expr -> expr INTDIVIDE expr .)
+    NE              reduce using rule 15 (expr -> expr INTDIVIDE expr .)
+    LAND            reduce using rule 15 (expr -> expr INTDIVIDE expr .)
+    LOR             reduce using rule 15 (expr -> expr INTDIVIDE expr .)
+    RPAREN          reduce using rule 15 (expr -> expr INTDIVIDE expr .)
+    POW             shift and go to state 23
+
+  ! POW             [ reduce using rule 15 (expr -> expr INTDIVIDE expr .) ]
+  ! PLUS            [ shift and go to state 17 ]
+  ! MINUS           [ shift and go to state 18 ]
+  ! MUL             [ shift and go to state 19 ]
+  ! DIVIDE          [ shift and go to state 20 ]
+  ! INTDIVIDE       [ shift and go to state 21 ]
+  ! MODULO          [ shift and go to state 22 ]
+  ! LE              [ shift and go to state 24 ]
+  ! GE              [ shift and go to state 25 ]
+  ! LT              [ shift and go to state 26 ]
+  ! GT              [ shift and go to state 27 ]
+  ! EQ              [ shift and go to state 28 ]
+  ! NE              [ shift and go to state 29 ]
+  ! LAND            [ shift and go to state 30 ]
+  ! LOR             [ shift and go to state 31 ]
+
+
+state 43
+
+    (16) expr -> expr MODULO expr .
+    (11) expr -> expr . PLUS expr
+    (12) expr -> expr . MINUS expr
+    (13) expr -> expr . MUL expr
+    (14) expr -> expr . DIVIDE expr
+    (15) expr -> expr . INTDIVIDE expr
+    (16) expr -> expr . MODULO expr
+    (17) expr -> expr . POW expr
+    (18) expr -> expr . LE expr
+    (19) expr -> expr . GE expr
+    (20) expr -> expr . LT expr
+    (21) expr -> expr . GT expr
+    (22) expr -> expr . EQ expr
+    (23) expr -> expr . NE expr
+    (25) expr -> expr . LAND expr
+    (26) expr -> expr . LOR expr
+
+    SEMI            reduce using rule 16 (expr -> expr MODULO expr .)
+    PLUS            reduce using rule 16 (expr -> expr MODULO expr .)
+    MINUS           reduce using rule 16 (expr -> expr MODULO expr .)
+    MUL             reduce using rule 16 (expr -> expr MODULO expr .)
+    DIVIDE          reduce using rule 16 (expr -> expr MODULO expr .)
+    INTDIVIDE       reduce using rule 16 (expr -> expr MODULO expr .)
+    MODULO          reduce using rule 16 (expr -> expr MODULO expr .)
+    LE              reduce using rule 16 (expr -> expr MODULO expr .)
+    GE              reduce using rule 16 (expr -> expr MODULO expr .)
+    LT              reduce using rule 16 (expr -> expr MODULO expr .)
+    GT              reduce using rule 16 (expr -> expr MODULO expr .)
+    EQ              reduce using rule 16 (expr -> expr MODULO expr .)
+    NE              reduce using rule 16 (expr -> expr MODULO expr .)
+    LAND            reduce using rule 16 (expr -> expr MODULO expr .)
+    LOR             reduce using rule 16 (expr -> expr MODULO expr .)
+    RPAREN          reduce using rule 16 (expr -> expr MODULO expr .)
+    POW             shift and go to state 23
+
+  ! POW             [ reduce using rule 16 (expr -> expr MODULO expr .) ]
+  ! PLUS            [ shift and go to state 17 ]
+  ! MINUS           [ shift and go to state 18 ]
+  ! MUL             [ shift and go to state 19 ]
+  ! DIVIDE          [ shift and go to state 20 ]
+  ! INTDIVIDE       [ shift and go to state 21 ]
+  ! MODULO          [ shift and go to state 22 ]
+  ! LE              [ shift and go to state 24 ]
+  ! GE              [ shift and go to state 25 ]
+  ! LT              [ shift and go to state 26 ]
+  ! GT              [ shift and go to state 27 ]
+  ! EQ              [ shift and go to state 28 ]
+  ! NE              [ shift and go to state 29 ]
+  ! LAND            [ shift and go to state 30 ]
+  ! LOR             [ shift and go to state 31 ]
+
+
+state 44
+
+    (17) expr -> expr POW expr .
+    (11) expr -> expr . PLUS expr
+    (12) expr -> expr . MINUS expr
+    (13) expr -> expr . MUL expr
+    (14) expr -> expr . DIVIDE expr
+    (15) expr -> expr . INTDIVIDE expr
+    (16) expr -> expr . MODULO expr
+    (17) expr -> expr . POW expr
+    (18) expr -> expr . LE expr
+    (19) expr -> expr . GE expr
+    (20) expr -> expr . LT expr
+    (21) expr -> expr . GT expr
+    (22) expr -> expr . EQ expr
+    (23) expr -> expr . NE expr
+    (25) expr -> expr . LAND expr
+    (26) expr -> expr . LOR expr
+
+    SEMI            reduce using rule 17 (expr -> expr POW expr .)
+    PLUS            reduce using rule 17 (expr -> expr POW expr .)
+    MINUS           reduce using rule 17 (expr -> expr POW expr .)
+    MUL             reduce using rule 17 (expr -> expr POW expr .)
+    DIVIDE          reduce using rule 17 (expr -> expr POW expr .)
+    INTDIVIDE       reduce using rule 17 (expr -> expr POW expr .)
+    MODULO          reduce using rule 17 (expr -> expr POW expr .)
+    LE              reduce using rule 17 (expr -> expr POW expr .)
+    GE              reduce using rule 17 (expr -> expr POW expr .)
+    LT              reduce using rule 17 (expr -> expr POW expr .)
+    GT              reduce using rule 17 (expr -> expr POW expr .)
+    EQ              reduce using rule 17 (expr -> expr POW expr .)
+    NE              reduce using rule 17 (expr -> expr POW expr .)
+    LAND            reduce using rule 17 (expr -> expr POW expr .)
+    LOR             reduce using rule 17 (expr -> expr POW expr .)
+    RPAREN          reduce using rule 17 (expr -> expr POW expr .)
+    POW             shift and go to state 23
+
+  ! POW             [ reduce using rule 17 (expr -> expr POW expr .) ]
+  ! PLUS            [ shift and go to state 17 ]
+  ! MINUS           [ shift and go to state 18 ]
+  ! MUL             [ shift and go to state 19 ]
+  ! DIVIDE          [ shift and go to state 20 ]
+  ! INTDIVIDE       [ shift and go to state 21 ]
+  ! MODULO          [ shift and go to state 22 ]
+  ! LE              [ shift and go to state 24 ]
+  ! GE              [ shift and go to state 25 ]
+  ! LT              [ shift and go to state 26 ]
+  ! GT              [ shift and go to state 27 ]
+  ! EQ              [ shift and go to state 28 ]
+  ! NE              [ shift and go to state 29 ]
+  ! LAND            [ shift and go to state 30 ]
+  ! LOR             [ shift and go to state 31 ]
+
+
+state 45
+
+    (18) expr -> expr LE expr .
+    (11) expr -> expr . PLUS expr
+    (12) expr -> expr . MINUS expr
+    (13) expr -> expr . MUL expr
+    (14) expr -> expr . DIVIDE expr
+    (15) expr -> expr . INTDIVIDE expr
+    (16) expr -> expr . MODULO expr
+    (17) expr -> expr . POW expr
+    (18) expr -> expr . LE expr
+    (19) expr -> expr . GE expr
+    (20) expr -> expr . LT expr
+    (21) expr -> expr . GT expr
+    (22) expr -> expr . EQ expr
+    (23) expr -> expr . NE expr
+    (25) expr -> expr . LAND expr
+    (26) expr -> expr . LOR expr
+
+    SEMI            reduce using rule 18 (expr -> expr LE expr .)
+    LE              reduce using rule 18 (expr -> expr LE expr .)
+    GE              reduce using rule 18 (expr -> expr LE expr .)
+    LT              reduce using rule 18 (expr -> expr LE expr .)
+    GT              reduce using rule 18 (expr -> expr LE expr .)
+    EQ              reduce using rule 18 (expr -> expr LE expr .)
+    NE              reduce using rule 18 (expr -> expr LE expr .)
+    LAND            reduce using rule 18 (expr -> expr LE expr .)
+    LOR             reduce using rule 18 (expr -> expr LE expr .)
+    RPAREN          reduce using rule 18 (expr -> expr LE expr .)
+    PLUS            shift and go to state 17
+    MINUS           shift and go to state 18
+    MUL             shift and go to state 19
+    DIVIDE          shift and go to state 20
+    INTDIVIDE       shift and go to state 21
+    MODULO          shift and go to state 22
+    POW             shift and go to state 23
+
+  ! PLUS            [ reduce using rule 18 (expr -> expr LE expr .) ]
+  ! MINUS           [ reduce using rule 18 (expr -> expr LE expr .) ]
+  ! MUL             [ reduce using rule 18 (expr -> expr LE expr .) ]
+  ! DIVIDE          [ reduce using rule 18 (expr -> expr LE expr .) ]
+  ! INTDIVIDE       [ reduce using rule 18 (expr -> expr LE expr .) ]
+  ! MODULO          [ reduce using rule 18 (expr -> expr LE expr .) ]
+  ! POW             [ reduce using rule 18 (expr -> expr LE expr .) ]
+  ! LE              [ shift and go to state 24 ]
+  ! GE              [ shift and go to state 25 ]
+  ! LT              [ shift and go to state 26 ]
+  ! GT              [ shift and go to state 27 ]
+  ! EQ              [ shift and go to state 28 ]
+  ! NE              [ shift and go to state 29 ]
+  ! LAND            [ shift and go to state 30 ]
+  ! LOR             [ shift and go to state 31 ]
+
+
+state 46
+
+    (19) expr -> expr GE expr .
+    (11) expr -> expr . PLUS expr
+    (12) expr -> expr . MINUS expr
+    (13) expr -> expr . MUL expr
+    (14) expr -> expr . DIVIDE expr
+    (15) expr -> expr . INTDIVIDE expr
+    (16) expr -> expr . MODULO expr
+    (17) expr -> expr . POW expr
+    (18) expr -> expr . LE expr
+    (19) expr -> expr . GE expr
+    (20) expr -> expr . LT expr
+    (21) expr -> expr . GT expr
+    (22) expr -> expr . EQ expr
+    (23) expr -> expr . NE expr
+    (25) expr -> expr . LAND expr
+    (26) expr -> expr . LOR expr
+
+    SEMI            reduce using rule 19 (expr -> expr GE expr .)
+    LE              reduce using rule 19 (expr -> expr GE expr .)
+    GE              reduce using rule 19 (expr -> expr GE expr .)
+    LT              reduce using rule 19 (expr -> expr GE expr .)
+    GT              reduce using rule 19 (expr -> expr GE expr .)
+    EQ              reduce using rule 19 (expr -> expr GE expr .)
+    NE              reduce using rule 19 (expr -> expr GE expr .)
+    LAND            reduce using rule 19 (expr -> expr GE expr .)
+    LOR             reduce using rule 19 (expr -> expr GE expr .)
+    RPAREN          reduce using rule 19 (expr -> expr GE expr .)
+    PLUS            shift and go to state 17
+    MINUS           shift and go to state 18
+    MUL             shift and go to state 19
+    DIVIDE          shift and go to state 20
+    INTDIVIDE       shift and go to state 21
+    MODULO          shift and go to state 22
+    POW             shift and go to state 23
+
+  ! PLUS            [ reduce using rule 19 (expr -> expr GE expr .) ]
+  ! MINUS           [ reduce using rule 19 (expr -> expr GE expr .) ]
+  ! MUL             [ reduce using rule 19 (expr -> expr GE expr .) ]
+  ! DIVIDE          [ reduce using rule 19 (expr -> expr GE expr .) ]
+  ! INTDIVIDE       [ reduce using rule 19 (expr -> expr GE expr .) ]
+  ! MODULO          [ reduce using rule 19 (expr -> expr GE expr .) ]
+  ! POW             [ reduce using rule 19 (expr -> expr GE expr .) ]
+  ! LE              [ shift and go to state 24 ]
+  ! GE              [ shift and go to state 25 ]
+  ! LT              [ shift and go to state 26 ]
+  ! GT              [ shift and go to state 27 ]
+  ! EQ              [ shift and go to state 28 ]
+  ! NE              [ shift and go to state 29 ]
+  ! LAND            [ shift and go to state 30 ]
+  ! LOR             [ shift and go to state 31 ]
+
+
+state 47
+
+    (20) expr -> expr LT expr .
+    (11) expr -> expr . PLUS expr
+    (12) expr -> expr . MINUS expr
+    (13) expr -> expr . MUL expr
+    (14) expr -> expr . DIVIDE expr
+    (15) expr -> expr . INTDIVIDE expr
+    (16) expr -> expr . MODULO expr
+    (17) expr -> expr . POW expr
+    (18) expr -> expr . LE expr
+    (19) expr -> expr . GE expr
+    (20) expr -> expr . LT expr
+    (21) expr -> expr . GT expr
+    (22) expr -> expr . EQ expr
+    (23) expr -> expr . NE expr
+    (25) expr -> expr . LAND expr
+    (26) expr -> expr . LOR expr
+
+    SEMI            reduce using rule 20 (expr -> expr LT expr .)
+    LE              reduce using rule 20 (expr -> expr LT expr .)
+    GE              reduce using rule 20 (expr -> expr LT expr .)
+    LT              reduce using rule 20 (expr -> expr LT expr .)
+    GT              reduce using rule 20 (expr -> expr LT expr .)
+    EQ              reduce using rule 20 (expr -> expr LT expr .)
+    NE              reduce using rule 20 (expr -> expr LT expr .)
+    LAND            reduce using rule 20 (expr -> expr LT expr .)
+    LOR             reduce using rule 20 (expr -> expr LT expr .)
+    RPAREN          reduce using rule 20 (expr -> expr LT expr .)
+    PLUS            shift and go to state 17
+    MINUS           shift and go to state 18
+    MUL             shift and go to state 19
+    DIVIDE          shift and go to state 20
+    INTDIVIDE       shift and go to state 21
+    MODULO          shift and go to state 22
+    POW             shift and go to state 23
+
+  ! PLUS            [ reduce using rule 20 (expr -> expr LT expr .) ]
+  ! MINUS           [ reduce using rule 20 (expr -> expr LT expr .) ]
+  ! MUL             [ reduce using rule 20 (expr -> expr LT expr .) ]
+  ! DIVIDE          [ reduce using rule 20 (expr -> expr LT expr .) ]
+  ! INTDIVIDE       [ reduce using rule 20 (expr -> expr LT expr .) ]
+  ! MODULO          [ reduce using rule 20 (expr -> expr LT expr .) ]
+  ! POW             [ reduce using rule 20 (expr -> expr LT expr .) ]
+  ! LE              [ shift and go to state 24 ]
+  ! GE              [ shift and go to state 25 ]
+  ! LT              [ shift and go to state 26 ]
+  ! GT              [ shift and go to state 27 ]
+  ! EQ              [ shift and go to state 28 ]
+  ! NE              [ shift and go to state 29 ]
+  ! LAND            [ shift and go to state 30 ]
+  ! LOR             [ shift and go to state 31 ]
+
+
+state 48
+
+    (21) expr -> expr GT expr .
+    (11) expr -> expr . PLUS expr
+    (12) expr -> expr . MINUS expr
+    (13) expr -> expr . MUL expr
+    (14) expr -> expr . DIVIDE expr
+    (15) expr -> expr . INTDIVIDE expr
+    (16) expr -> expr . MODULO expr
+    (17) expr -> expr . POW expr
+    (18) expr -> expr . LE expr
+    (19) expr -> expr . GE expr
+    (20) expr -> expr . LT expr
+    (21) expr -> expr . GT expr
+    (22) expr -> expr . EQ expr
+    (23) expr -> expr . NE expr
+    (25) expr -> expr . LAND expr
+    (26) expr -> expr . LOR expr
+
+    SEMI            reduce using rule 21 (expr -> expr GT expr .)
+    LE              reduce using rule 21 (expr -> expr GT expr .)
+    GE              reduce using rule 21 (expr -> expr GT expr .)
+    LT              reduce using rule 21 (expr -> expr GT expr .)
+    GT              reduce using rule 21 (expr -> expr GT expr .)
+    EQ              reduce using rule 21 (expr -> expr GT expr .)
+    NE              reduce using rule 21 (expr -> expr GT expr .)
+    LAND            reduce using rule 21 (expr -> expr GT expr .)
+    LOR             reduce using rule 21 (expr -> expr GT expr .)
+    RPAREN          reduce using rule 21 (expr -> expr GT expr .)
+    PLUS            shift and go to state 17
+    MINUS           shift and go to state 18
+    MUL             shift and go to state 19
+    DIVIDE          shift and go to state 20
+    INTDIVIDE       shift and go to state 21
+    MODULO          shift and go to state 22
+    POW             shift and go to state 23
+
+  ! PLUS            [ reduce using rule 21 (expr -> expr GT expr .) ]
+  ! MINUS           [ reduce using rule 21 (expr -> expr GT expr .) ]
+  ! MUL             [ reduce using rule 21 (expr -> expr GT expr .) ]
+  ! DIVIDE          [ reduce using rule 21 (expr -> expr GT expr .) ]
+  ! INTDIVIDE       [ reduce using rule 21 (expr -> expr GT expr .) ]
+  ! MODULO          [ reduce using rule 21 (expr -> expr GT expr .) ]
+  ! POW             [ reduce using rule 21 (expr -> expr GT expr .) ]
+  ! LE              [ shift and go to state 24 ]
+  ! GE              [ shift and go to state 25 ]
+  ! LT              [ shift and go to state 26 ]
+  ! GT              [ shift and go to state 27 ]
+  ! EQ              [ shift and go to state 28 ]
+  ! NE              [ shift and go to state 29 ]
+  ! LAND            [ shift and go to state 30 ]
+  ! LOR             [ shift and go to state 31 ]
+
+
+state 49
+
+    (22) expr -> expr EQ expr .
+    (11) expr -> expr . PLUS expr
+    (12) expr -> expr . MINUS expr
+    (13) expr -> expr . MUL expr
+    (14) expr -> expr . DIVIDE expr
+    (15) expr -> expr . INTDIVIDE expr
+    (16) expr -> expr . MODULO expr
+    (17) expr -> expr . POW expr
+    (18) expr -> expr . LE expr
+    (19) expr -> expr . GE expr
+    (20) expr -> expr . LT expr
+    (21) expr -> expr . GT expr
+    (22) expr -> expr . EQ expr
+    (23) expr -> expr . NE expr
+    (25) expr -> expr . LAND expr
+    (26) expr -> expr . LOR expr
+
+    SEMI            reduce using rule 22 (expr -> expr EQ expr .)
+    EQ              reduce using rule 22 (expr -> expr EQ expr .)
+    NE              reduce using rule 22 (expr -> expr EQ expr .)
+    LAND            reduce using rule 22 (expr -> expr EQ expr .)
+    LOR             reduce using rule 22 (expr -> expr EQ expr .)
+    RPAREN          reduce using rule 22 (expr -> expr EQ expr .)
+    PLUS            shift and go to state 17
+    MINUS           shift and go to state 18
+    MUL             shift and go to state 19
+    DIVIDE          shift and go to state 20
+    INTDIVIDE       shift and go to state 21
+    MODULO          shift and go to state 22
+    POW             shift and go to state 23
+    LE              shift and go to state 24
+    GE              shift and go to state 25
+    LT              shift and go to state 26
+    GT              shift and go to state 27
+
+  ! PLUS            [ reduce using rule 22 (expr -> expr EQ expr .) ]
+  ! MINUS           [ reduce using rule 22 (expr -> expr EQ expr .) ]
+  ! MUL             [ reduce using rule 22 (expr -> expr EQ expr .) ]
+  ! DIVIDE          [ reduce using rule 22 (expr -> expr EQ expr .) ]
+  ! INTDIVIDE       [ reduce using rule 22 (expr -> expr EQ expr .) ]
+  ! MODULO          [ reduce using rule 22 (expr -> expr EQ expr .) ]
+  ! POW             [ reduce using rule 22 (expr -> expr EQ expr .) ]
+  ! LE              [ reduce using rule 22 (expr -> expr EQ expr .) ]
+  ! GE              [ reduce using rule 22 (expr -> expr EQ expr .) ]
+  ! LT              [ reduce using rule 22 (expr -> expr EQ expr .) ]
+  ! GT              [ reduce using rule 22 (expr -> expr EQ expr .) ]
+  ! EQ              [ shift and go to state 28 ]
+  ! NE              [ shift and go to state 29 ]
+  ! LAND            [ shift and go to state 30 ]
+  ! LOR             [ shift and go to state 31 ]
+
+
+state 50
+
+    (23) expr -> expr NE expr .
+    (11) expr -> expr . PLUS expr
+    (12) expr -> expr . MINUS expr
+    (13) expr -> expr . MUL expr
+    (14) expr -> expr . DIVIDE expr
+    (15) expr -> expr . INTDIVIDE expr
+    (16) expr -> expr . MODULO expr
+    (17) expr -> expr . POW expr
+    (18) expr -> expr . LE expr
+    (19) expr -> expr . GE expr
+    (20) expr -> expr . LT expr
+    (21) expr -> expr . GT expr
+    (22) expr -> expr . EQ expr
+    (23) expr -> expr . NE expr
+    (25) expr -> expr . LAND expr
+    (26) expr -> expr . LOR expr
+
+    SEMI            reduce using rule 23 (expr -> expr NE expr .)
+    EQ              reduce using rule 23 (expr -> expr NE expr .)
+    NE              reduce using rule 23 (expr -> expr NE expr .)
+    LAND            reduce using rule 23 (expr -> expr NE expr .)
+    LOR             reduce using rule 23 (expr -> expr NE expr .)
+    RPAREN          reduce using rule 23 (expr -> expr NE expr .)
+    PLUS            shift and go to state 17
+    MINUS           shift and go to state 18
+    MUL             shift and go to state 19
+    DIVIDE          shift and go to state 20
+    INTDIVIDE       shift and go to state 21
+    MODULO          shift and go to state 22
+    POW             shift and go to state 23
+    LE              shift and go to state 24
+    GE              shift and go to state 25
+    LT              shift and go to state 26
+    GT              shift and go to state 27
+
+  ! PLUS            [ reduce using rule 23 (expr -> expr NE expr .) ]
+  ! MINUS           [ reduce using rule 23 (expr -> expr NE expr .) ]
+  ! MUL             [ reduce using rule 23 (expr -> expr NE expr .) ]
+  ! DIVIDE          [ reduce using rule 23 (expr -> expr NE expr .) ]
+  ! INTDIVIDE       [ reduce using rule 23 (expr -> expr NE expr .) ]
+  ! MODULO          [ reduce using rule 23 (expr -> expr NE expr .) ]
+  ! POW             [ reduce using rule 23 (expr -> expr NE expr .) ]
+  ! LE              [ reduce using rule 23 (expr -> expr NE expr .) ]
+  ! GE              [ reduce using rule 23 (expr -> expr NE expr .) ]
+  ! LT              [ reduce using rule 23 (expr -> expr NE expr .) ]
+  ! GT              [ reduce using rule 23 (expr -> expr NE expr .) ]
+  ! EQ              [ shift and go to state 28 ]
+  ! NE              [ shift and go to state 29 ]
+  ! LAND            [ shift and go to state 30 ]
+  ! LOR             [ shift and go to state 31 ]
+
+
+state 51
+
+    (25) expr -> expr LAND expr .
+    (11) expr -> expr . PLUS expr
+    (12) expr -> expr . MINUS expr
+    (13) expr -> expr . MUL expr
+    (14) expr -> expr . DIVIDE expr
+    (15) expr -> expr . INTDIVIDE expr
+    (16) expr -> expr . MODULO expr
+    (17) expr -> expr . POW expr
+    (18) expr -> expr . LE expr
+    (19) expr -> expr . GE expr
+    (20) expr -> expr . LT expr
+    (21) expr -> expr . GT expr
+    (22) expr -> expr . EQ expr
+    (23) expr -> expr . NE expr
+    (25) expr -> expr . LAND expr
+    (26) expr -> expr . LOR expr
+
+    SEMI            reduce using rule 25 (expr -> expr LAND expr .)
+    LAND            reduce using rule 25 (expr -> expr LAND expr .)
+    LOR             reduce using rule 25 (expr -> expr LAND expr .)
+    RPAREN          reduce using rule 25 (expr -> expr LAND expr .)
+    PLUS            shift and go to state 17
+    MINUS           shift and go to state 18
+    MUL             shift and go to state 19
+    DIVIDE          shift and go to state 20
+    INTDIVIDE       shift and go to state 21
+    MODULO          shift and go to state 22
+    POW             shift and go to state 23
+    LE              shift and go to state 24
+    GE              shift and go to state 25
+    LT              shift and go to state 26
+    GT              shift and go to state 27
+    EQ              shift and go to state 28
+    NE              shift and go to state 29
+
+  ! PLUS            [ reduce using rule 25 (expr -> expr LAND expr .) ]
+  ! MINUS           [ reduce using rule 25 (expr -> expr LAND expr .) ]
+  ! MUL             [ reduce using rule 25 (expr -> expr LAND expr .) ]
+  ! DIVIDE          [ reduce using rule 25 (expr -> expr LAND expr .) ]
+  ! INTDIVIDE       [ reduce using rule 25 (expr -> expr LAND expr .) ]
+  ! MODULO          [ reduce using rule 25 (expr -> expr LAND expr .) ]
+  ! POW             [ reduce using rule 25 (expr -> expr LAND expr .) ]
+  ! LE              [ reduce using rule 25 (expr -> expr LAND expr .) ]
+  ! GE              [ reduce using rule 25 (expr -> expr LAND expr .) ]
+  ! LT              [ reduce using rule 25 (expr -> expr LAND expr .) ]
+  ! GT              [ reduce using rule 25 (expr -> expr LAND expr .) ]
+  ! EQ              [ reduce using rule 25 (expr -> expr LAND expr .) ]
+  ! NE              [ reduce using rule 25 (expr -> expr LAND expr .) ]
+  ! LAND            [ shift and go to state 30 ]
+  ! LOR             [ shift and go to state 31 ]
+
+
+state 52
+
+    (26) expr -> expr LOR expr .
+    (11) expr -> expr . PLUS expr
+    (12) expr -> expr . MINUS expr
+    (13) expr -> expr . MUL expr
+    (14) expr -> expr . DIVIDE expr
+    (15) expr -> expr . INTDIVIDE expr
+    (16) expr -> expr . MODULO expr
+    (17) expr -> expr . POW expr
+    (18) expr -> expr . LE expr
+    (19) expr -> expr . GE expr
+    (20) expr -> expr . LT expr
+    (21) expr -> expr . GT expr
+    (22) expr -> expr . EQ expr
+    (23) expr -> expr . NE expr
+    (25) expr -> expr . LAND expr
+    (26) expr -> expr . LOR expr
+
+    SEMI            reduce using rule 26 (expr -> expr LOR expr .)
+    LOR             reduce using rule 26 (expr -> expr LOR expr .)
+    RPAREN          reduce using rule 26 (expr -> expr LOR expr .)
+    PLUS            shift and go to state 17
+    MINUS           shift and go to state 18
+    MUL             shift and go to state 19
+    DIVIDE          shift and go to state 20
+    INTDIVIDE       shift and go to state 21
+    MODULO          shift and go to state 22
+    POW             shift and go to state 23
+    LE              shift and go to state 24
+    GE              shift and go to state 25
+    LT              shift and go to state 26
+    GT              shift and go to state 27
+    EQ              shift and go to state 28
+    NE              shift and go to state 29
+    LAND            shift and go to state 30
+
+  ! PLUS            [ reduce using rule 26 (expr -> expr LOR expr .) ]
+  ! MINUS           [ reduce using rule 26 (expr -> expr LOR expr .) ]
+  ! MUL             [ reduce using rule 26 (expr -> expr LOR expr .) ]
+  ! DIVIDE          [ reduce using rule 26 (expr -> expr LOR expr .) ]
+  ! INTDIVIDE       [ reduce using rule 26 (expr -> expr LOR expr .) ]
+  ! MODULO          [ reduce using rule 26 (expr -> expr LOR expr .) ]
+  ! POW             [ reduce using rule 26 (expr -> expr LOR expr .) ]
+  ! LE              [ reduce using rule 26 (expr -> expr LOR expr .) ]
+  ! GE              [ reduce using rule 26 (expr -> expr LOR expr .) ]
+  ! LT              [ reduce using rule 26 (expr -> expr LOR expr .) ]
+  ! GT              [ reduce using rule 26 (expr -> expr LOR expr .) ]
+  ! EQ              [ reduce using rule 26 (expr -> expr LOR expr .) ]
+  ! NE              [ reduce using rule 26 (expr -> expr LOR expr .) ]
+  ! LAND            [ reduce using rule 26 (expr -> expr LOR expr .) ]
+  ! LOR             [ shift and go to state 31 ]
+
+
+state 53
+
+    (4) stmt -> RETURN expr SEMI .
+
+    RETURN          reduce using rule 4 (stmt -> RETURN expr SEMI .)
+    MINUS           reduce using rule 4 (stmt -> RETURN expr SEMI .)
+    LNOT            reduce using rule 4 (stmt -> RETURN expr SEMI .)
+    INTEGER         reduce using rule 4 (stmt -> RETURN expr SEMI .)
+    DOUBLE          reduce using rule 4 (stmt -> RETURN expr SEMI .)
+    BOOLEAN         reduce using rule 4 (stmt -> RETURN expr SEMI .)
+    STRING          reduce using rule 4 (stmt -> RETURN expr SEMI .)
+    LPAREN          reduce using rule 4 (stmt -> RETURN expr SEMI .)
+    ID              reduce using rule 4 (stmt -> RETURN expr SEMI .)
+    $end            reduce using rule 4 (stmt -> RETURN expr SEMI .)
+
+
+state 54
+
+    (33) expr -> LPAREN expr RPAREN .
+
+    SEMI            reduce using rule 33 (expr -> LPAREN expr RPAREN .)
+    PLUS            reduce using rule 33 (expr -> LPAREN expr RPAREN .)
+    MINUS           reduce using rule 33 (expr -> LPAREN expr RPAREN .)
+    MUL             reduce using rule 33 (expr -> LPAREN expr RPAREN .)
+    DIVIDE          reduce using rule 33 (expr -> LPAREN expr RPAREN .)
+    INTDIVIDE       reduce using rule 33 (expr -> LPAREN expr RPAREN .)
+    MODULO          reduce using rule 33 (expr -> LPAREN expr RPAREN .)
+    POW             reduce using rule 33 (expr -> LPAREN expr RPAREN .)
+    LE              reduce using rule 33 (expr -> LPAREN expr RPAREN .)
+    GE              reduce using rule 33 (expr -> LPAREN expr RPAREN .)
+    LT              reduce using rule 33 (expr -> LPAREN expr RPAREN .)
+    GT              reduce using rule 33 (expr -> LPAREN expr RPAREN .)
+    EQ              reduce using rule 33 (expr -> LPAREN expr RPAREN .)
+    NE              reduce using rule 33 (expr -> LPAREN expr RPAREN .)
+    LAND            reduce using rule 33 (expr -> LPAREN expr RPAREN .)
+    LOR             reduce using rule 33 (expr -> LPAREN expr RPAREN .)
+    RPAREN          reduce using rule 33 (expr -> LPAREN expr RPAREN .)
+
+
+state 55
+
+    (10) assign -> ID EQUALS expr . SEMI
+    (11) expr -> expr . PLUS expr
+    (12) expr -> expr . MINUS expr
+    (13) expr -> expr . MUL expr
+    (14) expr -> expr . DIVIDE expr
+    (15) expr -> expr . INTDIVIDE expr
+    (16) expr -> expr . MODULO expr
+    (17) expr -> expr . POW expr
+    (18) expr -> expr . LE expr
+    (19) expr -> expr . GE expr
+    (20) expr -> expr . LT expr
+    (21) expr -> expr . GT expr
+    (22) expr -> expr . EQ expr
+    (23) expr -> expr . NE expr
+    (25) expr -> expr . LAND expr
+    (26) expr -> expr . LOR expr
+
+    SEMI            shift and go to state 56
+    PLUS            shift and go to state 17
+    MINUS           shift and go to state 18
+    MUL             shift and go to state 19
+    DIVIDE          shift and go to state 20
+    INTDIVIDE       shift and go to state 21
+    MODULO          shift and go to state 22
+    POW             shift and go to state 23
+    LE              shift and go to state 24
+    GE              shift and go to state 25
+    LT              shift and go to state 26
+    GT              shift and go to state 27
+    EQ              shift and go to state 28
+    NE              shift and go to state 29
+    LAND            shift and go to state 30
+    LOR             shift and go to state 31
+
+
+state 56
+
+    (10) assign -> ID EQUALS expr SEMI .
+
+    RETURN          reduce using rule 10 (assign -> ID EQUALS expr SEMI .)
+    MINUS           reduce using rule 10 (assign -> ID EQUALS expr SEMI .)
+    LNOT            reduce using rule 10 (assign -> ID EQUALS expr SEMI .)
+    INTEGER         reduce using rule 10 (assign -> ID EQUALS expr SEMI .)
+    DOUBLE          reduce using rule 10 (assign -> ID EQUALS expr SEMI .)
+    BOOLEAN         reduce using rule 10 (assign -> ID EQUALS expr SEMI .)
+    STRING          reduce using rule 10 (assign -> ID EQUALS expr SEMI .)
+    LPAREN          reduce using rule 10 (assign -> ID EQUALS expr SEMI .)
+    ID              reduce using rule 10 (assign -> ID EQUALS expr SEMI .)
+    $end            reduce using rule 10 (assign -> ID EQUALS expr SEMI .)
+

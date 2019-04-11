@@ -108,7 +108,7 @@ def t_INTEGER(t):
     num = int(t.value)
   except:
     t_error(t)
-  if (abs(num) > 2^31 - 1):
+  if abs(num) > 2^31 - 1:
     t_error(t)
   else:
     return t
