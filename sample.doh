@@ -6,7 +6,9 @@ function int test(int a) {
 function string anothertest(string a) {
     return a;
 }
-return b;
+
+test(1, 3 , b);
+
 struct Class {
     int id,
     string title,

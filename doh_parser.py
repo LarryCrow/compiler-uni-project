@@ -114,6 +114,23 @@ def p_func_param_declaration(p):
     p[0] = Node(p[1], [p[2]])
 
 
+def p_func_call(p):
+    '''expr : ID LPAREN args RPAREN'''
+    p[0] = Node('FUNCTION CALL', [p[1], p[3]])
+
+
+def p_arguments(p):
+    '''args :
+            | expr
+            | args COMMA expr'''
+    if len(p) == 1:
+        pass
+    elif len(p) == 2:
+        p[0] = Node('ARGUMENTS', [p[1]])
+    elif len(p) == 4:
+        p[0] = p[1].add_parts([p[3]])
+
+
 def p_assign(p):
     '''assign : ID EQUALS expr SEMI'''
     p[0] = Node('ASSIGN', [p[1], p[3]])
