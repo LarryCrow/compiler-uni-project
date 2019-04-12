@@ -12,7 +12,6 @@ reserved = {
     'continue': 'CONTINUE',
     'goto': 'GOTO',
     'break': 'BREAK',
-    'struct': 'STRUCTURE',
     'null': 'NULL'
 }
 
@@ -49,7 +48,7 @@ tokens = [
              'COMMENT',
 
              # Other
-             'ERROR', 'FUNCTION', 'RETURN'
+             'ERROR', 'FUNCTION', 'RETURN', 'STRUCTURE'
          ] + list(reserved.values())
 
 # Operators
@@ -93,6 +92,8 @@ def t_ID(t):
         t.type = 'BOOLEAN'
     elif re.match(r'(\bfunction\b)', t.value):
         t.type = 'FUNCTION'
+    elif re.match(r'(\bstruct\b)', t.value):
+        t.type = 'STRUCTURE'
     elif re.match(r'(\breturn\b)', t.value):
         t.type = 'RETURN'
     else:

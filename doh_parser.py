@@ -21,7 +21,10 @@ class Node:
         return "\n".join(st)
 
     def __repr__(self):
-        return self.type + ":\n\t" + self.parts_str().replace("\n", "\n\t")
+        if self.type == '':
+            return self.parts_str().replace("\n", "\n")
+        else:
+            return self.type + ":\n\t" + self.parts_str().replace("\n", "\n\t")
 
     def add_parts(self, parts):
         self.parts += parts
@@ -47,36 +50,40 @@ precedence = (
 )
 
 
-# def p_program(p):
-#     '''program :
-#                | stmtList
-#                | program stmtList'''
-#     if len(p) == 1:
-#         p[0] = ''
-#     elif len(p) == 2:
-#         p[0] = p[1]
-#     else:
-#         p[0] = p[1]
+def p_program(p):
+    '''program :
+               | basic_block'''
+    if len(p) == 1:
+        p[0] = ''
+    elif len(p) == 2:
+        p[0] = Node('PROGRAM', [p[1]])
 
 
-# def p_func_declaration(p):
-#     '''func_declaration : FUNCTION datatype id LPAREN func_params RPAREN LBRACE stmtList RBRACE'''
-#     p[0] = Node('FUNCTION', [p[2], p[3], p[5], p[8]])
+def p_basic_block(p):
+    '''basic_block : stmt_list'''
+    p[0] = p[1]
+
+
+def p_func_declaration(p):
+    '''func_declaration : FUNCTION datatype id LPAREN func_params RPAREN LBRACE basic_block RBRACE'''
+    p[0] = Node('FUNCTION', [p[2], p[3], p[5], p[8]])
 
 
 def p_stmt_list(p):
-    '''stmtList : stmtList stmt
-                | stmt'''
+    '''stmt_list : stmt_list statement
+                 | statement'''
     if len(p) == 3:
         p[0] = p[1].add_parts([p[2]])
     else:
-        p[0] = Node('LINE', [p[1]])
+        p[0] = Node('', [p[1]])
 
 
 def p_stmt(p):
-    '''stmt : expr SEMI
-            | RETURN expr SEMI
-            | assign'''
+    '''statement : expr SEMI
+                 | RETURN expr SEMI
+                 | assign
+                 | func_declaration
+                 | struct_declaration'''
     if len(p) == 3:
         p[0] = p[1]
     elif len(p) == 4:
@@ -84,10 +91,10 @@ def p_stmt(p):
     else:
         p[0] = p[1]
 
-#
-# def p_struct_declaration(p):
-#     '''struct_declaration : STRUCT id LBRACE func_params RBRACE'''
-#     p[0] = Node('STRUCT', [p[3], p[5]])
+
+def p_struct_declaration(p):
+    '''struct_declaration : STRUCTURE id LBRACE func_params RBRACE'''
+    p[0] = Node('STRUCTURE', [p[2], p[4]])
 
 
 def p_func_params(p):
@@ -199,7 +206,10 @@ def p_id(p):
 
 
 def p_error(p):
-    print("Syntax error in input!", p)
+    if p:
+        print(p.lineno, "Syntax error in input at token '%s'" % p.value)
+    else:
+        print("EOF","Syntax error. No more input.")
 
 
 # Create parser object
