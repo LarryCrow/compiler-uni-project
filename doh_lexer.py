@@ -2,23 +2,10 @@ import ply.lex as lex
 import re as re
 
 
-# An array of tokens and their definitions that we can uniquely identify
-reserved = {
-    'if': 'IF',
-    'else': 'ELSE',
-    'elseif': 'ELSEIF',
-    'while': 'WHILE',
-    'do': 'DO',
-    'continue': 'CONTINUE',
-    'goto': 'GOTO',
-    'break': 'BREAK',
-    'null': 'NULL'
-}
-
 # An array of tokens that need complex regular expressions to define
 tokens = [
              # Literals (identifier, integer, double, string, boolean, array)
-             'ID', 'INTEGER', 'DOUBLE', 'STRING', 'BOOLEAN', 'ARRAY',
+             'ID', 'INTEGER', 'DOUBLE', 'STRING', 'BOOLEAN',
 
              # Operators
              # +, -, *, **, /, %, %%
@@ -42,13 +29,13 @@ tokens = [
              'LPAREN', 'RPAREN',
              'LBRACKET', 'RBRACKET',
              'LBRACE', 'RBRACE',
-             'COMMA', 'PERIOD', 'SEMI', 'COLON',
+             'COMMA', 'DOT', 'SEMI', 'COLON',
 
              # Comments
              'COMMENT', 'NEWLINE',
              # Other
-             'ERROR', 'FUNCTION', 'RETURN', 'STRUCTURE'
-         ] + list(reserved.values())
+             'ERROR', 'FUNCTION', 'RETURN', 'STRUCTURE', 'DO', 'WHILE', 'BREAK', 'CONTINUE', 'GOTO', 'IF', 'ELSE', 'NULL'
+         ]
 
 # Operators
 t_PLUS = r'\+'
@@ -68,7 +55,6 @@ t_GT = r'>'
 t_EQ = r'=='
 t_NE = r'!='
 t_EQUALS = r'='
-t_RETURN = r'return'
 
 # Delimeters
 t_LPAREN = r'\('
@@ -78,14 +64,14 @@ t_RBRACKET = r'\]'
 t_LBRACE = r'\{'
 t_RBRACE = r'\}'
 t_COMMA = r','
-t_PERIOD = r'\.'
+t_DOT = r'\.'
 t_SEMI = r';'
 t_COLON = r':'
 
 # Identifiers
 def t_ID(t):
     r'[A-Za-z_][A-Za-z0-9_]*'
-    if(re.match(r'(\bint\b|\bstring\b|\bdouble\b|\barray\b|\bboolean\b)', t.value)):
+    if(re.match(r'(\bint\b|\bstring\b|\bdouble\b|\bboolean\b)', t.value)):
         t.type = 'DATATYPE'
     elif(re.match(r'(\btrue\b|\bfalse\b)', t.value)):
         t.type = 'BOOLEAN'
@@ -95,8 +81,24 @@ def t_ID(t):
         t.type = 'STRUCTURE'
     elif re.match(r'(\breturn\b)', t.value):
         t.type = 'RETURN'
+    elif re.match(r'(\bdo\b)', t.value):
+        t.type = 'DO'
+    elif re.match(r'(\bwhile\b)', t.value):
+        t.type = 'WHILE'
+    elif re.match(r'(\bbreak\b)', t.value):
+        t.type = 'BREAK'
+    elif re.match(r'(\bcontinue\b)', t.value):
+        t.type = 'CONTINUE'
+    elif re.match(r'(\bgoto\b)', t.value):
+        t.type = 'GOTO'
+    elif re.match(r'(\bif\b)', t.value):
+        t.type = 'IF'
+    elif re.match(r'(\belse\b)', t.value):
+        t.type = 'ELSE'
+    elif re.match(r'(\bnull\b)', t.value):
+        t.type = 'NULL'
     else:
-        t.type = reserved.get(t.value, 'ID')
+        t.type = 'ID'
     return t
 
 

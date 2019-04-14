@@ -1,4 +1,8 @@
 PROGRAM:
 	ASSIGN:
-		c
-		1
+		a
+		ARRAY:
+			TYPE:
+				int
+			SIZE:
+				3

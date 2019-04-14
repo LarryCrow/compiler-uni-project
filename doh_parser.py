@@ -84,22 +84,64 @@ def p_stmt_list(p):
 
 
 def p_stmt(p):
-    '''statement : expr SEMI
-                 | RETURN expr SEMI
-                 | assign
-                 | func_declaration
-                 | struct_declaration'''
-    if len(p) == 3:
-        p[0] = p[1]
-    elif len(p) == 4:
-        p[0] = Node('RETURN', [p[2]])
+    '''
+    statement : expr SEMI
+              | var_declaration
+              | return
+              | assign
+              | func_declaration
+              | struct_declaration
+              | while
+              | BREAK SEMI
+              | CONTINUE SEMI
+              | GOTO ID SEMI
+              | goto_mark
+              | if-else
+    '''
+    if p[1] == 'break':
+        p[0] = Node('BREAK', [])
+    elif p[1] == 'continue':
+        p[0] = Node('CONTINUE', [])
+    elif p[1] == 'goto':
+        p[0] = Node('GOTO', [p[2]])
     else:
         p[0] = p[1]
 
 
+def p_loops(p):
+    '''
+    while : WHILE LPAREN expr RPAREN LBRACE stmt_list RBRACE
+          | DO LBRACE stmt_list RBRACE WHILE LPAREN expr RPAREN SEMI
+    '''
+    if len(p) == 8:
+        p[0] = Node('WHILE', [p[3], p[6]])
+    else:
+        p[0] = Node('DO-WHILE', [p[3], p[7]])
+
+
+def p_if_else(p):
+    '''
+    if-else : IF LPAREN expr RPAREN LBRACE stmt_list RBRACE
+            | IF LPAREN expr RPAREN LBRACE stmt_list RBRACE ELSE LBRACE stmt_list RBRACE
+    '''
+    if len(p) == 7:
+        p[0] = Node('IF', [p[3], p[6]])
+    else:
+        p[0] = Node('IF-ELSE', [p[3], p[6], p[10]])
+
+
 def p_struct_declaration(p):
-    '''struct_declaration : STRUCTURE id LBRACE params RBRACE'''
+    '''
+    struct_declaration : STRUCTURE id LBRACE params RBRACE
+    '''
     p[0] = Node('STRUCTURE', [p[2], p[4]])
+
+
+def p_struct_field(p):
+    '''
+    expr : ID DOT ID
+    '''
+    p[0] = Node('STRUCT-FIELD', [p[1], p[3]])
 
 
 # def p_struct_declaration_error(p):
@@ -162,9 +204,27 @@ def p_arguments(p):
 #     print('Syntax error in a function arguments in a row %d' % p.slice[1].lineno)
 
 
+def p_var_declaration(p):
+    '''
+    var_declaration : datatype id EQUALS expr SEMI
+    '''
+    p[0] = Node('VARIABLE', [p[1], p[2], p[4]])
+
+
 def p_assign(p):
     '''assign : ID EQUALS expr SEMI'''
     p[0] = Node('ASSIGN', [p[1], p[3]])
+
+
+def p_return(p):
+    '''
+    return : RETURN expr SEMI
+           | RETURN SEMI
+    '''
+    if len(p) == 4:
+        p[0] = Node('RETURN', [p[2]])
+    else:
+        p[0] = Node('RETURN', [])
 
 
 # def p_assign_error(p):
@@ -183,22 +243,20 @@ def p_math_expressions(p):
     if len(p) == 2:
         p[0] = p[1]
     else:
-        print(p[2])
-        p[0] = Node(p[2], [p[1], p[3]])
-        # if p[2] == '+':
-        #     p[0] = Node('PLUS', [p[1], p[3]])
-        # elif p[2] == '-':
-        #     p[0] = Node('MINUS', [p[1], p[3]])
-        # elif p[2] == '*':
-        #     p[0] = Node('MUL', [p[1], p[3]])
-        # elif p[2] == '/':
-        #     p[0] = Node('DIV', [p[1], p[3]])
-        # elif p[2] == '%':
-        #     p[0] = Node('INT DIVIDE', [p[1], p[3]])
-        # elif p[2] == '%%':
-        #     p[0] = Node('MODULO', [p[1], p[3]])
-        # elif p[2] == '**':
-        #     p[0] = Node('POW', [p[1], p[3]])
+        if p[2] == '+':
+            p[0] = Node('PLUS', [p[1], p[3]])
+        elif p[2] == '-':
+            p[0] = Node('MINUS', [p[1], p[3]])
+        elif p[2] == '*':
+            p[0] = Node('MUL', [p[1], p[3]])
+        elif p[2] == '/':
+            p[0] = Node('DIV', [p[1], p[3]])
+        elif p[2] == '%':
+            p[0] = Node('INT DIVIDE', [p[1], p[3]])
+        elif p[2] == '%%':
+            p[0] = Node('MODULO', [p[1], p[3]])
+        elif p[2] == '**':
+            p[0] = Node('POW', [p[1], p[3]])
 
 
 def p_conditionals(p):
@@ -243,11 +301,31 @@ def p_literals(p):
             | DOUBLE
             | BOOLEAN
             | STRING
+            | NULL
             | LPAREN expr RPAREN'''
     if len(p) == 2:
         p[0] = p[1]
     else:
         p[0] = p[2]
+
+
+def p_array_init(p):
+    '''
+    expr : datatype LBRACKET expr RBRACKET
+    '''
+    p[0] = Node('ARRAY', [p[1], 'SIZE:\n\t' + str(p[3])])
+
+
+def p_index(p):
+    '''
+    expr : ID LBRACKET expr RBRACKET
+    '''
+    p[0] = Node('INDEX', [p[1], p[3]])
+
+
+def p_goto_mark(p):
+    '''goto_mark : ID COLON'''
+    p[0] = Node('GOTO-MARK', [p[1]])
 
 
 def p_datatype(p):
