@@ -93,7 +93,7 @@ def p_stmt(p):
 
 
 def p_struct_declaration(p):
-    '''struct_declaration : STRUCTURE id LBRACE func_params RBRACE'''
+    '''с: STRUCTURE id LBRACE func_params RBRACE'''
     p[0] = Node('STRUCTURE', [p[2], p[4]])
 
 
@@ -228,6 +228,35 @@ def p_error(p):
     else:
         print("EOF","Syntax error. No more input.")
 
+def p_do(p):
+    '''do: DO LBRACE stmt_list RBRACE WHILE LPAREN expr RPAREN'''
+    p[0] = Node('DO', [p[3], p[7]] )
+
+def p_while(p):
+    '''while: WHILE LPAREN expr RPAREN LBRACE stmt_list RBRACE'''
+    p[0] = Node('WHILE',[p[3], p[6]])
+
+def p_break(p):
+    '''statment: BREAK SEMI'''
+    p[0] = Node('BREAK', [p[1]])
+
+def p_colon(p):
+    '''colon: COLON'''
+    p[0] = Node('COLON', [p[1]])
+
+def p_continue(p):
+    '''statment: CONTINUE SEMI'''
+    p[0] = Node('CONTINUE', [p[1]])
+
+def p_goto(p):
+    '''statment: GOTO SEMI'''
+    p[0] = Node('GOTO', [p[1]])
+def p_if(p):
+    '''if: IF LPAREN expr RPAREN LBRACE stmt_list RBRACE'''
+    p[0] = Node('IF', [p[3], p[6]])
+def p_else(p):
+    '''else: IF LPAREN expr RPAREN LBRACE stmt_list RBRACE ELSE LBRACE stmt_list RBRACE'''
+    p[0] = Node('ELSE', [p[10]])
 
 # Create parser object
 def create_doh_parser():

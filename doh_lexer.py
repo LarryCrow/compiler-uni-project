@@ -4,14 +4,8 @@ import re as re
 
 # An array of tokens and their definitions that we can uniquely identify
 reserved = {
-    'if': 'IF',
     'else': 'ELSE',
     'elseif': 'ELSEIF',
-    'while': 'WHILE',
-    'do': 'DO',
-    'continue': 'CONTINUE',
-    'goto': 'GOTO',
-    'break': 'BREAK',
     'null': 'NULL'
 }
 
@@ -48,7 +42,7 @@ tokens = [
              'COMMENT',
 
              # Other
-             'ERROR', 'FUNCTION', 'RETURN', 'STRUCTURE'
+             'ERROR', 'FUNCTION', 'RETURN', 'STRUCTURE', 'DO', 'WHILE', 'BREAK', 'CONTINUE', 'GOTO', 'IF', 'ELSE'
          ] + list(reserved.values())
 
 # Operators
@@ -96,6 +90,20 @@ def t_ID(t):
         t.type = 'STRUCTURE'
     elif re.match(r'(\breturn\b)', t.value):
         t.type = 'RETURN'
+    elif re.match(r'(\bdo\b)', t.value):
+        t.type = 'DO'
+    elif re.match(r'(\bwhile\b)', t.value):
+        t.type = 'WHILE'
+    elif re.match(r'(\bbreak\b)', t.value):
+        t.type = 'BREAK'
+    elif re.match(r'(\bcontinue\b)', t.value):
+        t.type = 'CONTINUE'
+    elif re.match(r'(\bgoto\b)', t.value):
+        t.type = 'GOTO'
+    elif re.match(r'(\bif\b)', t.value):
+        t.type = 'IF'
+    elif re.match(r'(\belse\b)', t.value):
+        t.type = 'ELSE'
     else:
         t.type = reserved.get(t.value, 'ID')
     return t
