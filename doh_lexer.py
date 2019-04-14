@@ -144,14 +144,12 @@ t_ignore = ' \t'
 
 # Error handling rule
 def t_error(t):
-    print("\n")
     if re.match(r'(\'|\")', t.value[0]):
-      print("Unfinished string at row %d, %d" % (t.lineno, t.lexpos - t.lexer.start_row_pos))
+      print("Unfinished string at %d, %d" % (t.lineno, t.lexpos - t.lexer.start_row_pos))
     elif re.match(r'(\[|\]|\{|\})', t.value[0]):
-      print("Unclosed bracket at row %d, %d", (t.lineno, t.lexpos - t.lexer.start_row_pos))
+      print("Unclosed bracket at %d, %d", (t.lineno, t.lexpos - t.lexer.start_row_pos))
     elif re.match(r'([+|-]?[0-9]+)', t.value):
-      print("The number is too large at row %d, %d", (t.lineno, t.lexpos - t.lexer.start_row_pos))
+      print("The number is too large at %d, %d", (t.lineno, t.lexpos - t.lexer.start_row_pos))
     else:
-      print("Illegal character '%s' at row %d, %d" % (t.value[0], t.lineno, t.lexpos - t.lexer.start_row_pos))
+      print("Illegal character '%s' at %d, %d" % (t.value[0], t.lineno, t.lexpos - t.lexer.start_row_pos))
     t.lexer.skip(1)
-    print("\n")
