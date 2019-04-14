@@ -65,8 +65,13 @@ def p_basic_block(p):
 
 
 def p_func_declaration(p):
-    '''func_declaration : FUNCTION datatype id LPAREN func_params RPAREN LBRACE basic_block RBRACE'''
+    '''func_declaration : FUNCTION datatype id LPAREN params RPAREN LBRACE basic_block RBRACE'''
     p[0] = Node('FUNCTION', [p[2], p[3], p[5], p[8]])
+
+
+# def p_func_declaration_error(p):
+#     '''func_declaration : FUNCTION error RBRACE'''
+#     print('Syntax error in function declaration in a row %d' % p.lineno(2))
 
 
 def p_stmt_list(p):
@@ -93,14 +98,19 @@ def p_stmt(p):
 
 
 def p_struct_declaration(p):
-    '''struct_declaration : STRUCTURE id LBRACE func_params RBRACE'''
+    '''struct_declaration : STRUCTURE id LBRACE params RBRACE'''
     p[0] = Node('STRUCTURE', [p[2], p[4]])
 
 
-def p_func_params(p):
-    '''func_params :
-                   | func_param
-                   | func_params COMMA func_param'''
+# def p_struct_declaration_error(p):
+#     '''struct_declaration : STRUCTURE error RBRACE'''
+#     print('Syntax error in structure declaration in a row %d' % p.lineno(2))
+
+
+def p_params(p):
+    '''params :
+              | param
+              | params COMMA param'''
     if len(p) == 1:
         p[0] = []
     elif len(p) == 2:
@@ -109,9 +119,25 @@ def p_func_params(p):
         p[0] = p[1].add_parts([p[3]])
 
 
-def p_func_param_declaration(p):
-    '''func_param : DATATYPE ID'''
+# def p_params_error(p):
+#     '''params : param error
+#               | params COMMA error param'''
+#     if len(p) == 2:
+#         print('Syntax error in parameters in a row %d' % p[1].lineno)
+#     elif len(p) == 3:
+#         print('Syntax error in parameters in a row %d' % p[2].lineno)
+#     else:
+#         print('Syntax error in parameters in a row %d' % p[3].lineno)
+
+
+def p_param_declaration(p):
+    '''param : DATATYPE ID'''
     p[0] = Node(p[1], [p[2]])
+
+
+# def p_param_declaration_error(p):
+#     '''param : DATATYPE ID error'''
+#     print('Syntax error in a parameter declaration in a row $d' % p[3].lineno)
 
 
 def p_func_call(p):
@@ -131,9 +157,19 @@ def p_arguments(p):
         p[0] = p[1].add_parts([p[3]])
 
 
+# def p_arguments_error(p):
+#     '''args : error'''
+#     print('Syntax error in a function arguments in a row %d' % p.slice[1].lineno)
+
+
 def p_assign(p):
     '''assign : ID EQUALS expr SEMI'''
     p[0] = Node('ASSIGN', [p[1], p[3]])
+
+
+# def p_assign_error(p):
+#     '''assign : EQUALS error SEMI'''
+#     print('Syntax error in an assignment operation in a row %d' % p.slice[2].lineno)
 
 
 def p_math_expressions(p):
@@ -147,20 +183,22 @@ def p_math_expressions(p):
     if len(p) == 2:
         p[0] = p[1]
     else:
-        if p[2] == '+':
-            p[0] = Node('PLUS', [p[1], p[3]])
-        elif p[2] == '-':
-            p[0] = Node('MINUS', [p[1], p[3]])
-        elif p[2] == '*':
-            p[0] = Node('MUL', [p[1], p[3]])
-        elif p[2] == '/':
-            p[0] = Node('DIV', [p[1], p[3]])
-        elif p[2] == '%':
-            p[0] = Node('INT DIVIDE', [p[1], p[3]])
-        elif p[2] == '%%':
-            p[0] = Node('MODULO', [p[1], p[3]])
-        elif p[2] == '**':
-            p[0] = Node('POW', [p[1], p[3]])
+        print(p[2])
+        p[0] = Node(p[2], [p[1], p[3]])
+        # if p[2] == '+':
+        #     p[0] = Node('PLUS', [p[1], p[3]])
+        # elif p[2] == '-':
+        #     p[0] = Node('MINUS', [p[1], p[3]])
+        # elif p[2] == '*':
+        #     p[0] = Node('MUL', [p[1], p[3]])
+        # elif p[2] == '/':
+        #     p[0] = Node('DIV', [p[1], p[3]])
+        # elif p[2] == '%':
+        #     p[0] = Node('INT DIVIDE', [p[1], p[3]])
+        # elif p[2] == '%%':
+        #     p[0] = Node('MODULO', [p[1], p[3]])
+        # elif p[2] == '**':
+        #     p[0] = Node('POW', [p[1], p[3]])
 
 
 def p_conditionals(p):
@@ -224,9 +262,9 @@ def p_id(p):
 
 def p_error(p):
     if p:
-        print(p.lineno, "Syntax error in input at token '%s'" % p.value)
+        print("Syntax error in input at token '%s' at %d, %d" % (p.value, p.lineno, p.lexpos - p.lexer.start_row_pos))
     else:
-        print("EOF","Syntax error. No more input.")
+        print("End of file", "Syntax error. No more input.")
 
 
 # Create parser object

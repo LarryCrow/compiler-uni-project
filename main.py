@@ -17,11 +17,11 @@ lexer = lex.lex()
 parser = create_doh_parser()
 with open('sample.doh', 'r', encoding="UTF-8") as r:
     data = r.read()
-    lexer.pos_in_line = 0
+    lexer.start_row_pos = 0
     lexer.input(data)
 
-    #tokens = []
-    #symbol_counter = 0
+    # tokens = []
+    # symbol_counter = 0
     # for lexeme in lexer:
     #     if lexeme.type != 'NEWLINE':
     #         tokens.append(lexeme)

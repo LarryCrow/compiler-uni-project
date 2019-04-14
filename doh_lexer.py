@@ -45,8 +45,7 @@ tokens = [
              'COMMA', 'PERIOD', 'SEMI', 'COLON',
 
              # Comments
-             'COMMENT',
-
+             'COMMENT', 'NEWLINE',
              # Other
              'ERROR', 'FUNCTION', 'RETURN', 'STRUCTURE'
          ] + list(reserved.values())
@@ -122,17 +121,15 @@ t_DOUBLE = r'[0-9]+.[0-9]+'
 def t_COMMENT(t):
     r'//.*\n'
     t.lexer.lineno += 1
-    t.lexer.pos_in_line = t.lexpos + len(t.value)
-    return t
+    t.lexer.start_row_pos = t.lexpos + len(t.value)
 
 
 # Define a rule so we can track line numbers
-# def t_NEWLINE(t):
-#     r'\n'
-#     t.lexer.lineno += len(t.value)
-#     t.value = "Newline"
-#     t.lexer.pos_in_line = t.lexpos + 1
-#     return t
+def t_NEWLINE(t):
+    r'\n'
+    t.lexer.lineno += len(t.value)
+    t.value = "Newline"
+    t.lexer.start_row_pos = t.lexpos + 1
 
 
 def t_STRING(t):
@@ -142,19 +139,19 @@ def t_STRING(t):
 
 
 # A string containing ignored characters (spaces and tabs)
-t_ignore = ' \t\n'
+t_ignore = ' \t'
 
 
 # Error handling rule
 def t_error(t):
     print("\n")
     if re.match(r'(\'|\")', t.value[0]):
-      print("Unfinished string at row %d, %d" % (t.lineno, t.lexpos - t.lexer.pos_in_line))
+      print("Unfinished string at row %d, %d" % (t.lineno, t.lexpos - t.lexer.start_row_pos))
     elif re.match(r'(\[|\]|\{|\})', t.value[0]):
-      print("Unclosed bracket at row %d, %d", (t.lineno, t.lexpos - t.lexer.pos_in_line))
+      print("Unclosed bracket at row %d, %d", (t.lineno, t.lexpos - t.lexer.start_row_pos))
     elif re.match(r'([+|-]?[0-9]+)', t.value):
-      print("The number is too large at row %d, %d", (t.lineno, t.lexpos - t.lexer.pos_in_line))
+      print("The number is too large at row %d, %d", (t.lineno, t.lexpos - t.lexer.start_row_pos))
     else:
-      print("Illegal character '%s' at row %d, %d" % (t.value[0], t.lineno, t.lexpos - t.lexer.pos_in_line))
+      print("Illegal character '%s' at row %d, %d" % (t.value[0], t.lineno, t.lexpos - t.lexer.start_row_pos))
     t.lexer.skip(1)
     print("\n")
