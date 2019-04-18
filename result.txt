@@ -1,8 +1,21 @@
 PROGRAM:
+	VARIABLE:
+		TYPE:
+			int
+		ID:
+			a
+		PLUS:
+			INT:
+				1
+			INT:
+				1
 	ASSIGN:
 		a
-		ARRAY:
-			TYPE:
-				int
-			SIZE:
-				3
+		PLUS:
+			PLUS:
+				INT:
+					1
+				INT:
+					1
+			INT:
+				0

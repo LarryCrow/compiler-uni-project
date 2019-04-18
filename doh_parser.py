@@ -1,5 +1,6 @@
 import ply.yacc as yacc
 from doh_lexer import tokens
+from errors import error
 
 # All operations(math or logical) with numbers are defined at the 'expr' rule
 # All conditionals are defined at the 'expr' rule too
@@ -124,7 +125,7 @@ def p_if_else(p):
     if-else : IF LPAREN expr RPAREN LBRACE stmt_list RBRACE
             | IF LPAREN expr RPAREN LBRACE stmt_list RBRACE ELSE LBRACE stmt_list RBRACE
     '''
-    if len(p) == 7:
+    if len(p) == 8:
         p[0] = Node('IF', [p[3], p[6]])
     else:
         p[0] = Node('IF-ELSE', [p[3], p[6], p[10]])
@@ -141,12 +142,14 @@ def p_struct_field(p):
     '''
     expr : ID DOT ID
     '''
-    p[0] = Node('STRUCT-FIELD', [p[1], p[3]])
+    p[0] = Node('STRUCT-FIELD', ['VAR:\n\t' + p[1], 'FIELD:\n\t' + p[3]])
 
 
 # def p_struct_declaration_error(p):
-#     '''struct_declaration : STRUCTURE error RBRACE'''
-#     print('Syntax error in structure declaration in a row %d' % p.lineno(2))
+#     '''struct_declaration : STRUCTURE id error params RBRACE'''
+#     if p.slice[3].type == 'error':
+#         err = p.slice[3]
+#         print('Unexpected symbol "%s" at row %d' % (err.value.value, err.value.lineno))
 
 
 def p_params(p):
@@ -207,8 +210,12 @@ def p_arguments(p):
 def p_var_declaration(p):
     '''
     var_declaration : datatype id EQUALS expr SEMI
+                    | datatype id SEMI
     '''
-    p[0] = Node('VARIABLE', [p[1], p[2], p[4]])
+    if len(p) == 6:
+        p[0] = Node('VARIABLE', [p[1], p[2], p[4]])
+    else:
+        p[0] = Node('VARIABLE', [p[1], p[2]])
 
 
 def p_assign(p):
@@ -297,16 +304,36 @@ def p_logical_operation(p):
 
 def p_literals(p):
     '''expr : id
-            | INTEGER
-            | DOUBLE
-            | BOOLEAN
-            | STRING
+            | int
+            | double
+            | bool
+            | str
             | NULL
             | LPAREN expr RPAREN'''
     if len(p) == 2:
         p[0] = p[1]
     else:
         p[0] = p[2]
+
+
+def p_const_int(p):
+    'int : INTEGER'
+    p[0] = Node('INT', [p[1]])
+
+
+def p_const_double(p):
+    'double : DOUBLE'
+    p[0] = Node('DOUBLE', [p[1]])
+
+
+def p_const_bool(p):
+    'bool : BOOLEAN'
+    p[0] = Node('BOOL', [p[1]])
+
+
+def p_const_string(p):
+    'str : STRING'
+    p[0] = Node('STRING', [p[1]])
 
 
 def p_array_init(p):
@@ -340,9 +367,9 @@ def p_id(p):
 
 def p_error(p):
     if p:
-        print("Syntax error in input at token '%s' at %d, %d" % (p.value, p.lineno, p.lexpos - p.lexer.start_row_pos))
+        error(p.lineno, "Unexpected symbol '%s'" % p.value)
     else:
-        print("End of file", "Syntax error. No more input.")
+        error("End of file", "Syntax error. No more input.")
 
 
 # Create parser object

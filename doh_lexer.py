@@ -102,21 +102,31 @@ def t_ID(t):
     return t
 
 
+# Floating literal
+def t_DOUBLE(t):
+    r'[0-9]+.[0-9]+'
+    try:
+        num = float(t.value)
+    except:
+        t_error(t)
+    if abs(num) > 2^31 - 1:
+        t_error(t)
+    else:
+        return t
+
+
 # Integer literal
 # t_INTEGER = r'[0-9]+'
 def t_INTEGER(t):
-  r'[0-9]+'
-  try:
-    num = int(t.value)
-  except:
-    t_error(t)
-  if abs(num) > 2^31 - 1:
-    t_error(t)
-  else:
-    return t
-
-# Floating literal
-t_DOUBLE = r'[0-9]+.[0-9]+'
+    r'[0-9]+'
+    try:
+        num = int(t.value)
+    except ValueError:
+        t_error(t)
+    if abs(num) > 2^31 - 1:
+        t_error(t)
+    else:
+        return t
 
 
 # Comment //
@@ -151,7 +161,7 @@ def t_error(t):
     elif re.match(r'(\[|\]|\{|\})', t.value[0]):
       print("Unclosed bracket at %d, %d", (t.lineno, t.lexpos - t.lexer.start_row_pos))
     elif re.match(r'([+|-]?[0-9]+)', t.value):
-      print("The number is too large at %d, %d", (t.lineno, t.lexpos - t.lexer.start_row_pos))
+      print("The number is too large at %d, %d" % (t.lineno, t.lexpos - t.lexer.start_row_pos))
     else:
       print("Illegal character '%s' at %d, %d" % (t.value[0], t.lineno, t.lexpos - t.lexer.start_row_pos))
     t.lexer.skip(1)
