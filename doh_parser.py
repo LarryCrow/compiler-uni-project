@@ -134,13 +134,6 @@ def p_struct_param(p):
         p[0] = p[1]
 
 
-def p_struct_field(p):
-    '''
-    expr : ID DOT ID
-    '''
-    p[0] = Node('STRUCT-FIELD', ['VAR:\n\t' + p[1], 'FIELD:\n\t' + p[3]], p.lineno(1))
-
-
 def p_params(p):
     '''params :
               | param
@@ -193,9 +186,12 @@ def p_var_declaration(p):
 
 def p_assign(p):
     '''assign : ID EQUALS expr SEMI
-              | ID EQUALS LBRACE args RBRACE SEMI'''
-    if len(p) == '5':
+              | ID EQUALS LBRACE args RBRACE SEMI
+              | ID DOT ID EQUALS expr SEMI'''
+    if len(p) == 5:
         p[0] = Node('ASSIGN', [p[1], p[3]], p.lineno(1))
+    elif p[2] == '.':
+        p[0] = Node('ASSIGN', [p[1], p[2], p[3], p[5]], p.lineno(1))
     else:
         p[0] = Node('ASSIGN', [p[1], p[4]], p.lineno(1))
 
@@ -328,12 +324,12 @@ def p_void(p):
 def p_array_init(p):
     '''
     expr : datatype LBRACKET RBRACKET id
-         | datatype LBRACKET RBRACKET id EQUALS datatype LBRACKET expr RBRACKET
+         | datatype LBRACKET RBRACKET id EQUALS datatype LBRACKET INTEGER RBRACKET
     '''
     if len(p) == 5:
         p[0] = Node('ARRAY', [p[1], p[4]], p.lineno(1))
     else:
-        p[0] = Node('ARRAY', [p[1], p[4], p[6], p[8]], p.lineno(1))
+        p[0] = Node('ARRAY', [p[1], p[4], p[6], Node('SIZE', [p[8]])], p.lineno(1))
 
 
 def p_index(p):

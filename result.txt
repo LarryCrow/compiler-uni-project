@@ -1,26 +1,81 @@
 PROGRAM:
-	STRUCTURE:
+	FUNCTION:
+		TYPE:
+			void
 		ID:
-			Human
+			print
+		PARAMS:
+			int:
+				num
+		RETURN:
+			
+	VARIABLE:
+		TYPE:
+			int
+		ID:
+			a
+		INT:
+			1
+	VARIABLE:
+		TYPE:
+			int
+		ID:
+			b
+		INT:
+			0
+	WHILE:
+		LESS:
+			ID:
+				a
+			INT:
+				5
+		ASSIGN:
+			b
+			PLUS:
+				ID:
+					b
+				INT:
+					10
+		ASSIGN:
+			a
+			PLUS:
+				ID:
+					a
+				INT:
+					1
+	IF-ELSE:
+		GREATER:
+			ID:
+				b
+			INT:
+				40
+		FUNCTION CALL:
+			print
+			ARGUMENTS:
+				ID:
+					b
+		FUNCTION CALL:
+			print
+			ARGUMENTS:
+				ID:
+					a
+	FUNCTION:
+		TYPE:
+			int
+		ID:
+			sum
 		PARAMS:
 			int:
 				a
 			string:
 				b
-	VARIABLE:
-		TYPE:
-			Human
-		ID:
-			person
-		ARGUMENTS:
-			INT:
-				29
-			STRING:
-				John
-	ASSIGN:
-		person
-		ARGUMENTS:
-			INT:
-				5
-			STRING:
-				Carl
+		VARIABLE:
+			TYPE:
+				int
+			ID:
+				c
+			PLUS:
+				ID:
+					a
+				ID:
+					b

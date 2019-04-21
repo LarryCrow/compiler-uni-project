@@ -97,11 +97,23 @@ def check_var_assigment(var_node):
     var_type = is_exist
     if is_structure(var_type):
         struct_descr = is_var_exist(var_type)
-        if not len(struct_descr['fields']) == len(var_node.parts[1].parts):
-            error(var_node.row_pos, 'Invalid numbers of variables to structure %s' % var_node.parts[0])
-            return
-        if not check_types_args(var_node.parts[1].parts, struct_descr['fields']):
-            return False
+        if var_node.parts[1] == '.':
+            is_struct_field = is_structure_field(var_node.parts[2], struct_descr['fields'])
+            if is_struct_field:
+                f_type = check_type_conformity(var_node.parts[3])
+                if not f_type:
+                    return
+                is_possible = is_operation_possible(is_struct_field['type'], f_type, 'ASSIGN')
+                if not is_possible['is_possible']:
+                    error(var_node.row_pos, "Type '%s' can't be assigned to variable with type '%s'" % (f_type, is_struct_field['type']))
+            else:
+                error(var_node.row_pos, '"%s" is not a "%s" field' % (var_node.parts[2], var_node.parts[0]))
+        else:
+            if not len(struct_descr['fields']) == len(var_node.parts[1].parts):
+                error(var_node.row_pos, 'Invalid numbers of variables to structure %s' % var_node.parts[0])
+                return
+            if not check_types_args(var_node.parts[1].parts, list(map(lambda x: x['type'],struct_descr['fields']))):
+                return False
     else:
         expr_type = check_type_conformity(var_node.parts[1])
         if not expr_type:
@@ -131,7 +143,7 @@ def check_structure_declaration(struct_node):
         return
     struct_type = struct_node.parts[0].parts[0]
     if len(struct_node.parts[1].parts) > 0:
-        fields = get_params_type(struct_node.parts[1])
+        fields = get_structure_fields(struct_node.parts[1])
         _values_table[struct_node.parts[0].parts[0]] = {'type' : struct_type, 'fields': fields}
     else:
         error(struct_node.row_pos, 'The structure has to have fields ')
@@ -147,12 +159,15 @@ def check_array_declaration(arr_node):
     if not arr_node.parts[0].parts[0] == arr_node.parts[2].parts[0]:
         error(arr_node.row_pos, 'Types aren\'t same')
         is_here_error = True
-    expr_type = check_type_conformity(arr_node.parts[3])
-    if not expr_type or not (expr_type.lower() == 'int' or expr_type.lower() == 'double'):
-        error(arr_node.row_pos, 'Illegal type of size value')
-        is_here_error = True
-    if not is_here_error:
-        _values_table[arr_node.parts[1].parts[0]] = arr_node.parts[0].parts[0]
+    try:
+        size = int(arr_node.parts[3].parts[0])
+        if size < 1:
+            error(arr_node.row_pos, 'Illegal value of array size')
+            is_here_error = True
+        if not is_here_error:
+            _values_table[arr_node.parts[1].parts[0]] = arr_node.parts[0].parts[0]
+    except ValueError:
+        error(arr_node.row_pos, "Illegal type value for array size")
 
 
 def check_func_call(func_node):
@@ -176,7 +191,7 @@ def check_struct_var(struct_var):
     if not len(is_struct_exist['fields']) == len(struct_var.parts[2].parts):
         error(struct_var.row_pos, 'Invalid numbers of variables to structure %s' % struct_var.parts[0])
         return
-    if not check_types_args(struct_var.parts[2].parts, is_struct_exist['fields']):
+    if not check_types_args(struct_var.parts[2].parts, list(map(lambda x: x['type'], is_struct_exist['fields']))):
         return False
     _values_table[struct_var.parts[1].parts[0]] = struct_var.parts[0].parts[0]
 
@@ -201,7 +216,11 @@ def check_types_args(args, params):
     """
     i = 0
     for arg in args:
-        if not arg.type.lower() == params[i]:
+        if arg.type.lower() == 'id':
+            arg_type = is_var_exist(arg.parts[0])
+        else:
+            arg_type = arg.type.lower()
+        if not arg_type == params[i]:
             error(arg.row_pos, 'Expected "%s" type, but received "%s"' % (params[i], arg.type.lower()))
             return False
         i += 1
@@ -235,6 +254,16 @@ def get_params_type(params):
     return result
 
 
+def get_structure_fields(params):
+    result = []
+    for param in params.parts:
+        result.append({
+            'name': param.parts[0],
+            'type': param.type
+        })
+    return result
+
+
 def check_type_conformity(expr):
     """
     Check type of all variable in math or logical expression
@@ -243,6 +272,8 @@ def check_type_conformity(expr):
     """
     if hasattr(expr, 'type'):
         if is_expression(expr):
+            if expr.type == 'UMINUS':
+                return expr.parts[0].type.lower()
             first = check_type_conformity(expr.parts[0])
             if not first:
                 return False
@@ -272,16 +303,24 @@ def get_data_type(a):
 
 
 def is_expression(expr):
-    if (expr.type == 'INT' or expr.type == 'DOUBLE' or expr.type == 'STRING' or
-            expr.type == 'BOOL' or expr.type == 'ID' or expr.type == 'FUNCTION CALL'):
+    if (expr.type == 'INT' or expr.type == 'DOUBLE' or expr.type == 'STRING' or expr.type == 'BOOL'
+            or expr.type == 'ID' or expr.type == 'FUNCTION CALL'):
         return False
     return True
 
 
 def is_structure(var_type):
+    var_type = var_type.upper()
     if var_type == 'INT' or var_type == 'DOUBLE' or var_type == 'STRING' or var_type == 'BOOL':
         return False
     return True
+
+
+def is_structure_field(field, structure_fields):
+    for f in structure_fields:
+        if field == f['name']:
+            return f
+    return False
 
 
 def is_operation_possible(a, b, type_operation):
