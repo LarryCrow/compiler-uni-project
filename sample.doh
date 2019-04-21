@@ -1,2 +1,6 @@
-int a = 1 + 1;
-a = 1 + 1;
+struct Human {
+    int a,
+    string b
+}
+
+Human person = {29, "John"};

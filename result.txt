@@ -1,21 +1,19 @@
 PROGRAM:
+	STRUCTURE:
+		ID:
+			Human
+		PARAMS:
+			int:
+				a
+			string:
+				b
 	VARIABLE:
 		TYPE:
-			int
+			Human
 		ID:
-			a
-		PLUS:
+			person
+		ARGUMENTS:
 			INT:
-				1
-			INT:
-				1
-	ASSIGN:
-		a
-		PLUS:
-			PLUS:
-				INT:
-					1
-				INT:
-					1
-			INT:
-				0
+				29
+			STRING:
+				John

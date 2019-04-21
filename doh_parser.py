@@ -1,6 +1,7 @@
 import ply.yacc as yacc
 from doh_lexer import tokens
 from errors import error
+from node import Node
 
 # All operations(math or logical) with numbers are defined at the 'expr' rule
 # All conditionals are defined at the 'expr' rule too
@@ -12,35 +13,13 @@ from errors import error
 # Precedence is tuple to keep precedence level and associativity of tokens.
 # Values are in ascending precedent level. Comma has lower priority, lbrace, rbrace ... have higher priority.
 
-
-# It's the class for more comfortable AST storing and printing
-class Node:
-    def parts_str(self):
-        st = []
-        for part in self.parts:
-            st.append( str( part ) )
-        return "\n".join(st)
-
-    def __repr__(self):
-        if self.type == '':
-            return self.parts_str().replace("\n", "\n")
-        else:
-            return self.type + ":\n\t" + self.parts_str().replace("\n", "\n\t")
-
-    def add_parts(self, parts):
-        self.parts += parts
-        return self
-
-    def __init__(self, type, parts):
-        self.type = type
-        self.parts = parts
-
-
 precedence = (
     ('left', 'COMMA'),
     ('right', 'EQUALS'),
     ('nonassoc', 'LOR'),
     ('nonassoc', 'LAND'),
+    ('nonassoc', 'BOR'),
+    ('nonassoc', 'BAND'),
     ('nonassoc', 'EQ', 'NE'),
     ('nonassoc', 'LE', 'GE', 'LT', 'GT'),
     ('left', 'PLUS', 'MINUS'),
@@ -57,7 +36,7 @@ def p_program(p):
     if len(p) == 1:
         p[0] = ''
     elif len(p) == 2:
-        p[0] = Node('PROGRAM', [p[1]])
+        p[0] = Node('PROGRAM', [p[1]], p.lineno(1))
 
 
 def p_basic_block(p):
@@ -67,12 +46,7 @@ def p_basic_block(p):
 
 def p_func_declaration(p):
     '''func_declaration : FUNCTION datatype id LPAREN params RPAREN LBRACE basic_block RBRACE'''
-    p[0] = Node('FUNCTION', [p[2], p[3], p[5], p[8]])
-
-
-# def p_func_declaration_error(p):
-#     '''func_declaration : FUNCTION error RBRACE'''
-#     print('Syntax error in function declaration in a row %d' % p.lineno(2))
+    p[0] = Node('FUNCTION', [p[2], p[3], p[5], p[8]], p.lineno(1))
 
 
 def p_stmt_list(p):
@@ -81,7 +55,7 @@ def p_stmt_list(p):
     if len(p) == 3:
         p[0] = p[1].add_parts([p[2]])
     else:
-        p[0] = Node('', [p[1]])
+        p[0] = Node('STMT_LIST', [p[1]], p.lineno(1))
 
 
 def p_stmt(p):
@@ -100,11 +74,11 @@ def p_stmt(p):
               | if-else
     '''
     if p[1] == 'break':
-        p[0] = Node('BREAK', [])
+        p[0] = Node('BREAK', [], p.lineno(1))
     elif p[1] == 'continue':
-        p[0] = Node('CONTINUE', [])
+        p[0] = Node('CONTINUE', [], p.lineno(1))
     elif p[1] == 'goto':
-        p[0] = Node('GOTO', [p[2]])
+        p[0] = Node('GOTO', [p[2]], p.lineno(1))
     else:
         p[0] = p[1]
 
@@ -115,9 +89,9 @@ def p_loops(p):
           | DO LBRACE stmt_list RBRACE WHILE LPAREN expr RPAREN SEMI
     '''
     if len(p) == 8:
-        p[0] = Node('WHILE', [p[3], p[6]])
+        p[0] = Node('WHILE', [p[3], p[6]], p.lineno(1))
     else:
-        p[0] = Node('DO-WHILE', [p[3], p[7]])
+        p[0] = Node('DO-WHILE', [p[3], p[7]], p.lineno(5))
 
 
 def p_if_else(p):
@@ -126,30 +100,45 @@ def p_if_else(p):
             | IF LPAREN expr RPAREN LBRACE stmt_list RBRACE ELSE LBRACE stmt_list RBRACE
     '''
     if len(p) == 8:
-        p[0] = Node('IF', [p[3], p[6]])
+        p[0] = Node('IF', [p[3], p[6]], p.lineno(1))
     else:
-        p[0] = Node('IF-ELSE', [p[3], p[6], p[10]])
+        p[0] = Node('IF-ELSE', [p[3], p[6], p[10]], p.lineno(1))
 
 
 def p_struct_declaration(p):
     '''
-    struct_declaration : STRUCTURE id LBRACE params RBRACE
+    struct_declaration : STRUCTURE id LBRACE struct_params RBRACE
     '''
-    p[0] = Node('STRUCTURE', [p[2], p[4]])
+    p[0] = Node('STRUCTURE', [p[2], p[4]], p.lineno(1))
+
+
+def p_struct_params(p):
+    '''
+    struct_params : struct_param
+                  | struct_params COMMA struct_param
+    '''
+    if len(p) == 2:
+        p[0] = Node('PARAMS', [p[1]], p.lineno(1))
+    else:
+        p[0] = p[1].add_parts([p[3]])
+
+
+def p_struct_param(p):
+    '''
+    struct_param : DATATYPE ID
+                 | func_declaration
+    '''
+    if len(p) == 3:
+        p[0] = Node(p[1], [p[2]], p.lineno(1))
+    else:
+        p[0] = p[1]
 
 
 def p_struct_field(p):
     '''
     expr : ID DOT ID
     '''
-    p[0] = Node('STRUCT-FIELD', ['VAR:\n\t' + p[1], 'FIELD:\n\t' + p[3]])
-
-
-# def p_struct_declaration_error(p):
-#     '''struct_declaration : STRUCTURE id error params RBRACE'''
-#     if p.slice[3].type == 'error':
-#         err = p.slice[3]
-#         print('Unexpected symbol "%s" at row %d' % (err.value.value, err.value.lineno))
+    p[0] = Node('STRUCT-FIELD', ['VAR:\n\t' + p[1], 'FIELD:\n\t' + p[3]], p.lineno(1))
 
 
 def p_params(p):
@@ -157,37 +146,21 @@ def p_params(p):
               | param
               | params COMMA param'''
     if len(p) == 1:
-        p[0] = []
+        p[0] = Node('PARAMS', [])
     elif len(p) == 2:
-        p[0] = Node('PARAMS', [p[1]])
+        p[0] = Node('PARAMS', [p[1]], p.lineno(1))
     else:
         p[0] = p[1].add_parts([p[3]])
 
 
-# def p_params_error(p):
-#     '''params : param error
-#               | params COMMA error param'''
-#     if len(p) == 2:
-#         print('Syntax error in parameters in a row %d' % p[1].lineno)
-#     elif len(p) == 3:
-#         print('Syntax error in parameters in a row %d' % p[2].lineno)
-#     else:
-#         print('Syntax error in parameters in a row %d' % p[3].lineno)
-
-
 def p_param_declaration(p):
     '''param : DATATYPE ID'''
-    p[0] = Node(p[1], [p[2]])
-
-
-# def p_param_declaration_error(p):
-#     '''param : DATATYPE ID error'''
-#     print('Syntax error in a parameter declaration in a row $d' % p[3].lineno)
+    p[0] = Node(p[1], [p[2]], p.lineno(1))
 
 
 def p_func_call(p):
     '''expr : ID LPAREN args RPAREN'''
-    p[0] = Node('FUNCTION CALL', [p[1], p[3]])
+    p[0] = Node('FUNCTION CALL', [p[1], p[3]], p.lineno(1))
 
 
 def p_arguments(p):
@@ -195,32 +168,32 @@ def p_arguments(p):
             | expr
             | args COMMA expr'''
     if len(p) == 1:
-        pass
+        p[0] = Node('ARGUMENTS', [])
     elif len(p) == 2:
-        p[0] = Node('ARGUMENTS', [p[1]])
+        p[0] = Node('ARGUMENTS', [p[1]], p.lineno(1))
     elif len(p) == 4:
         p[0] = p[1].add_parts([p[3]])
 
-
-# def p_arguments_error(p):
-#     '''args : error'''
-#     print('Syntax error in a function arguments in a row %d' % p.slice[1].lineno)
 
 
 def p_var_declaration(p):
     '''
     var_declaration : datatype id EQUALS expr SEMI
                     | datatype id SEMI
+                    | ID id EQUALS LBRACE args RBRACE SEMI
     '''
-    if len(p) == 6:
-        p[0] = Node('VARIABLE', [p[1], p[2], p[4]])
+    if hasattr(p[1], 'type'):
+        if len(p) == 6:
+            p[0] = Node('VARIABLE', [p[1], p[2], p[4]], p.lineno(3))
+        else:
+            p[0] = Node('VARIABLE', [p[1], p[2]], p.lineno(3))
     else:
-        p[0] = Node('VARIABLE', [p[1], p[2]])
+        p[0] = Node('VARIABLE', [Node('TYPE', [p[1]]), p[2], p[5]])
 
 
 def p_assign(p):
     '''assign : ID EQUALS expr SEMI'''
-    p[0] = Node('ASSIGN', [p[1], p[3]])
+    p[0] = Node('ASSIGN', [p[1], p[3]], p.lineno(1))
 
 
 def p_return(p):
@@ -229,14 +202,9 @@ def p_return(p):
            | RETURN SEMI
     '''
     if len(p) == 4:
-        p[0] = Node('RETURN', [p[2]])
+        p[0] = Node('RETURN', [p[2]], p.lineno(1))
     else:
-        p[0] = Node('RETURN', [])
-
-
-# def p_assign_error(p):
-#     '''assign : EQUALS error SEMI'''
-#     print('Syntax error in an assignment operation in a row %d' % p.slice[2].lineno)
+        p[0] = Node('RETURN', [], p.lineno(1))
 
 
 def p_math_expressions(p):
@@ -251,19 +219,19 @@ def p_math_expressions(p):
         p[0] = p[1]
     else:
         if p[2] == '+':
-            p[0] = Node('PLUS', [p[1], p[3]])
+            p[0] = Node('PLUS', [p[1], p[3]], p.lineno(2))
         elif p[2] == '-':
-            p[0] = Node('MINUS', [p[1], p[3]])
+            p[0] = Node('MINUS', [p[1], p[3]], p.lineno(2))
         elif p[2] == '*':
-            p[0] = Node('MUL', [p[1], p[3]])
+            p[0] = Node('MUL', [p[1], p[3]], p.lineno(2))
         elif p[2] == '/':
-            p[0] = Node('DIV', [p[1], p[3]])
+            p[0] = Node('DIV', [p[1], p[3]], p.lineno(2))
         elif p[2] == '%':
-            p[0] = Node('INT DIVIDE', [p[1], p[3]])
+            p[0] = Node('INT DIVIDE', [p[1], p[3]], p.lineno(2))
         elif p[2] == '%%':
-            p[0] = Node('MODULO', [p[1], p[3]])
+            p[0] = Node('MODULO', [p[1], p[3]], p.lineno(2))
         elif p[2] == '**':
-            p[0] = Node('POW', [p[1], p[3]])
+            p[0] = Node('POW', [p[1], p[3]], p.lineno(2))
 
 
 def p_conditionals(p):
@@ -274,17 +242,17 @@ def p_conditionals(p):
             | expr EQ expr
             | expr NE expr'''
     if p[2] == '<=':
-        p[0] = Node('LESS OR EQ', [p[1], p[3]])
+        p[0] = Node('LESS OR EQ', [p[1], p[3]], p.lineno(2))
     elif p[2] == '>=':
-        p[0] = Node('GREATER OR EQ', [p[1], p[3]])
+        p[0] = Node('GREATER OR EQ', [p[1], p[3]], p.lineno(2))
     elif p[2] == '<':
-        p[0] = Node('LESS', [p[1], p[3]])
+        p[0] = Node('LESS', [p[1], p[3]], p.lineno(2))
     elif p[2] == '>':
-        p[0] = Node('GREATER', [p[1], p[3]])
+        p[0] = Node('GREATER', [p[1], p[3]], p.lineno(2))
     elif p[2] == '==':
-        p[0] = Node('EQUALS', [p[1], p[3]])
+        p[0] = Node('EQUALS', [p[1], p[3]], p.lineno(2))
     elif p[2] == '!=':
-        p[0] = Node('NOT EQUALS', [p[1], p[3]])
+        p[0] = Node('NOT EQUALS', [p[1], p[3]], p.lineno(2))
 
 
 def p_logical_operation(p):
@@ -293,13 +261,24 @@ def p_logical_operation(p):
             | expr LOR expr
             | LNOT expr'''
     if p[1] == '-':
-        p[0] = Node('UMINUS', [p[2]])
+        p[0] = Node('UMINUS', [p[2]], p.lineno(1))
     elif p[2] == '&&':
-        p[0] = Node('AND', [p[1], p[3]])
+        p[0] = Node('LAND', [p[1], p[3]], p.lineno(1))
     elif p[2] == '||':
-        p[0] = Node('OR', [p[1], p[3]])
+        p[0] = Node('LOR', [p[1], p[3]], p.lineno(1))
     elif p[1] == '!':
-        p[0] = Node('NEGATION', [p[2]])
+        p[0] = Node('LNOT', [p[2]], p.lineno(1))
+
+
+def p_bitwise_operation(p):
+    '''
+    expr : expr BAND expr
+         | expr BOR expr
+    '''
+    if p[2] == '&':
+        p[0] = Node('BAND', [p[1], p[3]], p.lineno(1))
+    elif p[2] == '|':
+        p[0] = Node('BOR', [p[1], p[3]], p.lineno(1))
 
 
 def p_literals(p):
@@ -308,6 +287,7 @@ def p_literals(p):
             | double
             | bool
             | str
+            | void
             | NULL
             | LPAREN expr RPAREN'''
     if len(p) == 2:
@@ -318,51 +298,58 @@ def p_literals(p):
 
 def p_const_int(p):
     'int : INTEGER'
-    p[0] = Node('INT', [p[1]])
+    p[0] = Node('INT', [p[1]], p.lineno(1))
 
 
 def p_const_double(p):
     'double : DOUBLE'
-    p[0] = Node('DOUBLE', [p[1]])
+    p[0] = Node('DOUBLE', [p[1]], p.lineno(1))
 
 
 def p_const_bool(p):
-    'bool : BOOLEAN'
-    p[0] = Node('BOOL', [p[1]])
+    'bool : BOOL'
+    p[0] = Node('BOOL', [p[1]], p.lineno(1))
 
 
 def p_const_string(p):
     'str : STRING'
-    p[0] = Node('STRING', [p[1]])
+    p[0] = Node('STRING', [p[1]], p.lineno(1))
+
+
+def p_void(p):
+    'void : VOID'
+    p[0] = Node('VOID', [p[1]], p.lineno(1))
 
 
 def p_array_init(p):
     '''
-    expr : datatype LBRACKET expr RBRACKET
+    expr : datatype LBRACKET RBRACKET id
+         | datatype LBRACKET RBRACKET id EQUALS datatype LBRACKET expr RBRACKET
     '''
-    p[0] = Node('ARRAY', [p[1], 'SIZE:\n\t' + str(p[3])])
+    if len(p) == 5:
+        p[0] = Node('ARRAY', [p[1], p[4]], p.lineno(1))
+    else:
+        p[0] = Node('ARRAY', [p[1], p[4], p[6], p[8]], p.lineno(1))
 
 
 def p_index(p):
-    '''
-    expr : ID LBRACKET expr RBRACKET
-    '''
-    p[0] = Node('INDEX', [p[1], p[3]])
+    'expr : ID LBRACKET expr RBRACKET'
+    p[0] = Node('INDEX', [p[1], p[3]], p.lineno(1))
 
 
 def p_goto_mark(p):
     '''goto_mark : ID COLON'''
-    p[0] = Node('GOTO-MARK', [p[1]])
+    p[0] = Node('GOTO-MARK', [p[1]], p.lineno(1))
 
 
 def p_datatype(p):
     '''datatype : DATATYPE'''
-    p[0] = Node('TYPE', [p[1]])
+    p[0] = Node('TYPE', [p[1]], p.lineno(1))
 
 
 def p_id(p):
     '''id : ID'''
-    p[0] = Node('ID', [p[1]])
+    p[0] = Node('ID', [p[1]], p.lineno(1))
 
 
 def p_error(p):

@@ -5,14 +5,16 @@ import re as re
 # An array of tokens that need complex regular expressions to define
 tokens = [
              # Literals (identifier, integer, double, string, boolean, array)
-             'ID', 'INTEGER', 'DOUBLE', 'STRING', 'BOOLEAN',
+             'ID', 'INTEGER', 'DOUBLE', 'STRING', 'BOOL', 'VOID',
 
              # Operators
              # +, -, *, **, /, %, %%
              # ||, &&, !
+             # |, &
              # <, <=, >, >=, ==, !=)
              'PLUS', 'MINUS', 'POW', 'MUL', 'DIVIDE', 'INTDIVIDE', 'MODULO',
              'LOR', 'LAND', 'LNOT',
+             'BOR', 'BAND',
              'LT', 'LE', 'GT', 'GE', 'EQ', 'NE',
 
              # Assignment (=)
@@ -48,6 +50,8 @@ t_MODULO = r'%%'
 t_LOR = r'\|\|'
 t_LAND = r'&&'
 t_LNOT = r'!'
+t_BAND = r'&'
+t_BOR = r'\|'
 t_LE = r'<='
 t_GE = r'>='
 t_LT = r'<'
@@ -71,10 +75,10 @@ t_COLON = r':'
 # Identifiers
 def t_ID(t):
     r'[A-Za-z_][A-Za-z0-9_]*'
-    if(re.match(r'(\bint\b|\bstring\b|\bdouble\b|\bboolean\b)', t.value)):
+    if(re.match(r'(\bint\b|\bstring\b|\bdouble\b|\bbool\b|\bvoid\b)', t.value)):
         t.type = 'DATATYPE'
     elif(re.match(r'(\btrue\b|\bfalse\b)', t.value)):
-        t.type = 'BOOLEAN'
+        t.type = 'BOOL'
     elif re.match(r'(\bfunction\b)', t.value):
         t.type = 'FUNCTION'
     elif re.match(r'(\bstruct\b)', t.value):
@@ -107,12 +111,12 @@ def t_DOUBLE(t):
     r'[0-9]+.[0-9]+'
     try:
         num = float(t.value)
-    except:
+        if abs(num) > 2**31 - 1:
+            t_error(t)
+        else:
+            return t
+    except ValueError:
         t_error(t)
-    if abs(num) > 2^31 - 1:
-        t_error(t)
-    else:
-        return t
 
 
 # Integer literal
@@ -121,12 +125,12 @@ def t_INTEGER(t):
     r'[0-9]+'
     try:
         num = int(t.value)
+        if abs(num) > 2**31 - 1:
+            t_error(t)
+        else:
+            return t
     except ValueError:
         t_error(t)
-    if abs(num) > 2^31 - 1:
-        t_error(t)
-    else:
-        return t
 
 
 # Comment //
@@ -158,8 +162,6 @@ t_ignore = ' \t'
 def t_error(t):
     if re.match(r'(\'|\")', t.value[0]):
       print("Unfinished string at %d, %d" % (t.lineno, t.lexpos - t.lexer.start_row_pos))
-    elif re.match(r'(\[|\]|\{|\})', t.value[0]):
-      print("Unclosed bracket at %d, %d", (t.lineno, t.lexpos - t.lexer.start_row_pos))
     elif re.match(r'([+|-]?[0-9]+)', t.value):
       print("The number is too large at %d, %d" % (t.lineno, t.lexpos - t.lexer.start_row_pos))
     else:

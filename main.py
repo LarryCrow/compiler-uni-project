@@ -19,10 +19,12 @@ with open('sample.doh', 'r', encoding="UTF-8") as r:
     lexer.start_row_pos = 0
     lexer.input(data)
     import sys
-    from errors import subscribe_errors, find_semantic_errors
+    from errors import subscribe_errors, find_semantic_errors, errors_reported
     parser = create_doh_parser()
     with subscribe_errors(lambda msg: sys.stdout.write(msg+"\n")):
         program = parser.parse()
-        find_semantic_errors(program)
-        with open('result.txt', 'w') as w:
-            w.write(str(program))
+        if errors_reported() == 0:
+            find_semantic_errors(program)
+            if errors_reported() == 0:
+                with open('result.txt', 'w') as w:
+                    w.write(str(program))
