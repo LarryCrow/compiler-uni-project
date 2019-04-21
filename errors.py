@@ -95,12 +95,20 @@ def check_var_assigment(var_node):
         error(var_node.row_pos, 'Variable "%s" isn\'t exist' % var_node.parts[1].parts[0])
         return
     var_type = is_exist
-    expr_type = check_type_conformity(var_node.parts[1])
-    if not expr_type:
-        return
-    is_possible = is_operation_possible(var_type, expr_type, 'ASSIGN')
-    if not is_possible['is_possible']:
-        error(var_node.row_pos, "Type '%s' can't be assigned to variable with type '%s'" % (expr_type, var_type))
+    if is_structure(var_type):
+        struct_descr = is_var_exist(var_type)
+        if not len(struct_descr['fields']) == len(var_node.parts[1].parts):
+            error(var_node.row_pos, 'Invalid numbers of variables to structure %s' % var_node.parts[0])
+            return
+        if not check_types_args(var_node.parts[1].parts, struct_descr['fields']):
+            return False
+    else:
+        expr_type = check_type_conformity(var_node.parts[1])
+        if not expr_type:
+            return
+        is_possible = is_operation_possible(var_type, expr_type, 'ASSIGN')
+        if not is_possible['is_possible']:
+            error(var_node.row_pos, "Type '%s' can't be assigned to variable with type '%s'" % (expr_type, var_type))
 
 
 def check_function_declaration(func_node):
@@ -166,7 +174,7 @@ def check_struct_var(struct_var):
         error(struct_var.row_pos, 'Function %s is not exist' % struct_var.parts[0])
         return
     if not len(is_struct_exist['fields']) == len(struct_var.parts[2].parts):
-        error(struct_var.row_pos, 'Invalid numbers of variables to function %s' % struct_var.parts[0])
+        error(struct_var.row_pos, 'Invalid numbers of variables to structure %s' % struct_var.parts[0])
         return
     if not check_types_args(struct_var.parts[2].parts, is_struct_exist['fields']):
         return False

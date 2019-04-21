@@ -17,3 +17,10 @@ PROGRAM:
 				29
 			STRING:
 				John
+	ASSIGN:
+		person
+		ARGUMENTS:
+			INT:
+				5
+			STRING:
+				Carl

@@ -192,8 +192,12 @@ def p_var_declaration(p):
 
 
 def p_assign(p):
-    '''assign : ID EQUALS expr SEMI'''
-    p[0] = Node('ASSIGN', [p[1], p[3]], p.lineno(1))
+    '''assign : ID EQUALS expr SEMI
+              | ID EQUALS LBRACE args RBRACE SEMI'''
+    if len(p) == '5':
+        p[0] = Node('ASSIGN', [p[1], p[3]], p.lineno(1))
+    else:
+        p[0] = Node('ASSIGN', [p[1], p[4]], p.lineno(1))
 
 
 def p_return(p):
