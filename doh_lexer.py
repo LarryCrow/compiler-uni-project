@@ -156,7 +156,6 @@ def t_STRING(t):
 # A string containing ignored characters (spaces and tabs)
 t_ignore = ' \t'
 
-
 # Error handling rule
 def t_error(t):
     if re.match(r'(\'|\")', t.value[0]):
