@@ -108,7 +108,7 @@ def t_ID(t):
 
 # Floating literal
 def t_DOUBLE(t):
-    r'[0-9]+.[0-9]+'
+    r'[0-9]+\.[0-9]+'
     try:
         num = float(t.value)
         if abs(num) > 2**31 - 1:
@@ -120,7 +120,6 @@ def t_DOUBLE(t):
 
 
 # Integer literal
-# t_INTEGER = r'[0-9]+'
 def t_INTEGER(t):
     r'[0-9]+'
     try:
