@@ -32,7 +32,7 @@ precedence = (
 
 def p_program(p):
     '''program :
-               | body_block'''
+               | scope'''
     if len(p) == 1:
         p[0] = ''
     elif len(p) == 2:
@@ -41,8 +41,7 @@ def p_program(p):
 
 def p_body_block(p):
     '''
-    body_block : stmt_list
-               | LBRACE stmt_list RBRACE
+    body_block : LBRACE scope RBRACE
     '''
     if len(p) == 2:
         p[0] = p[1]
@@ -55,13 +54,13 @@ def p_func_declaration(p):
     p[0] = Node('FUNCTION', [p[2], p[3], p[5], p[7]], p.lineno(1))
 
 
-def p_stmt_list(p):
-    '''stmt_list : stmt_list statement
-                 | statement'''
+def p_scope(p):
+    '''scope : scope statement
+             | statement'''
     if len(p) == 3:
         p[0] = p[1].add_parts([p[2]])
     else:
-        p[0] = Node('STMT_LIST', [p[1]], p.lineno(1))
+        p[0] = Node('scope', [p[1]], p.lineno(1))
 
 
 def p_stmt(p):
@@ -373,12 +372,12 @@ def p_id(p):
 
 
 # def p_loops__while_error(p):
-#     '''while : WHILE error expr RPAREN LBRACE stmt_list RBRACE
-#              | WHILE LPAREN error RPAREN LBRACE stmt_list RBRACE
-#              | WHILE LPAREN expr error LBRACE stmt_list RBRACE
-#              | WHILE LPAREN expr RPAREN error stmt_list RBRACE
+#     '''while : WHILE error expr RPAREN LBRACE scope RBRACE
+#              | WHILE LPAREN error RPAREN LBRACE scope RBRACE
+#              | WHILE LPAREN expr error LBRACE scope RBRACE
+#              | WHILE LPAREN expr RPAREN error scope RBRACE
 #              | WHILE LPAREN expr RPAREN LBRACE error RBRACE
-#              | WHILE LPAREN expr RPAREN LBRACE stmt_list error'''
+#              | WHILE LPAREN expr RPAREN LBRACE scope error'''
 #     if str(p.slice[2]) == 'error':
 #         print('Syntax error, expected "("')
 #     elif str(p.slice[3]) == 'error':
@@ -393,14 +392,14 @@ def p_id(p):
 #         print('Syntax error, expected "}"')
 #
 # def p_loops_dowhile_error(p):
-#     '''while : error LBRACE stmt_list RBRACE WHILE LPAREN expr RPAREN SEMI
-#              | DO error stmt_list RBRACE WHILE LPAREN expr RPAREN SEMI
+#     '''while : error LBRACE scope RBRACE WHILE LPAREN expr RPAREN SEMI
+#              | DO error scope RBRACE WHILE LPAREN expr RPAREN SEMI
 #              | DO LBRACE error RBRACE WHILE LPAREN expr RPAREN SEMI
-#              | DO LBRACE stmt_list error WHILE LPAREN expr RPAREN SEMI
-#              | DO LBRACE stmt_list RBRACE error LPAREN expr RPAREN SEMI
-#              | DO LBRACE stmt_list RBRACE WHILE error expr RPAREN SEMI
-#              | DO LBRACE stmt_list RBRACE WHILE LPAREN error RPAREN SEMI
-#              | DO LBRACE stmt_list RBRACE WHILE LPAREN expr RPAREN error'''
+#              | DO LBRACE scope error WHILE LPAREN expr RPAREN SEMI
+#              | DO LBRACE scope RBRACE error LPAREN expr RPAREN SEMI
+#              | DO LBRACE scope RBRACE WHILE error expr RPAREN SEMI
+#              | DO LBRACE scope RBRACE WHILE LPAREN error RPAREN SEMI
+#              | DO LBRACE scope RBRACE WHILE LPAREN expr RPAREN error'''
 #     if str(p.slice[1]) == 'error':
 #         print('Error, expected "DO"')
 #     elif str(p.slice[2]) == 'error':
@@ -421,12 +420,12 @@ def p_id(p):
 #         print('Syntax error, expected ";"')
 #
 # def p_loops__if_error(p):
-#     '''if-else : IF error expr RPAREN LBRACE stmt_list RBRACE
-#              | IF LPAREN error RPAREN LBRACE stmt_list RBRACE
-#              | IF LPAREN expr error LBRACE stmt_list RBRACE
-#              | IF LPAREN expr RPAREN error stmt_list RBRACE
+#     '''if-else : IF error expr RPAREN LBRACE scope RBRACE
+#              | IF LPAREN error RPAREN LBRACE scope RBRACE
+#              | IF LPAREN expr error LBRACE scope RBRACE
+#              | IF LPAREN expr RPAREN error scope RBRACE
 #              | IF LPAREN expr RPAREN LBRACE error RBRACE
-#              | IF LPAREN expr RPAREN LBRACE stmt_list error'''
+#              | IF LPAREN expr RPAREN LBRACE scope error'''
 #     if str(p.slice[2]) == 'error':
 #         print('Syntax error, expected "("')
 #     elif str(p.slice[3]) == 'error':
