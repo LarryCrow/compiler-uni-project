@@ -1,11 +1,5 @@
 PROGRAM:
-	FUNCTION:
-		TYPE:
-			int
-		ID:
-			test
-		PARAMS:
-			
+	SCOPE:
 		VARIABLE:
 			TYPE:
 				int
@@ -13,26 +7,10 @@ PROGRAM:
 				a
 			INT:
 				1
-		IF:
+		WHILE:
 			GREATER:
-				ID:
-					a
+				INT:
+					1
 				INT:
 					0
-			VARIABLE:
-				TYPE:
-					int
-				ID:
-					b
-				INT:
-					4
-		RETURN:
-			STRING:
-				string
-	VARIABLE:
-		TYPE:
-			int
-		ID:
-			a
-		INT:
-			1
+			{
