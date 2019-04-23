@@ -1,1 +1,5 @@
-int[] arr = int[100];
+int z = 5;
+if () {
+   int c = 10;
+}
+

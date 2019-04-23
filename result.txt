@@ -1,10 +1,21 @@
 PROGRAM:
-	ARRAY:
+	VARIABLE:
 		TYPE:
 			int
 		ID:
-			arr
-		TYPE:
-			int
-		SIZE:
-			100
+			z
+		INT:
+			5
+	WHILE:
+		LESS:
+			ID:
+				z
+			INT:
+				5
+		VARIABLE:
+			TYPE:
+				int
+			ID:
+				a
+			INT:
+				10

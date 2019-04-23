@@ -352,6 +352,77 @@ def p_id(p):
     p[0] = Node('ID', [p[1]], p.lineno(1))
 
 
+def p_loops__while_error(p):
+    '''while : WHILE error expr RPAREN LBRACE stmt_list RBRACE
+             | WHILE LPAREN error RPAREN LBRACE stmt_list RBRACE
+             | WHILE LPAREN expr error LBRACE stmt_list RBRACE
+             | WHILE LPAREN expr RPAREN error stmt_list RBRACE
+             | WHILE LPAREN expr RPAREN LBRACE error RBRACE
+             | WHILE LPAREN expr RPAREN LBRACE stmt_list error'''
+    if str(p.slice[2]) == 'error':
+        print('Syntax error, expected "("')
+    elif str(p.slice[3]) == 'error':
+        print('Expected condition for while')
+    elif str(p.slice[4]) == 'error':
+        print('Syntax error, expected ")"')
+    elif str(p.slice[5]) == 'error':
+        print('Syntax error, expected "{"')
+    elif str(p.slice[6]) == 'error':
+        print('Expected statement')
+    elif str(p.slice[7]) == 'error':
+        print('Syntax error, expected "}"')
+
+def p_loops_dowhile_error(p):
+    '''while : error LBRACE stmt_list RBRACE WHILE LPAREN expr RPAREN SEMI
+             | DO error stmt_list RBRACE WHILE LPAREN expr RPAREN SEMI
+             | DO LBRACE error RBRACE WHILE LPAREN expr RPAREN SEMI
+             | DO LBRACE stmt_list error WHILE LPAREN expr RPAREN SEMI
+             | DO LBRACE stmt_list RBRACE error LPAREN expr RPAREN SEMI
+             | DO LBRACE stmt_list RBRACE WHILE error expr RPAREN SEMI
+             | DO LBRACE stmt_list RBRACE WHILE LPAREN error RPAREN SEMI
+             | DO LBRACE stmt_list RBRACE WHILE LPAREN expr RPAREN error'''
+    if str(p.slice[1]) == 'error':
+        print('Error, expected "DO"')
+    elif str(p.slice[2]) == 'error':
+        print('Syntax error, expected "{"')
+    elif str(p.slice[3]) == 'error':
+        print('Error, expected statement')
+    elif str(p.slice[4]) == 'error':
+        print('Syntax error, expected "}"')
+    elif str(p.slice[5]) == 'error':
+        print('Error, expected "WHILE"')
+    elif str(p.slice[6]) == 'error':
+        print('Syntax error, expected "("')
+    elif str(p.slice[7]) == 'error':
+        print('Error, expected condition for while')
+    elif str(p.slice[8]) == 'error':
+        print('Syntax error, expected ")"')
+    elif str(p.slice[9]) == 'error':
+        print('Syntax error, expected ";"')
+
+def p_loops__if_error(p):
+    '''if-else : IF error expr RPAREN LBRACE stmt_list RBRACE
+             | IF LPAREN error RPAREN LBRACE stmt_list RBRACE
+             | IF LPAREN expr error LBRACE stmt_list RBRACE
+             | IF LPAREN expr RPAREN error stmt_list RBRACE
+             | IF LPAREN expr RPAREN LBRACE error RBRACE
+             | IF LPAREN expr RPAREN LBRACE stmt_list error'''
+    if str(p.slice[2]) == 'error':
+        print('Syntax error, expected "("')
+    elif str(p.slice[3]) == 'error':
+        print('Expected condition for if')
+    elif str(p.slice[4]) == 'error':
+        print('Syntax error, expected ")"')
+    elif str(p.slice[5]) == 'error':
+        print('Syntax error, expected "{"')
+    elif str(p.slice[6]) == 'error':
+        print('Expected statement')
+    elif str(p.slice[7]) == 'error':
+        print('Syntax error, expected "}"')
+
+
+
+
 def p_error(p):
     if p:
         error(p.lineno, "Unexpected symbol '%s'" % p.value)
