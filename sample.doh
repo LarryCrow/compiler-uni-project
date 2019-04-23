@@ -1,5 +1,3 @@
-int z = 5;
-if () {
-   int c = 10;
+while (a > 0) {
+    return 1;
 }
-

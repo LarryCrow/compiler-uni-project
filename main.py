@@ -24,7 +24,7 @@ with open('sample.doh', 'r', encoding="UTF-8") as r:
     with subscribe_errors(lambda msg: sys.stdout.write(msg+"\n")):
         program = parser.parse()
         if errors_reported() == 0:
-            find_semantic_errors(program)
+            #find_semantic_errors(program)
             if errors_reported() == 0:
                 with open('result.txt', 'w') as w:
                     w.write(str(program))

@@ -1,21 +1,11 @@
 PROGRAM:
-	VARIABLE:
-		TYPE:
-			int
-		ID:
-			z
-		INT:
-			5
 	WHILE:
-		LESS:
-			ID:
-				z
-			INT:
-				5
-		VARIABLE:
-			TYPE:
-				int
+		GREATER:
 			ID:
 				a
 			INT:
-				10
+				0
+		BODY:
+			RETURN:
+				INT:
+					1
