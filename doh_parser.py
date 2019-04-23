@@ -1,7 +1,7 @@
 import ply.yacc as yacc
-from doh_lexer import tokens
 from errors import error
-from node import Node
+from models.node import Node
+from doh_lexer import tokens
 
 # All operations(math or logical) with numbers are defined at the 'expr' rule
 # All conditionals are defined at the 'expr' rule too

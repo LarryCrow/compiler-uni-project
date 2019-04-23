@@ -1,10 +1,38 @@
 PROGRAM:
-	ARRAY:
+	FUNCTION:
 		TYPE:
 			int
 		ID:
-			arr
+			test
+		PARAMS:
+			
+		VARIABLE:
+			TYPE:
+				int
+			ID:
+				a
+			INT:
+				1
+		IF:
+			GREATER:
+				ID:
+					a
+				INT:
+					0
+			VARIABLE:
+				TYPE:
+					int
+				ID:
+					b
+				INT:
+					4
+		RETURN:
+			STRING:
+				string
+	VARIABLE:
 		TYPE:
 			int
-		SIZE:
-			100
+		ID:
+			a
+		INT:
+			1

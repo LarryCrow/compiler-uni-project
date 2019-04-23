@@ -1,8 +1,11 @@
 from contextlib import contextmanager
+from models.scope import Scope
 
 _subscribers = []
 _num_errors = 0
 _values_table = {}
+_scopes = []
+_cur_scope = None
 
 
 def error(lineno, message, filename=None):
@@ -23,7 +26,11 @@ def error(lineno, message, filename=None):
 # It gets an AST, which is a string, and parses it
 # When it finds one of the types where can be error it calls a help-function to process this node
 def find_semantic_errors(ast):
+    global _scopes
+    global _cur_scope
     if not ast == '':
+        _cur_scope = Scope(hash(ast))
+        _scopes.append(_cur_scope)
         find_errors(ast)
     else:
         print('File is empty')
@@ -31,6 +38,8 @@ def find_semantic_errors(ast):
 
 def find_errors(ast, inside_func=False):
     global _values_table
+    global _scopes
+    global _cur_scope
     for node in ast.parts:
         if hasattr(node, 'type'):
             already_called = False
@@ -42,9 +51,13 @@ def find_errors(ast, inside_func=False):
                 if inside_func:
                     error(node.row_pos, 'Function can\'t be defined inside another function')
                 else:
+                    check_function_declaration(node)
+                    f_scope = Scope(hash(node), _cur_scope, _cur_scope.variables.copy())
+                    _scopes.append(f_scope)
+                    _cur_scope = f_scope
                     find_errors(node, True)
                     already_called = True
-                    check_function_declaration(node)
+                    _cur_scope = f_scope.scope
             if node.type == 'RETURN':
                 if not inside_func:
                     error(node.row_pos, 'Return can\'t be used outside function')
@@ -58,13 +71,20 @@ def find_errors(ast, inside_func=False):
                 check_array_declaration(node)
             if node.type == 'IF' or node.type == 'IF-ELSE' or node.type == 'WHILE' or node.type == 'DO-WHILE':
                 check_conditional_or_loop(node)
+                new_scope = Scope(hash(node), _cur_scope, _cur_scope.variables.copy())
+                _scopes.append(new_scope)
+                _cur_scope = new_scope
+                find_errors(node)
+                already_called = True
+                _cur_scope = new_scope.scope
             if not already_called:
                 find_errors(node, inside_func)
 
 
 def check_var_declaration(var_node):
     global _values_table
-    is_exist = is_var_exist(var_node.parts[1].parts[0])
+    global _cur_scope
+    is_exist = _cur_scope.is_variable_exist(var_node.parts[1].parts[0])
     if is_exist is not None:
         error(var_node.row_pos, 'Variable "%s" is already exist' % var_node.parts[1].parts[0])
         return
@@ -81,11 +101,11 @@ def check_var_declaration(var_node):
                 return
             is_possible = is_operation_possible(var_type, expr_type, 'ASSIGN')
             if is_possible['is_possible']:
-                _values_table[var_node.parts[1].parts[0]] = var_type
+                _cur_scope.add_variable(var_node.parts[1].parts[0], var_type)
             else:
                 error(var_node.row_pos, "Type '%s' can't be assigned to variable with type '%s'" % (expr_type, var_type))
         else:
-            _values_table[var_node.parts[1].parts[0]] = var_type
+            _cur_scope.add_variable(var_node.parts[1].parts[0], var_type)
 
 
 def check_var_assigment(var_node):
@@ -125,14 +145,15 @@ def check_var_assigment(var_node):
 
 def check_function_declaration(func_node):
     global _values_table
-    is_exist = is_var_exist(func_node.parts[1].parts[0])
+    global _cur_scope
+    is_exist = _cur_scope.is_variable_exist(func_node.parts[1].parts[0])
     if is_exist is not None:
         error(func_node.row_pos, 'Variable "%s" is already exist' % func_node.parts[1].parts[0])
         return
     func_type = func_node.parts[0].parts[0]
     if has_return(func_type, func_node.parts[3]):
         params = get_params_type(func_node.parts[2])
-        _values_table[func_node.parts[1].parts[0]] = {'type' : func_type, 'params': params}
+        _cur_scope.add_variable(func_node.parts[1].parts[0], {'type' : func_type, 'params': params})
 
 
 def check_structure_declaration(struct_node):
@@ -151,6 +172,8 @@ def check_structure_declaration(struct_node):
 
 def check_array_declaration(arr_node):
     global _values_table
+    global _scopes
+    cur_scope = _scopes[-1]
     is_here_error = False
     is_exist = is_var_exist(arr_node.parts[1].parts[0])
     if is_exist is not None:
@@ -165,7 +188,7 @@ def check_array_declaration(arr_node):
             error(arr_node.row_pos, 'Illegal value of array size')
             is_here_error = True
         if not is_here_error:
-            _values_table[arr_node.parts[1].parts[0]] = arr_node.parts[0].parts[0]
+            cur_scope.add_variables(arr_node.parts[1].parts[0], arr_node.parts[0].parts[0])
     except ValueError:
         error(arr_node.row_pos, "Illegal type value for array size")
 
@@ -230,8 +253,8 @@ def check_types_args(args, params):
 def has_return(func_type, func_node):
     for part in func_node.parts:
         if part.type == 'WHILE' or part.type == 'DO-WHILE' or part.type == 'IF' or part.type == 'IF-ELSE' or part.type == 'STMT_LIST':
-            if not has_return(func_type, part):
-                return False
+            has_return(func_type, part)
+                # return False
         elif part.type == 'RETURN':
             if len(part.parts) > 0:
                 return_type = check_type_conformity(part.parts[0])
@@ -292,10 +315,11 @@ def check_type_conformity(expr):
 
 
 def get_data_type(a):
+    global _cur_scope
     if a.type == 'ID' or a.type == 'FUNCTION CALL':
-        id_type = is_var_exist(a.parts[0])
-        if id_type is not None:
-            return id_type.lower()
+        id = _cur_scope.is_variable_exist(a.parts[0])
+        if id is not None:
+            return id['type'].lower()
         error(a.row_pos, 'Variable "%s" is not exist' % a.parts[0])
         return False
     else:
