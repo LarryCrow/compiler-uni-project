@@ -32,21 +32,27 @@ precedence = (
 
 def p_program(p):
     '''program :
-               | basic_block'''
+               | body_block'''
     if len(p) == 1:
         p[0] = ''
     elif len(p) == 2:
         p[0] = Node('PROGRAM', [p[1]], p.lineno(1))
 
 
-def p_basic_block(p):
-    '''basic_block : stmt_list'''
-    p[0] = p[1]
+def p_body_block(p):
+    '''
+    body_block : stmt_list
+               | LBRACE stmt_list RBRACE
+    '''
+    if len(p) == 2:
+        p[0] = p[1]
+    else:
+        p[0] = Node('BODY', [p[2]])
 
 
 def p_func_declaration(p):
-    '''func_declaration : FUNCTION datatype id LPAREN params RPAREN LBRACE basic_block RBRACE'''
-    p[0] = Node('FUNCTION', [p[2], p[3], p[5], p[8]], p.lineno(1))
+    'func_declaration : FUNCTION datatype id LPAREN params RPAREN body_block'
+    p[0] = Node('FUNCTION', [p[2], p[3], p[5], p[7]], p.lineno(1))
 
 
 def p_stmt_list(p):
@@ -85,24 +91,29 @@ def p_stmt(p):
 
 def p_loops(p):
     '''
-    while : WHILE LPAREN expr RPAREN LBRACE stmt_list RBRACE
-          | DO LBRACE stmt_list RBRACE WHILE LPAREN expr RPAREN SEMI
+    while : WHILE conditional body_block
+          | DO body_block WHILE conditional SEMI
     '''
-    if len(p) == 8:
-        p[0] = Node('WHILE', [p[3], p[6]], p.lineno(1))
+    if len(p) == 4:
+        p[0] = Node('WHILE', [p[2], p[3]], p.lineno(1))
     else:
-        p[0] = Node('DO-WHILE', [p[3], p[7]], p.lineno(5))
+        p[0] = Node('DO-WHILE', [p[2], p[4]], p.lineno(5))
 
 
 def p_if_else(p):
     '''
-    if-else : IF LPAREN expr RPAREN LBRACE stmt_list RBRACE
-            | IF LPAREN expr RPAREN LBRACE stmt_list RBRACE ELSE LBRACE stmt_list RBRACE
+    if-else : IF conditional body_block
+            | IF conditional body_block ELSE body_block
     '''
-    if len(p) == 8:
-        p[0] = Node('IF', [p[3], p[6]], p.lineno(1))
+    if len(p) == 4:
+        p[0] = Node('IF', [p[2], p[3]], p.lineno(1))
     else:
-        p[0] = Node('IF-ELSE', [p[3], p[6], p[10]], p.lineno(1))
+        p[0] = Node('IF-ELSE', [p[2], p[3], p[5]], p.lineno(1))
+
+
+def p_conditional(p):
+    'conditional : LPAREN expr RPAREN'
+    p[0] = p[2]
 
 
 def p_struct_declaration(p):
@@ -152,7 +163,7 @@ def p_param_declaration(p):
 
 
 def p_func_call(p):
-    '''expr : ID LPAREN args RPAREN'''
+    '''expr : id LPAREN args RPAREN'''
     p[0] = Node('FUNCTION CALL', [p[1], p[3]], p.lineno(1))
 
 

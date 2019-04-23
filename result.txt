@@ -1,10 +1,30 @@
 PROGRAM:
-	ARRAY:
+	FUNCTION:
 		TYPE:
 			int
 		ID:
-			arr
-		TYPE:
-			int
-		SIZE:
-			100
+			test
+		PARAMS:
+			int:
+				a
+		BODY:
+			IF-ELSE:
+				GREATER:
+					ID:
+						a
+					INT:
+						5
+				BODY:
+					RETURN:
+						MINUS:
+							ID:
+								a
+							INT:
+								5
+				BODY:
+					RETURN:
+						MINUS:
+							INT:
+								5
+							ID:
+								a
