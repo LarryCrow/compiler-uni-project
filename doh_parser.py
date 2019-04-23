@@ -116,13 +116,13 @@ def p_conditional(p):
     p[0] = p[2]
 
 #
-# def p_conditional_errors(p):
-#     '''
-#     conditional : error expr RPAREN
-#                 | LPAREN error RPAREN
-#                 | LPAREN expr error
-#     '''
-#     print('Here is error')
+def p_conditional_errors(p):
+    '''
+    conditional : error expr RPAREN
+                | LPAREN error RPAREN
+                | LPAREN expr error
+    '''
+    print('Unexpected symbol "%s". Expected symbol is "("' % p.slice[1].value.value)
 
 
 def p_struct_declaration(p):
