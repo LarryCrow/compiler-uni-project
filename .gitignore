@@ -1,7 +1,7 @@
-.sample.doh
+sample.doh
 result.txt
 parser.out
-parsetab.pyg
+parsetab.py
 
 # IDEs and editors
 /.idea
