@@ -53,7 +53,6 @@ def find_errors(ast, inside_func=False, inside_loop=False):
                     error(node.row_pos, 'Function can\'t be defined inside another function')
                 else:
                     f_params = declare_function(node)
-                    f_params = f_params + _cur_scope.variables.copy()
                     f_scope = Scope(hash(node), _cur_scope, f_params)
                     _scopes.append(f_scope)
                     _cur_scope = f_scope
@@ -112,7 +111,7 @@ def declare_variable(variable_node):
     if var_type == 'void':
         error(variable_node.row_pos, 'Variable can\'t have a void type')
         return
-    is_var_exist = _cur_scope.is_variable_exist(var_name)
+    is_var_exist = _cur_scope.is_variable_exist(var_name, True)
     if is_var_exist is not None:
         error(variable_node.row_pos, 'Variable \'%s\' already exists' % var_name)
         return
@@ -135,7 +134,7 @@ def declare_function(function_node):
     global _cur_scope
     func_type = function_node.parts[0].parts[0]
     func_name = function_node.parts[1].parts[0]
-    is_func_exist = _cur_scope.is_variable_exist(func_name)
+    is_func_exist = _cur_scope.is_variable_exist(func_name, True)
     if is_func_exist is not None:
         error(function_node.row_pos, 'Function \'%s\' already exists')
         return None
@@ -152,7 +151,7 @@ def declare_structure(structure_node):
     """
     global _cur_scope
     structure_name = structure_node.parts[0].parts[0]
-    is_structure_type_exist = _cur_scope.is_variable_exist(structure_name)
+    is_structure_type_exist = _cur_scope.is_variable_exist(structure_name, True)
     if is_structure_type_exist is not None:
         error(structure_node.row_pos, 'Structure \'%s\' is already defined' % structure_name)
     structure_params = get_function_params(structure_node.parts[1])
@@ -177,7 +176,7 @@ def declare_array(array_node):
     arr_type = array_node.parts[0].parts[0]
     arr_name = array_node.parts[1].parts[0]
     arr_size = array_node.parts[2].parts[0]
-    if _cur_scope.is_variable_exist(arr_name) is not None:
+    if _cur_scope.is_variable_exist(arr_name, True) is not None:
         error(array_node.row_pos, 'Array \'%s\' already exists' % arr_name)
         return
     if arr_type.lower() == 'void':
@@ -210,7 +209,7 @@ def declare_structure_variable(str_var_node):
     global _cur_scope
     var_type = str_var_node.parts[0].parts[0]
     var_name = str_var_node.parts[1].parts[0]
-    if _cur_scope.is_variable_exist(var_name) is not None:
+    if _cur_scope.is_variable_exist(var_name, True) is not None:
         error(str_var_node.pow_row, 'Variable \'%s\' already exists' % var_name)
         return
     structure = _cur_scope.is_variable_exist(var_type)
@@ -429,7 +428,6 @@ def check_goto_call(goto_node):
 
 
 def check_conditional_or_loop(node):
-    cond_expr = None
     if node.type == 'IF' or node.type == 'IF_ELSE' or node.type == 'WHILE':
         cond_expr = node.parts[0]
     else:
