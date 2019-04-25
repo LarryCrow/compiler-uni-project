@@ -26,7 +26,7 @@ precedence = (
     ('left', 'MUL', 'DIVIDE', 'INTDIVIDE', 'MODULO'),
     ('right', 'POW'),
     ('right', 'UMINUS', 'LNOT'),
-    ('left', 'LBRACE', 'RBRACE', 'LPAREN', 'RPAREN', 'LBRACKET', 'RBRACKET')
+    ('left', 'LBRACE', 'RBRACE', 'LPAREN', 'RPAREN', 'LBRACKET', 'RBRACKET', 'DOT')
 )
 
 
@@ -36,28 +36,29 @@ def p_program(p):
     if len(p) == 1:
         p[0] = ''
     elif len(p) == 2:
-        p[0] = Node('PROGRAM', [p[1]], p.lineno(1))
+        p[0] = p[1]
 
 
 def p_body_block(p):
-    '''
-    basic_block : LBRACE scope RBRACE
-    '''
-    p[0] = p[1]
+    'basic_block : LBRACE scope RBRACE'
+    p[0] = p[2]
 
 
 def p_func_declaration(p):
-    '''func_declaration : FUNCTION datatype id LPAREN params RPAREN basic_block'''
+    'func_declaration : FUNCTION datatype id LPAREN params RPAREN basic_block'
     p[0] = Node('FUNCTION', [p[2], p[3], p[5], p[7]], p.lineno(1))
 
 
 def p_scope(p):
-    '''scope : scope statement
-             | statement'''
+    '''
+    scope : scope statement
+          | statement
+    '''
     if len(p) == 3:
         p[0] = p[1].add_parts([p[2]])
     else:
-        p[0] = Node('SCOPE', [p[1]], p.lineno(1))
+        # p[0] = Node('SCOPE', [p[1]], p.slice[1].value.row_pos - 1)
+        p[0] = Node('SCOPE', [p[1]], 0)
 
 
 def p_stmt(p):
@@ -93,7 +94,7 @@ def p_loops(p):
     if len(p) == 4:
         p[0] = Node('WHILE', [p[2], p[3]], p.lineno(1))
     else:
-        p[0] = Node('DO-WHILE', [p[2], p[4]], p.lineno(5))
+        p[0] = Node('DO_WHILE', [p[2], p[4]], p.lineno(5))
 
 
 def p_if_else(p):
@@ -104,7 +105,7 @@ def p_if_else(p):
     if len(p) == 4:
         p[0] = Node('IF', [p[2], p[3]], p.lineno(1))
     else:
-        p[0] = Node('IF-ELSE', [p[2], p[3], p[5]], p.lineno(1))
+        p[0] = Node('IF_ELSE', [p[2], p[3], p[5]], p.lineno(1))
 
 
 def p_conditional(p):
@@ -131,14 +132,8 @@ def p_struct_params(p):
 
 
 def p_struct_param(p):
-    '''
-    struct_param : DATATYPE ID
-                 | func_declaration
-    '''
-    if len(p) == 3:
-        p[0] = Node(p[1], [p[2]], p.lineno(1))
-    else:
-        p[0] = p[1]
+    'struct_param : DATATYPE ID'
+    p[0] = Node(p[1], [p[2]], p.lineno(1))
 
 
 def p_params(p):
@@ -160,7 +155,7 @@ def p_param_declaration(p):
 
 def p_func_call(p):
     '''expr : ID LPAREN args RPAREN'''
-    p[0] = Node('FUNCTION CALL', [p[1], p[3]], p.lineno(1))
+    p[0] = Node('FUNCTION_CALL', [p[1], p[3]], p.lineno(1))
 
 
 def p_arguments(p):
@@ -175,32 +170,49 @@ def p_arguments(p):
         p[0] = p[1].add_parts([p[3]])
 
 
-
 def p_var_declaration(p):
     '''
     var_declaration : datatype id EQUALS expr SEMI
                     | datatype id SEMI
-                    | ID id EQUALS LBRACE args RBRACE SEMI
     '''
-    if hasattr(p[1], 'type'):
-        if len(p) == 6:
-            p[0] = Node('VARIABLE', [p[1], p[2], p[4]], p.lineno(3))
-        else:
-            p[0] = Node('VARIABLE', [p[1], p[2]], p.lineno(3))
+    if len(p) == 6:
+        p[0] = Node('VARIABLE', [p[1], p[2], p[4]], p.lineno(3))
     else:
-        p[0] = Node('VARIABLE', [Node('TYPE', [p[1]]), p[2], p[5]])
+        p[0] = Node('VARIABLE', [p[1], p[2]], p.lineno(3))
 
 
-def p_assign(p):
-    '''assign : ID EQUALS expr SEMI
-              | ID EQUALS LBRACE args RBRACE SEMI
-              | ID DOT ID EQUALS expr SEMI'''
+def p_struct_var_declaration(p):
+    '''var_declaration : ID id SEMI
+                       | ID id EQUALS LBRACE args RBRACE SEMI
+                       | ID id EQUALS expr SEMI'''
+    if len(p) == 4:
+        p[0] = Node('STRUCT_VAR', [Node('TYPE', [p[1]]), p[2]], p.lineno(1))
+    elif len(p) == 8:
+        p[0] = Node('STRUCT_VAR', [Node('TYPE', [p[1]]), p[2], p[5]], p.lineno(1))
+    else:
+        p[0] = Node('STRUCT_VAR', [Node('TYPE', [p[1]]), p[2], p[4]], p.lineno(1))
+
+
+def p_var_assign(p):
+    'assign : id EQUALS expr SEMI'
     if len(p) == 5:
         p[0] = Node('ASSIGN', [p[1], p[3]], p.lineno(1))
-    elif p[2] == '.':
-        p[0] = Node('ASSIGN', [p[1], p[2], p[3], p[5]], p.lineno(1))
+
+
+def p_struct_assign(p):
+    '''
+    assign : id EQUALS LBRACE args RBRACE SEMI
+           | id DOT ID EQUALS expr SEMI
+    '''
+    if not p[2] == '.':
+        p[0] = Node('ASSIGN', [p[1], p[4]])
     else:
-        p[0] = Node('ASSIGN', [p[1], p[4]], p.lineno(1))
+        p[0] = Node('ASSIGN', [p[1], p[3], p[5]])
+
+
+def p_array_assign(p):
+    'assign : id LBRACKET expr RBRACKET EQUALS expr SEMI'
+    p[0] = Node('ASSIGN', [p[1], p[3], p[6]])
 
 
 def p_return(p):
@@ -330,23 +342,36 @@ def p_void(p):
 
 def p_array_init(p):
     '''
-    expr : datatype LBRACKET RBRACKET id
-         | datatype LBRACKET RBRACKET id EQUALS datatype LBRACKET INTEGER RBRACKET
+    expr : datatype id LBRACKET INTEGER RBRACKET
+         | ID id LBRACKET INTEGER RBRACKET
+         | datatype id LBRACKET INTEGER RBRACKET EQUALS LBRACE args RBRACE
+         | ID id LBRACKET INTEGER RBRACKET EQUALS LBRACE args RBRACE
     '''
-    if len(p) == 5:
-        p[0] = Node('ARRAY', [p[1], p[4]], p.lineno(1))
+    if len(p) == 6:
+        if hasattr(p[1], 'type'):
+            p[0] = Node('ARRAY', [p[1], p[2], Node('SIZE', [p[4]])], p.lineno(1))
+        else:
+            p[0] = Node('ARRAY', [Node('TYPE', [p[1]]), p[2], Node('SIZE', [p[4]])], p.lineno(1))
     else:
-        p[0] = Node('ARRAY', [p[1], p[4], p[6], Node('SIZE', [p[8]])], p.lineno(1))
+        if hasattr(p[1], 'type'):
+            p[0] = Node('ARRAY', [p[1], p[2], Node('SIZE', [p[4]]), p[8]], p.lineno(1))
+        else:
+            p[0] = Node('ARRAY', [Node('TYPE',[p[1]]), p[2], Node('SIZE', [p[4]]), p[8]], p.lineno(1))
 
 
 def p_index(p):
-    'expr : ID LBRACKET expr RBRACKET'
-    p[0] = Node('INDEX', [p[1], p[3]], p.lineno(1))
+    'expr : id LBRACKET expr RBRACKET'
+    p[0] = Node('ARRAY_ELEMENT', [p[1], p[3]], p.lineno(1))
+
+
+def p_struct_field(p):
+    'expr : id DOT ID'
+    p[0] = Node('STRUCT_FIELD', [p[1], p[3]])
 
 
 def p_goto_mark(p):
     '''goto_mark : ID COLON'''
-    p[0] = Node('GOTO-MARK', [p[1]], p.lineno(1))
+    p[0] = Node('GOTO_MARK', [p[1]], p.lineno(1))
 
 
 def p_datatype(p):
