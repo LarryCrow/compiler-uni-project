@@ -50,7 +50,7 @@ def p_body_block(p):
 
 # TODO check
 def p_body_block_error(p):
-    ''' body_block : error scope RBRACE
+    '''basic_block : error scope RBRACE
                    | LBRACE error RBRACE
                    | LBRACE scope error
     '''
@@ -68,11 +68,11 @@ def p_func_declaration(p):
 
 # TODO check
 def p_func_declaration_error(p):
-    '''func_declaration : error datatype id LPAREN params RPAREN body_block
-                        | FUNCTION error id LPAREN params RPAREN body_block
-                        | FUNCTION datatype error LPAREN params RPAREN body_block
-                        | FUNCTION datatype id error params RPAREN body_block
-                        | FUNCTION datatype id LPAREN params error body_block
+    '''func_declaration : error datatype id LPAREN params RPAREN basic_block
+                        | FUNCTION error id LPAREN params RPAREN basic_block
+                        | FUNCTION datatype error LPAREN params RPAREN basic_block
+                        | FUNCTION datatype id error params RPAREN basic_block
+                        | FUNCTION datatype id LPAREN params error basic_block
     '''
     if str(p.slice[1]) == 'error':
         print('Unexpected symbol "%s". Expected token is "function"' % p.slice[1].value.value)
@@ -137,9 +137,9 @@ def p_loops(p):
 
 def p_loop_dowhile_error(p):
     '''
-    while : error body_block WHILE conditional SEMI
-          | DO body_block error conditional SEMI
-          | DO body_block WHILE conditional error
+    while : error basic_block WHILE conditional SEMI
+          | DO basic_block error conditional SEMI
+          | DO basic_block WHILE conditional error
     '''
     if str(p.slice[1]) == 'error':
         print('Unexpected token "%s". Expected token is "DO"' % p.slice[1].value.value)
@@ -291,7 +291,7 @@ def p_arguments_error(p):
     print('Unexpected symbol "%s". Expected symbol is ","' % p.slice[2].value.value)
 
 
-# TODO check (separeted var declaration to 3 functions)
+
 def p_var_declaration(p):
     '''
     var_declaration : datatype id EQUALS expr SEMI
@@ -380,10 +380,35 @@ def p_struct_assign(p):
         p[0] = Node('ASSIGN', [p[1], p[3], p[5]])
 
 
-# TODO check
 def p_array_assign(p):
     'assign : id LBRACKET expr RBRACKET EQUALS expr SEMI'
     p[0] = Node('ASSIGN', [p[1], p[3], p[6]])
+
+def p_array_assign_error(p):
+    '''assign : error LBRACKET expr RBRACKET EQUALS expr SEMI
+              | id error expr RBRACKET EQUALS expr SEMI
+              | id LBRACKET error RBRACKET EQUALS expr SEMI
+              | id LBRACKET expr error EQUALS expr SEMI
+              | id LBRACKET expr RBRACKET error expr SEMI
+              | id LBRACKET expr RBRACKET EQUALS error SEMI
+              | id LBRACKET expr RBRACKET EQUALS expr error'''
+    if str(p.slice[1]) == 'error':
+        print('Unexpected symbol "%s". Expected token is "ID"' % p.slice[1].value.value)
+    elif str(p.slice[2]) == 'error':
+        print('Unexpected symbol "%s". Expected token is "["' % p.slice[2].value.value)
+    elif str(p.slice[3]) == 'error':
+        print('Unexpected symbol "%s". Expected expression' % p.slice[3].value.value)
+    elif str(p.slice[4]) == 'error':
+        print('Unexpected symbol "%s". Expected token is "]"' % p.slice[4].value.value)
+    elif str(p.slice[5]) == 'error':
+        print('Unexpected symbol "%s". Expected token is "="' % p.slice[5].value.value)
+    elif str(p.slice[6]) == 'error':
+        print('Unexpected symbol "%s". Expected expression for assign' % p.slice[6].value.value)
+    elif str(p.slice[7]) == 'error':
+        print('Unexpected symbol "%s". Expected symbol is ";"' % p.slice[7].value.value)
+
+
+
 
 def p_assign_error_1(p):
     '''
@@ -563,10 +588,10 @@ def p_void(p):
 # TODO check
 def p_array_init(p):
     '''
-    expr : datatype id LBRACKET INTEGER RBRACKET
-         | ID id LBRACKET INTEGER RBRACKET
-         | datatype id LBRACKET INTEGER RBRACKET EQUALS LBRACE args RBRACE
-         | ID id LBRACKET INTEGER RBRACKET EQUALS LBRACE args RBRACE
+    expr : datatype id LBRACKET INTEGER RBRACKET SEMI
+         | ID id LBRACKET INTEGER RBRACKET SEMI
+         | datatype id LBRACKET INTEGER RBRACKET EQUALS LBRACE args RBRACE SEMI
+         | ID id LBRACKET INTEGER RBRACKET EQUALS LBRACE args RBRACE SEMI
     '''
     if len(p) == 6:
         if hasattr(p[1], 'type'):
@@ -581,19 +606,98 @@ def p_array_init(p):
 
 def p_array_init_error_1(p):
     '''
-    expr : datatype error RBRACKET id
-         | datatype LBRACKET error id
-         | datatype LBRACKET RBRACKET error
-         | error LBRACKET RBRACKET id
+    expr : error id LBRACKET INTEGER RBRACKET SEMI
+         | datatype error LBRACKET INTEGER RBRACKET SEMI
+         | datatype id error INTEGER RBRACKET SEMI
+         | datatype id LBRACKET error RBRACKET SEMI
+         | datatype id LBRACKET INTEGER error SEMI
+         | datatype id LBRACKET INTEGER RBRACKET error
     '''
     if str(p.slice[1]) == 'error':
-        print('Unexpected symbol "%s". Expected "DATATYPE" for array' % p.slice[1].value.value)
+        print('Unexpected symbol "%s". Expected datatype of array' % p.slice[1].value.value)
     elif str(p.slice[2]) == 'error':
-        print('Unexpected symbol "%s". Expected symbol is "["' % p.slice[2].value.value)
+        print('Unexpected symbol "%s". Expected token is "ID"' % p.slice[2].value.value)
     elif str(p.slice[3]) == 'error':
-        print('Unexpected symbol "%s". Expected symbol is "]"' % p.slice[3].value.value)
+        print('Unexpected symbol "%s". Expected token is "["' % p.slice[3].value.value)
     elif str(p.slice[4]) == 'error':
-        print(print('Unexpected symbol "%s". Expected token is "ID" for array' % p.slice[4].value.value))
+        print('Unexpected symbol "%s". Expected size of array' % p.slice[4].value.value)
+    elif str(p.slice[5]) == 'error':
+        print('Unexpected symbol "%s". Expected token is "]"' % p.slice[5].value.value)
+    elif str(p.slice[6]) == 'error':
+        print('Unexpected symbol "%s". Expected token is ";"' % p.slice[6].value.value)
+def p_array_init_error_2(p):
+    '''
+    expr : ID id error INTEGER RBRACKET SEMI
+         | ID id LBRACKET error RBRACKET SEMI
+         | ID id LBRACKET INTEGER error SEMI
+         | ID id LBRACKET INTEGER RBRACKET error
+    '''
+    if str(p.slice[3]) == 'error':
+        print('Unexpected symbol "%s". Expected token is "["' % p.slice[3].value.value)
+    elif str(p.slice[4]) == 'error':
+        print('Unexpected symbol "%s". Expected size of array' % p.slice[4].value.value)
+    elif str(p.slice[5]) == 'error':
+        print('Unexpected symbol "%s". Expected token is "]"' % p.slice[5].value.value)
+    elif str(p.slice[6]) == 'error':
+        print('Unexpected symbol "%s". Expected token is ";"' % p.slice[6].value.value)
+
+def p_array_init_error_3(p):
+    '''
+    expr : datatype id error INTEGER RBRACKET EQUALS LBRACE args RBRACE SEMI
+         | datatype id LBRACKET error RBRACKET EQUALS LBRACE args RBRACE SEMI
+         | datatype id LBRACKET INTEGER error EQUALS LBRACE args RBRACE SEMI
+         | datatype id LBRACKET INTEGER RBRACKET error LBRACE args RBRACE SEMI
+         | datatype id LBRACKET INTEGER RBRACKET EQUALS error args RBRACE SEMI
+         | datatype id LBRACKET INTEGER RBRACKET EQUALS LBRACE error RBRACE SEMI
+         | datatype id LBRACKET INTEGER RBRACKET EQUALS LBRACE args error SEMI
+         | datatype id LBRACKET INTEGER RBRACKET EQUALS LBRACE args RBRACE error
+    '''
+    if str(p.slice[3]) == 'error':
+        print('Unexpected symbol "%s". Expected token is "["' % p.slice[3].value.value)
+    elif str(p.slice[4]) == 'error':
+        print('Unexpected symbol "%s". Expected size of array' % p.slice[4].value.value)
+    elif str(p.slice[5]) == 'error':
+        print('Unexpected symbol "%s". Expected token is "]"' % p.slice[5].value.value)
+    elif str(p.slice[6]) == 'error':
+        print('Unexpected symbol "%s". Expected token is "="' % p.slice[6].value.value)
+    elif str(p.slice[7]) == 'error':
+        print('Unexpected symbol "%s". Expected token is "{"' % p.slice[7].value.value)
+    elif str(p.slice[8]) == 'error':
+        print('Unexpected symbol "%s". Expected arguments' % p.slice[8].value.value)
+    elif str(p.slice[9]) == 'error':
+        print('Unexpected symbol "%s". Expected token is "}"' % p.slice[9].value.value)
+    elif str(p.slice[10]) == 'error':
+        print('Unexpected symbol "%s". Expected token is ";"' % p.slice[10].value.value)
+
+def p_array_init_error_4(p):
+    '''
+    expr : ID id error INTEGER RBRACKET EQUALS LBRACE args RBRACE SEMI
+         | ID id LBRACKET error RBRACKET EQUALS LBRACE args RBRACE SEMI
+         | ID id LBRACKET INTEGER error EQUALS LBRACE args RBRACE SEMI
+         | ID id LBRACKET INTEGER RBRACKET error LBRACE args RBRACE SEMI
+         | ID id LBRACKET INTEGER RBRACKET EQUALS error args RBRACE SEMI
+         | ID id LBRACKET INTEGER RBRACKET EQUALS LBRACE error RBRACE SEMI
+         | ID id LBRACKET INTEGER RBRACKET EQUALS LBRACE args error SEMI
+         | ID id LBRACKET INTEGER RBRACKET EQUALS LBRACE args RBRACE error
+    '''
+    if str(p.slice[3]) == 'error':
+        print('Unexpected symbol "%s". Expected token is "["' % p.slice[3].value.value)
+    elif str(p.slice[4]) == 'error':
+        print('Unexpected symbol "%s". Expected size of array' % p.slice[4].value.value)
+    elif str(p.slice[5]) == 'error':
+        print('Unexpected symbol "%s". Expected token is "]"' % p.slice[5].value.value)
+    elif str(p.slice[6]) == 'error':
+        print('Unexpected symbol "%s". Expected token is "="' % p.slice[6].value.value)
+    elif str(p.slice[7]) == 'error':
+        print('Unexpected symbol "%s". Expected token is "{"' % p.slice[7].value.value)
+    elif str(p.slice[8]) == 'error':
+        print('Unexpected symbol "%s". Expected arguments' % p.slice[8].value.value)
+    elif str(p.slice[9]) == 'error':
+        print('Unexpected symbol "%s". Expected token is "}"' % p.slice[9].value.value)
+    elif str(p.slice[10]) == 'error':
+        print('Unexpected symbol "%s". Expected token is ";"' % p.slice[10].value.value)
+
+
 
 def p_index(p):
     'expr : id LBRACKET expr RBRACKET'
