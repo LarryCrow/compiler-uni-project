@@ -15,12 +15,6 @@ class Scope:
             return cur_scope.is_variable_exist(name, one_level_search, cur_scope.scope)
         return None
 
-    # def is_variable_exist(self, name):
-    #     for el in self.variables:
-    #         if el['name'] == name:
-    #             return el
-    #     return None
-
     def __init__(self, s_id, scope=None, variables=None):
         self.s_id = s_id
         self.scope = scope

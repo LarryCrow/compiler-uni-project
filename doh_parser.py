@@ -30,13 +30,11 @@ precedence = (
 )
 
 
-# TODO change body_block to basic_block
-
-
-
 def p_program(p):
-    '''program :
-               | scope'''
+    '''
+    program :
+            | scope
+    '''
     if len(p) == 1:
         p[0] = ''
     elif len(p) == 2:
@@ -48,11 +46,11 @@ def p_body_block(p):
     p[0] = p[2]
 
 
-# TODO check
 def p_body_block_error(p):
-    '''basic_block : error scope RBRACE
-                   | LBRACE error RBRACE
-                   | LBRACE scope error
+    '''
+    basic_block : error scope RBRACE
+                | LBRACE error RBRACE
+                | LBRACE scope error
     '''
     if str(p.slice[1]) == 'error':
         print('Unexpected symbol "%s". Expected symbol is "{"' % p.slice[1].value.value)
@@ -66,13 +64,14 @@ def p_func_declaration(p):
     'func_declaration : FUNCTION datatype id LPAREN params RPAREN basic_block'
     p[0] = Node('FUNCTION', [p[2], p[3], p[5], p[7]], p.lineno(1))
 
-# TODO check
+
 def p_func_declaration_error(p):
-    '''func_declaration : error datatype id LPAREN params RPAREN basic_block
-                        | FUNCTION error id LPAREN params RPAREN basic_block
-                        | FUNCTION datatype error LPAREN params RPAREN basic_block
-                        | FUNCTION datatype id error params RPAREN basic_block
-                        | FUNCTION datatype id LPAREN params error basic_block
+    '''
+    func_declaration : error datatype id LPAREN params RPAREN basic_block
+                     | FUNCTION error id LPAREN params RPAREN basic_block
+                     | FUNCTION datatype error LPAREN params RPAREN basic_block
+                     | FUNCTION datatype id error params RPAREN basic_block
+                     | FUNCTION datatype id LPAREN params error basic_block
     '''
     if str(p.slice[1]) == 'error':
         print('Unexpected symbol "%s". Expected token is "function"' % p.slice[1].value.value)
@@ -86,7 +85,6 @@ def p_func_declaration_error(p):
         print('Unexpected symbol "%s". Expected symbol is ")"' % p.slice[6].value.value)
 
 
-# TODO check
 def p_scope(p):
     '''
     scope : scope statement
@@ -123,7 +121,6 @@ def p_stmt(p):
         p[0] = p[1]
 
 
-# TODO check
 def p_loops(p):
     '''
     while : WHILE conditional basic_block
@@ -177,15 +174,11 @@ def p_conditional_errors(p):
     elif str(p.slice[3]) == 'error':
         print('Unexpected symbol "%s". Expected symbol is ")"' % p.slice[3].value.value)
 
-    #print('Unexpected symbol "%s". Expected symbol is "("' % p.slice[1].value.value)
-
-
 
 def p_struct_declaration(p):
-    '''
-    struct_declaration : STRUCTURE id LBRACE struct_params RBRACE
-    '''
+    'struct_declaration : STRUCTURE id LBRACE struct_params RBRACE'
     p[0] = Node('STRUCTURE', [p[2], p[4]], p.lineno(1))
+
 
 def p_struct_declaration_error(p):
     '''
@@ -201,7 +194,6 @@ def p_struct_declaration_error(p):
         print('Unexpected symbol "%s". Expected symbol is "}"' % p.slice[5].value.value)
 
 
-
 def p_struct_params(p):
     '''
     struct_params : struct_param
@@ -212,15 +204,16 @@ def p_struct_params(p):
     else:
         p[0] = p[1].add_parts([p[3]])
 
+
 def p_struct_params_error(p):
-    '''
-    struct_params : struct_params error struct_param
-    '''
+    'struct_params : struct_params error struct_param'
     print('Unexpected symbol "%s". Expected symbol is ","' % p.slice[2].value.value)
+
 
 def p_struct_param(p):
     'struct_param : DATATYPE ID'
     p[0] = Node(p[1], [p[2]], p.lineno(1))
+
 
 def p_struct_param_error(p):
     '''
@@ -232,10 +225,13 @@ def p_struct_param_error(p):
     elif str(p.slice[2]) == 'error':
         print('Unexpected symbol "%s". Expected token is "ID"' % p.slice[2].value.value)
 
+
 def p_params(p):
-    '''params :
-              | param
-              | params COMMA param'''
+    '''
+    params :
+           | param
+           | params COMMA param
+    '''
     if len(p) == 1:
         p[0] = Node('PARAMS', [])
     elif len(p) == 2:
@@ -243,40 +239,50 @@ def p_params(p):
     else:
         p[0] = p[1].add_parts([p[3]])
 
+
 def p_params_error(p):
-    '''
-    params : params error param
-    '''
+    'params : params error param'
     print('Unexpected symbol "%s". Expected symbol is ","' % p.slice[1].value.value)
 
+
 def p_param_declaration(p):
-    '''param : DATATYPE ID'''
+    'param : DATATYPE ID'
     p[0] = Node(p[1], [p[2]], p.lineno(1))
 
+
 def p_param_declaration_error(p):
-    '''param : error ID
-             | DATATYPE error'''
+    '''
+    param : error ID
+          | DATATYPE error
+    '''
     if str(p.slice[1]) == 'error':
         print('Unexpected symbol "%s". Expected "DATATYPE" of parameter' % p.slice[1].value.value)
     elif str(p.slice[2]) == 'error':
         print('Unexpected symbol "%s". Expected token is "ID"' % p.slice[2].value.value)
 
+
 def p_func_call(p):
-    '''expr : id LPAREN args RPAREN'''
+    'expr : id LPAREN args RPAREN'
     p[0] = Node('FUNCTION_CALL', [p[1], p[3]], p.lineno(1))
 
+
 def p_func_call_error(p):
-    '''expr : id error args RPAREN
-            | id LPAREN args error'''
+    '''
+    expr : id error args RPAREN
+         | id LPAREN args error
+    '''
     if str(p.slice[2]) == 'error':
         print('Unexpected symbol "%s". Expected symbol is "("' % p.slice[2].value.value)
     elif str(p.slice[4]) == 'error':
         print('Unexpected symbol "%s". Expected symbol is ")"' % p.slice[4].value.value)
 
+
 def p_arguments(p):
-    '''args :
-            | expr
-            | args COMMA expr'''
+    '''
+    args :
+         | expr
+         | args COMMA expr
+    '''
     if len(p) == 1:
         p[0] = Node('ARGUMENTS', [])
     elif len(p) == 2:
@@ -284,12 +290,10 @@ def p_arguments(p):
     elif len(p) == 4:
         p[0] = p[1].add_parts([p[3]])
 
-def p_arguments_error(p):
-    '''
-    args : args error expr
-    '''
-    print('Unexpected symbol "%s". Expected symbol is ","' % p.slice[2].value.value)
 
+def p_arguments_error(p):
+    'args : args error expr'
+    print('Unexpected symbol "%s". Expected symbol is ","' % p.slice[2].value.value)
 
 
 def p_var_declaration(p):
@@ -304,9 +308,11 @@ def p_var_declaration(p):
 
 
 def p_struct_var_declaration(p):
-    '''var_declaration : ID id SEMI
-                       | ID id EQUALS LBRACE args RBRACE SEMI
-                       | ID id EQUALS expr SEMI'''
+    '''
+    var_declaration : ID id SEMI
+                    | ID id EQUALS LBRACE args RBRACE SEMI
+                    | ID id EQUALS expr SEMI
+    '''
     if len(p) == 4:
         p[0] = Node('STRUCT_VAR', [Node('TYPE', [p[1]]), p[2]], p.lineno(1))
     elif len(p) == 8:
@@ -331,6 +337,7 @@ def p_var_declaration_error_1(p):
     elif str(p.slice[4]) == 'error':
         print('Unexpected symbol "%s". Expected expression for variable' % p.slice[4].value.value)
 
+
 def p_var_declaration_error_2(p):
     '''
     var_declaration : datatype error SEMI
@@ -340,6 +347,7 @@ def p_var_declaration_error_2(p):
         print('Unexpected symbol "%s". Expected token is "ID"' % p.slice[2].value.value)
     elif str(p.slice[3]) == 'error':
         print('Unexpected symbol "%s". Expected symbol is ";"' % p.slice[3].value.value)
+
 
 def p_var_declaration_error_3(p):
     '''
@@ -363,6 +371,7 @@ def p_var_declaration_error_3(p):
     elif str(p.slice[7]) == 'error':
         print('Unexpected symbol "%s". Expected symbol is ";"' % p.slice[7].value.value)
 
+
 def p_var_assign(p):
     'assign : id EQUALS expr SEMI'
     if len(p) == 5:
@@ -384,14 +393,17 @@ def p_array_assign(p):
     'assign : id LBRACKET expr RBRACKET EQUALS expr SEMI'
     p[0] = Node('ASSIGN', [p[1], p[3], p[6]])
 
+
 def p_array_assign_error(p):
-    '''assign : error LBRACKET expr RBRACKET EQUALS expr SEMI
-              | id error expr RBRACKET EQUALS expr SEMI
-              | id LBRACKET error RBRACKET EQUALS expr SEMI
-              | id LBRACKET expr error EQUALS expr SEMI
-              | id LBRACKET expr RBRACKET error expr SEMI
-              | id LBRACKET expr RBRACKET EQUALS error SEMI
-              | id LBRACKET expr RBRACKET EQUALS expr error'''
+    '''
+    assign : error LBRACKET expr RBRACKET EQUALS expr SEMI
+           | id error expr RBRACKET EQUALS expr SEMI
+           | id LBRACKET error RBRACKET EQUALS expr SEMI
+           | id LBRACKET expr error EQUALS expr SEMI
+           | id LBRACKET expr RBRACKET error expr SEMI
+           | id LBRACKET expr RBRACKET EQUALS error SEMI
+           | id LBRACKET expr RBRACKET EQUALS expr error
+    '''
     if str(p.slice[1]) == 'error':
         print('Unexpected symbol "%s". Expected token is "ID"' % p.slice[1].value.value)
     elif str(p.slice[2]) == 'error':
@@ -408,8 +420,6 @@ def p_array_assign_error(p):
         print('Unexpected symbol "%s". Expected symbol is ";"' % p.slice[7].value.value)
 
 
-
-
 def p_assign_error_1(p):
     '''
     assign : ID error expr SEMI
@@ -422,6 +432,7 @@ def p_assign_error_1(p):
         print('Unexpected symbol "%s". Expected expression' % p.slice[3].value.value)
     elif str(p.slice[4]) == 'error':
         print('Unexpected symbol "%s". Expected symbol is ";"' % p.slice[4].value.value)
+
 
 def p_assign_error_2(p):
     '''
@@ -442,10 +453,13 @@ def p_assign_error_2(p):
     elif str(p.slice[6]) == 'error':
         print('Unexpected symbol "%s". Expected symbol is ";"' % p.slice[6].value.value)
 
+
 def p_assign_error_3(p):
-    '''assign : ID DOT ID error expr SEMI
-              | ID DOT ID EQUALS error SEMI
-              | ID DOT ID EQUALS expr error'''
+    '''
+    assign : ID DOT ID error expr SEMI
+           | ID DOT ID EQUALS error SEMI
+           | ID DOT ID EQUALS expr error
+    '''
     if str(p.slice[4]) == 'error':
         print('Unexpected symbol "%s". Expected symbol is "="' % p.slice[4].value.value)
     elif str(p.slice[5]) == 'error':
@@ -463,20 +477,23 @@ def p_return(p):
         p[0] = Node('RETURN', [p[2]], p.lineno(1))
     else:
         p[0] = Node('RETURN', [], p.lineno(1))
+
+
 def p_return_error(p):
-    '''
-    return : RETURN error
-    '''
+    'return : RETURN error'
     print('Unexpected symbol "%s". Expected symbol is ";"' % p.slice[2].value.value)
 
+
 def p_math_expressions(p):
-    '''expr : expr PLUS expr
-            | expr MINUS expr
-            | expr MUL expr
-            | expr DIVIDE expr
-            | expr INTDIVIDE expr
-            | expr MODULO expr
-            | expr POW expr'''
+    '''
+    expr : expr PLUS expr
+         | expr MINUS expr
+         | expr MUL expr
+         | expr DIVIDE expr
+         | expr INTDIVIDE expr
+         | expr MODULO expr
+         | expr POW expr
+    '''
     if len(p) == 2:
         p[0] = p[1]
     else:
@@ -497,12 +514,14 @@ def p_math_expressions(p):
 
 
 def p_conditionals(p):
-    '''expr : expr LE expr
-            | expr GE expr
-            | expr LT expr
-            | expr GT expr
-            | expr EQ expr
-            | expr NE expr'''
+    '''
+    expr : expr LE expr
+         | expr GE expr
+         | expr LT expr
+         | expr GT expr
+         | expr EQ expr
+         | expr NE expr
+    '''
     if p[2] == '<=':
         p[0] = Node('LESS OR EQ', [p[1], p[3]], p.lineno(2))
     elif p[2] == '>=':
@@ -516,15 +535,19 @@ def p_conditionals(p):
     elif p[2] == '!=':
         p[0] = Node('NOT EQUALS', [p[1], p[3]], p.lineno(2))
 
+
 def p_expr_error(p):
-    '''expr : expr error expr'''
+    'expr : expr error expr'
     print('Unexpected symbol "%s". Expected arithmetic or logical operator' % p.slice[2].value.value)
 
+
 def p_logical_operation(p):
-    '''expr : MINUS expr %prec UMINUS
-            | expr LAND expr
-            | expr LOR expr
-            | LNOT expr'''
+    '''
+    expr : MINUS expr %prec UMINUS
+         | expr LAND expr
+         | expr LOR expr
+         | LNOT expr
+    '''
     if p[1] == '-':
         p[0] = Node('UMINUS', [p[2]], p.lineno(1))
     elif p[2] == '&&':
@@ -547,14 +570,16 @@ def p_bitwise_operation(p):
 
 
 def p_literals(p):
-    '''expr : id
-            | int
-            | double
-            | bool
-            | str
-            | void
-            | NULL
-            | LPAREN expr RPAREN'''
+    '''
+    expr : id
+         | int
+         | double
+         | bool
+         | str
+         | void
+         | NULL
+         | LPAREN expr RPAREN
+    '''
     if len(p) == 2:
         p[0] = p[1]
     else:
@@ -585,7 +610,7 @@ def p_void(p):
     'void : VOID'
     p[0] = Node('VOID', [p[1]], p.lineno(1))
 
-# TODO check
+
 def p_array_init(p):
     '''
     expr : datatype id LBRACKET INTEGER RBRACKET SEMI
@@ -603,6 +628,7 @@ def p_array_init(p):
             p[0] = Node('ARRAY', [p[1], p[2], Node('SIZE', [p[4]]), p[8]], p.lineno(1))
         else:
             p[0] = Node('ARRAY', [Node('TYPE',[p[1]]), p[2], Node('SIZE', [p[4]]), p[8]], p.lineno(1))
+
 
 def p_array_init_error_1(p):
     '''
@@ -625,6 +651,8 @@ def p_array_init_error_1(p):
         print('Unexpected symbol "%s". Expected token is "]"' % p.slice[5].value.value)
     elif str(p.slice[6]) == 'error':
         print('Unexpected symbol "%s". Expected token is ";"' % p.slice[6].value.value)
+
+
 def p_array_init_error_2(p):
     '''
     expr : ID id error INTEGER RBRACKET SEMI
@@ -640,6 +668,7 @@ def p_array_init_error_2(p):
         print('Unexpected symbol "%s". Expected token is "]"' % p.slice[5].value.value)
     elif str(p.slice[6]) == 'error':
         print('Unexpected symbol "%s". Expected token is ";"' % p.slice[6].value.value)
+
 
 def p_array_init_error_3(p):
     '''
@@ -668,6 +697,7 @@ def p_array_init_error_3(p):
         print('Unexpected symbol "%s". Expected token is "}"' % p.slice[9].value.value)
     elif str(p.slice[10]) == 'error':
         print('Unexpected symbol "%s". Expected token is ";"' % p.slice[10].value.value)
+
 
 def p_array_init_error_4(p):
     '''
@@ -698,7 +728,6 @@ def p_array_init_error_4(p):
         print('Unexpected symbol "%s". Expected token is ";"' % p.slice[10].value.value)
 
 
-
 def p_index(p):
     'expr : id LBRACKET expr RBRACKET'
     p[0] = Node('ARRAY_ELEMENT', [p[1], p[3]], p.lineno(1))
@@ -710,24 +739,24 @@ def p_struct_field(p):
 
 
 def p_goto_mark(p):
-    '''goto_mark : ID COLON'''
+    'goto_mark : ID COLON'
     p[0] = Node('GOTO_MARK', [p[1]], p.lineno(1))
 
 
 def p_datatype(p):
-    '''datatype : DATATYPE'''
+    'datatype : DATATYPE'
     p[0] = Node('TYPE', [p[1]], p.lineno(1))
 
 
 def p_id(p):
-    '''id : ID'''
+    'id : ID'
     p[0] = Node('ID', [p[1]], p.lineno(1))
-
 
 
 def p_error(p):
     if p:
-        error(p.lineno, "Unexpected symbol '%s'" % p.value)
+        #error(p.lineno, "Unexpected symbol '%s'" % p.value)
+        pass
     else:
         error("End of file", "Syntax error. No more input.")
 
