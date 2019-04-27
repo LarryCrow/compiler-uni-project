@@ -422,9 +422,9 @@ def check_array_element(arr_elem_node):
 
 def check_goto_call(goto_node):
     global _cur_scope
-    mark = _cur_scope.is_variable_exist(goto_node.parts[0])
+    mark = _cur_scope.is_variable_exist(goto_node.parts[0].parts[0])
     if mark is None or not mark['type'] == 'mark':
-        error(goto_node.row_pos, 'Label \'%s\' for \'goto\' operator does not exist' % goto_node.parts[0])
+        error(goto_node.row_pos, 'Label \'%s\' for \'goto\' operator does not exist' % goto_node.parts[0].parts[0])
 
 
 def check_conditional_or_loop(node):
