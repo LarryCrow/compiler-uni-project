@@ -46,6 +46,11 @@ def p_body_block(p):
     p[0] = p[2]
 
 
+def p_body_block_error(p):
+    'basic_block : LBRACE scope error'
+    error(p.lexer.lineno, 'Unexpected symbol \'%s\'. Expected \'}\'' % p[3].value)
+
+
 def p_scope(p):
     '''
     scope : scope statement
@@ -98,6 +103,32 @@ def p_loop(p):
         p[0] = Node('DO_WHILE', [p[2], p[4]], p.lineno(5))
 
 
+def p_loop_error(p):
+    '''
+    while : WHILE error
+          | WHILE expr error
+          | DO error
+          | DO basic_block error
+          | DO basic_block WHILE error
+          | DO basic_block WHILE expr error
+    '''
+    pos = p.lexer.lineno
+    if p[1] == 'WHILE':
+        if str(p.slice[2]) == 'error':
+            error(pos, 'Unexpected symbol \'%s\'. Expected conditional expression' % p[2].value)
+        else:
+            error(pos, 'Unexpected symbol \'%s\'. Expected \'{\'' % p[3].value)
+    else:
+        if str(p.slice[2]) == 'error':
+            error(pos, 'Unexpected symbol \'%s\'. Expected \'{\'' % p[2].value)
+        elif str(p.slice[3]) == 'error':
+            error(pos, 'Unexpected symbol \'%s\'. Expected \'while\'' % p[3].value)
+        elif str(p.slice[4]) == 'error':
+            error(pos, 'Unexpected symbol \'%s\'. Expected conditional expression' % p[4].value)
+        else:
+            error(pos, 'Unexpected symbol \'%s\'. Expected \';\'' % p[5].value)
+
+
 def p_loop_keyword(p):
     '''
     loop_keyword : BREAK
@@ -117,7 +148,23 @@ def p_if_else(p):
         p[0] = Node('IF_ELSE', [p[2], p[3], p[5]], p.lineno(1))
 
 
+def p_if_else_error(p):
+    '''
+    if-else : IF error
+            | IF expr error
+            | IF expr basic_block ELSE error
+    '''
+    pos = p.lexer.lineno
+    if len(p) == 3:
+        error(pos, 'Unexpected symbol \'%s\'. Expected conditional expression' % p[2].value)
+    elif len(p) == 4:
+        error(pos, 'Unexpected symbol \'%s\'. Expected \'{\'' % p[3].value)
+    else:
+        error(pos, 'Unexpected symbol \'%s\'. Expected \'{\'' % p[5].value)
+
+
 ###### STRUCTURE DEFINITION ######
+
 
 def p_struct_definition(p):
     'struct_declaration : STRUCTURE id struct_body'
@@ -140,6 +187,17 @@ def p_struct_fields(p):
         p[0] = p[1].add_parts([p[3]])
 
 
+def p_struct_fields_error(p):
+    '''
+    struct_fields : struct_fields error
+                  | struct_fields COMMA error
+    '''
+    pos = p.lexer.lineno
+    if len(p) == 3:
+        error(pos, 'Unexpected symbol \'%s\'. Expected \',\' or closing bracket' % p[2].value)
+    else:
+        error(pos, 'Unexpected symbol \'%s\'. Expected field' % p[3].value)
+
 ###### FUNCTION DECLARATION ######
 
 
@@ -148,9 +206,31 @@ def p_func_declaration(p):
     p[0] = Node('FUNCTION', [p[2], p[3], p[4], p[5]], p.lineno(1))
 
 
+def p_func_declaration_error(p):
+    '''
+    func_declaration : FUNCTION error
+                     | FUNCTION datatype error
+                     | FUNCTION datatype id error
+    '''
+    pos = p.lexer.lineno
+    if len(p) == 3:
+        error(pos, 'Unexpected symbol \'%s\'. Expected return type' % p[2].value)
+    elif len(p) == 4:
+        error(pos, 'Unexpected symbol \'%s\'. Expected function name' % p[3].value)
+    elif len(p) == 5:
+        error(pos, 'Unexpected symbol \'%s\'. Expected return function params' % p[4].value)
+    else:
+        error(pos, 'Unexpected symbol \'%s\'. Expected \'{\'' % p[5].value)
+
+
 def p_func_params_paren(p):
     'func_params_paren : LPAREN func_params RPAREN'
     p[0] = p[2]
+
+
+def p_func_param_paren_error(p):
+    'func_params_paren : LPAREN func_params error'
+    error(p.lexer.lineno, 'Unexpected symbol \'%s\'. Expected \')\'' % p[3].value)
 
 
 def p_func_params(p):
@@ -167,9 +247,26 @@ def p_func_params(p):
         p[0] = p[1].add_parts([p[3]])
 
 
+def p_func_params_error(p):
+    '''
+    func_params : func_params error
+                | func_params COMMA error
+    '''
+    pos = p.lexer.lineno
+    if len(p) == 3:
+        error(pos, 'Unexpected symbol \'%s\'. Expected \',\' or closing bracket' % p[2].value)
+    else:
+        error(pos, 'Unexpected symbol \'%s\'. Expected parameter' % p[3].value)
+
+
 def p_param_declaration(p):
     'param : DATATYPE ID'
     p[0] = Node(p[1], [p[2]], p.lineno(1))
+
+
+def p_param_declaration_error(p):
+    'param : DATATYPE error'
+    error(p.lexer.lineno, 'Unexpected symbol \'%s\'. Expected variable name' % p[2].value)
 
 
 def p_func_call(p):
@@ -196,6 +293,18 @@ def p_arguments(p):
         p[0] = p[1].add_parts([p[3]])
 
 
+def p_arguments_error(p):
+    '''
+    args : args error
+         | args COMMA error
+    '''
+    pos = p.lexer.lineno
+    if len(p) == 3:
+        error(pos, 'Unexpected symbol \'%s\'. Expected \',\' or closing bracket' % p[2].value)
+    else:
+        error(pos, 'Unexpected symbol \'%s\'. Expected argument' % p[3].value)
+
+
 def p_var_declaration(p):
     '''
     var_declaration : datatype id EQUALS expr
@@ -204,7 +313,7 @@ def p_var_declaration(p):
     if len(p) == 5:
         p[0] = Node('VARIABLE', [p[1], p[2], p[4]], p.lineno(3))
     else:
-        p[0] = Node('VARIABLE', [p[1], p[2]], p.lineno(3))
+        p[0] = Node('VARIABLE', [p[1], p[2]], p.lineno(2))
 
 
 def p_struct_var_declaration(p):
@@ -219,6 +328,14 @@ def p_struct_var_declaration(p):
         p[0] = Node('STRUCT_VAR', [Node('TYPE', [p[1]]), p[2], p[4]], p.lineno(1))
     else:
         p[0] = Node('STRUCT_VAR', [Node('TYPE', [p[1]]), p[2], p[4]], p.lineno(1))
+
+
+def p_var_declaration_error(p):
+    '''
+    var_declaration : datatype id EQUALS error
+                    | ID id EQUALS error
+    '''
+    error(p.lexer.lineno, 'Unexpected symbol \'%s\'. Expected expression' % p[4].value)
 
 
 ###### ASSIGNMENT ######
@@ -244,6 +361,21 @@ def p_struct_assign(p):
 def p_array_assign(p):
     'assign : id LBRACKET expr RBRACKET EQUALS expr'
     p[0] = Node('ASSIGN', [p[1], p[3], p[6]])
+
+
+def p_assign_error(p):
+    '''
+    assign : id LBRACKET expr RBRACKET EQUALS error
+           | id EQUALS error
+           | id DOT ID EQUALS error
+    '''
+    if str(p.slice[6]) == 'error':
+        err_val = p[6].value
+    elif str(p.slice[3]) == 'error':
+        err_val = p[3].value
+    else:
+        err_val = p[5].value
+    error(p.lexer.lineno, 'Unexpected symbol \'%s\'. Expected expression' % err_val)
 
 
 def p_return(p):
@@ -337,6 +469,29 @@ def p_bitwise_operation(p):
         p[0] = Node('BOR', [p[1], p[3]], p.lineno(1))
 
 
+def p_operation_error(p):
+    '''
+    expr : expr PLUS error
+         | expr MINUS error
+         | expr MUL error
+         | expr DIVIDE error
+         | expr INTDIVIDE error
+         | expr MODULO error
+         | expr POW error
+         | expr LE error
+         | expr GE error
+         | expr LT error
+         | expr GT error
+         | expr EQ error
+         | expr NE error
+         | expr BAND error
+         | expr BOR error
+         | expr LAND error
+         | expr LOR error
+    '''
+    error(p.lexer.lineno, 'Unexpected symbol \'%s\'. Expected expression' % p[3].value)
+
+
 def p_literals(p):
     '''
     expr : id
@@ -352,6 +507,18 @@ def p_literals(p):
         p[0] = p[1]
     else:
         p[0] = p[2]
+
+
+def p_parentheses_expr_error(p):
+    '''
+    expr : LPAREN error
+         | LPAREN expr error
+    '''
+    pos = p.lexer.lineno
+    if str(p.slice[2]) == 'error':
+        error(pos, 'Unexpected symbol \'%s\'. Expected expression' % p[2].value)
+    else:
+        error(pos, 'Unexpected symbol \'%s\'. Expected \')\'' % p[3].value)
 
 
 def p_const_int(p):
@@ -399,8 +566,20 @@ def p_array_init(p):
 
 
 def p_array_size(p):
-    '''array_size : LBRACKET INTEGER RBRACKET'''
+    'array_size : LBRACKET INTEGER RBRACKET'
     p[0] = p[2]
+
+
+def p_array_size_error(p):
+    '''
+    array_size : LBRACKET error
+               | LBRACKET INTEGER error
+    '''
+    pos = p.lexer.lineno
+    if str(p.slice[2]) == 'error':
+        error(pos, 'Unexpected symbol \'%s\'. Expected array index' % p[2].value)
+    else:
+        error(pos, 'Unexpected symbol \'%s\'. Expected \']\'' % p[3].value)
 
 
 def p_index(p):
@@ -408,9 +587,26 @@ def p_index(p):
     p[0] = Node('ARRAY_ELEMENT', [p[1], p[3]], p.lineno(1))
 
 
+def p_index_error(p):
+    '''
+    expr : id LBRACKET error
+         | id LBRACKET expr error
+    '''
+    pos = p.lexer.lineno
+    if str(p.slice[3]) == 'error':
+        error(pos, 'Unexpected symbol \'%s\'. Expected array index' % p[3].value)
+    else:
+        error(pos, 'Unexpected symbol \'%s\'. Expected \']\'' % p[4].value)
+
+
 def p_struct_field(p):
     'expr : id DOT ID'
     p[0] = Node('STRUCT_FIELD', [p[1], p[3]])
+
+
+def p_struct_field_error(p):
+    'expr : id DOT error'
+    error(p.lexer.lineno, 'Unexpected symbol \'%s\'. Expected structure field' % p[3].value)
 
 
 def p_goto(p):
@@ -420,7 +616,7 @@ def p_goto(p):
 
 def p_goto_error(p):
     'goto : GOTO error'
-    error(1, 'Unexpected symbol \'%s\'. Expected goto mark' % p[2].value)
+    error(p.lexer.lineno, 'Unexpected symbol \'%s\'. Expected goto mark' % p[2].value)
 
 
 def p_goto_mark(p):
@@ -440,9 +636,9 @@ def p_id(p):
 
 def p_error(p):
     if p:
-        error(p.lineno, "Unexpected symbol '%s' in p_error" % p.value)
+        pass
     else:
-        error("End of file", "Syntax error. No more input.")
+        error("End of file", "Probably there will be ',' or closing bracket")
 
 
 # Create parser object
