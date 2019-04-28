@@ -249,14 +249,14 @@ def p_func_params(p):
 
 def p_func_params_error(p):
     '''
-    func_params : func_params error
+    func_params : func_params error param
                 | func_params COMMA error
     '''
     pos = p.lexer.lineno
-    if len(p) == 3:
+    if str(p.slice[2]) == 'error':
         error(pos, 'Unexpected symbol \'%s\'. Expected \',\' or closing bracket' % p[2].value)
     else:
-        error(pos, 'Unexpected symbol \'%s\'. Expected parameter' % p[3].value)
+        error(pos, 'Unexpected symbol \'%s\'. Expected data type' % p[3].value)
 
 
 def p_param_declaration(p):
@@ -353,14 +353,14 @@ def p_struct_assign(p):
            | id DOT ID EQUALS expr
     '''
     if not p[2] == '.':
-        p[0] = Node('ASSIGN', [p[1], p[3]])
+        p[0] = Node('ASSIGN', [p[1], p[3]], p.lieno(2))
     else:
-        p[0] = Node('ASSIGN', [p[1], p[3], p[5]])
+        p[0] = Node('ASSIGN', [p[1], Node('FIELD', [p[3]]), p[5]], p.lineno(2))
 
 
 def p_array_assign(p):
     'assign : id LBRACKET expr RBRACKET EQUALS expr'
-    p[0] = Node('ASSIGN', [p[1], p[3], p[6]])
+    p[0] = Node('ASSIGN', [p[1], p[3], p[6]], p.lineno(2))
 
 
 def p_assign_error(p):
@@ -369,12 +369,12 @@ def p_assign_error(p):
            | id EQUALS error
            | id DOT ID EQUALS error
     '''
-    if str(p.slice[6]) == 'error':
-        err_val = p[6].value
-    elif str(p.slice[3]) == 'error':
+    if str(p.slice[3]) == 'error':
         err_val = p[3].value
-    else:
+    elif str(p.slice[5]) == 'error':
         err_val = p[5].value
+    else:
+        err_val = p[6].value
     error(p.lexer.lineno, 'Unexpected symbol \'%s\'. Expected expression' % err_val)
 
 
@@ -601,7 +601,7 @@ def p_index_error(p):
 
 def p_struct_field(p):
     'expr : id DOT ID'
-    p[0] = Node('STRUCT_FIELD', [p[1], p[3]])
+    p[0] = Node('STRUCT_FIELD', [p[1], Node('FIELD', [p[3]])])
 
 
 def p_struct_field_error(p):

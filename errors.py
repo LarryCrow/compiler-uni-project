@@ -68,7 +68,7 @@ def find_errors(ast, inside_func=False, inside_loop=False):
             elif node.type == 'STRUCTURE':
                 if inside_func:
                     error(node.row_pos, 'Structure can\'t be declared inside function')
-                declare_structure(node)
+                define_structure(node)
             elif node.type == 'ARRAY':
                 declare_array(node)
             elif node.type == 'IF' or node.type == 'IF_ELSE' or node.type == 'WHILE' or node.type == 'DO_WHILE':
@@ -120,7 +120,7 @@ def declare_variable(variable_node):
         if var_type == r_side_type or r_side_type == 'null':
             _cur_scope.add_variable(var_name, var_type)
         else:
-            error(variable_node.row_pos, '\'%s\' value can\'t be assigned to \'%s\' variable' % (r_side_type, var_type))
+            error(variable_node.row_pos, 'Value can\'t be assigned to \'%s\' variable' % var_type)
     else:
         _cur_scope.add_variable(var_name, var_type)
 
@@ -140,10 +140,10 @@ def declare_function(function_node):
         return None
     params = get_function_params(function_node.parts[2])
     _cur_scope.add_variable(func_name, func_type, params)
-    return params
+    return params.copy()
 
 
-def declare_structure(structure_node):
+def define_structure(structure_node):
     """
     Declare a structure
     :param structure_node: A Node object with a structure declaration rule
@@ -278,13 +278,13 @@ def assign_to_array(var, index, value):
         return
     value_type = get_value_type(value)
     if not var['type'] == value_type:
-        error(value.row_pos, '\'%s\' value can\'t be assigned in to \'%s\' variable' % (value_type, var['type']))
+        error(value.row_pos, 'Value can\'t be assigned in to \'%s\' variable' % var['type'])
 
 
 def assign_to_var(var, value):
     value_type = get_value_type(value)
     if not var['type'] == value_type:
-        error(value.row_pos, '\'%s\' value can\'t be assigned in to \'%s\' variable' % (value_type, var['type']))
+        error(value.row_pos, 'Value can\'t be assigned in to \'%s\' variable' % var['type'])
 
 
 def assign_to_structure(assignment_node):
@@ -306,10 +306,9 @@ def assign_to_structure(assignment_node):
         else:
             value_type = get_value_type(assignment_node.parts[1])
             if not struct['name'] == value_type:
-                error(assignment_node.row_pos, '\'%s\' value can\'t be assigned in to \'%s\' variable' %
-                      (value_type, struct['name']))
+                error(assignment_node.row_pos, 'Value can\'t be assigned in to \'%s\' variable' % struct['name'])
     else:
-        str_field = assignment_node.parts[1]
+        str_field = assignment_node.parts[1].parts[0]
         if str_field not in list(map(lambda x: x['name'], struct['options'])):
             error(assignment_node.row_pos, 'Field \'%s\' does not exist in \'%s\' structure' %
                   (str_field, struct['name']))
@@ -317,8 +316,7 @@ def assign_to_structure(assignment_node):
             str_field_type = get_structure_field_type(str_field, struct)
             right_side_type = get_value_type(assignment_node.parts[2])
             if not str_field_type == right_side_type:
-                error(assignment_node.row_pos, '\'%s\' value can\'t be assigned in to \'%s\' field' %
-                      (right_side_type, str_field_type))
+                error(assignment_node.row_pos, 'Value can\'t be assigned in to \'%s\' field' % str_field_type)
 
 
 def check_function_call(func_node):
@@ -328,7 +326,7 @@ def check_function_call(func_node):
     :return:
     """
     global _cur_scope
-    func_name = func_node.parts[0]
+    func_name = func_node.parts[0].parts[0]
     func_args = func_node.parts[1].parts
     func = _cur_scope.is_variable_exist(func_name)
     if func is None:
@@ -394,7 +392,7 @@ def check_function_returns(func_type, body_node, func_level=True):
 def check_structure_field(str_node):
     global _cur_scope
     str_var = str_node.parts[0].parts[0]
-    str_field = str_node.parts[1]
+    str_field = str_node.parts[1].parts[0]
     is_var_exist = _cur_scope.is_variable_exist(str_var)
     if is_var_exist is None:
         error(str_node.row_pos, 'Variable \'%s\' does not exist' % str_var)
