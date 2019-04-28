@@ -117,7 +117,7 @@ def p_loop_error(p):
         if str(p.slice[2]) == 'error':
             error(pos, 'Unexpected symbol \'%s\'. Expected conditional expression' % p[2].value)
         else:
-            error(pos, 'Unexpected symbol \'%s\'. Expected \'{\'' % p[3].value)
+            error(pos, 'Unexpected symbol \'%s\'. Expected \'}\'' % p[3].value)
     else:
         if str(p.slice[2]) == 'error':
             error(pos, 'Unexpected symbol \'%s\'. Expected \'{\'' % p[2].value)
