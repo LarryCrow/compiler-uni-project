@@ -349,7 +349,7 @@ def p_var_declaration_error(p):
 def p_var_assign(p):
     'assign : id EQUALS expr'
     if len(p) == 4:
-        p[0] = Node('ASSIGN', [p[1], p[3]], p.lineno(1))
+        p[0] = Node('ASSIGN', [p[1], p[3]], p.lineno(2))
 
 
 def p_struct_assign(p):
@@ -641,7 +641,7 @@ def p_id(p):
 
 def p_error(p):
     if p:
-        pass
+        error('kl', 'klj')
     else:
         error("End of file", "Probably there will be ',' or closing bracket")
 

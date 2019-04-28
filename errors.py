@@ -213,7 +213,7 @@ def declare_structure_variable(str_var_node):
         return
     structure = _cur_scope.is_variable_exist(var_type)
     if structure is None:
-        error(str_var_node.pow_row, 'Structure \'%s\' does not exist' % var_type)
+        error(str_var_node.row_pos, 'Structure \'%s\' does not exist' % var_type)
         return
     if len(str_var_node.parts) > 2:
         if str_var_node.parts[2].type == 'ARGUMENTS':
@@ -434,7 +434,7 @@ def check_conditional_or_loop(node):
     expr_type = get_value_type(cond_expr)
     if not expr_type == 'bool':
         error(node.row_pos, 'Conditional expression should has a \'bool\' type')
-    
+
 
 def get_value_type(value_node):
     """
