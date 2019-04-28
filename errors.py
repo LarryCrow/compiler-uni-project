@@ -82,9 +82,9 @@ def find_errors(ast, inside_func=False, inside_loop=False):
                     find_errors(node.parts[1], inside_func=inside_func, inside_loop=inside_loop)
                     find_errors(node.parts[2], inside_func=inside_func, inside_loop=inside_loop)
                 elif node.type == 'WHILE':
-                    find_errors(node, inside_func=inside_func, inside_loop=True)
+                    find_errors(node.parts[1], inside_func=inside_func, inside_loop=True)
                 else:
-                    find_errors(node, inside_func=inside_func, inside_loop=True)
+                    find_errors(node.parts[0], inside_func=inside_func, inside_loop=True)
                 already_called = True
                 _cur_scope = new_scope.scope
             elif node.type == 'BREAK' or node.type == 'CONTINUE':

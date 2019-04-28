@@ -66,7 +66,7 @@ def p_stmt(p):
     '''
     statement : expr SEMI
               | func_declaration
-              | struct_declaration
+              | struct_definition
               | while
               | goto_mark
               | if-else
@@ -167,7 +167,7 @@ def p_if_else_error(p):
 
 
 def p_struct_definition(p):
-    'struct_declaration : STRUCTURE id struct_body'
+    'struct_definition : STRUCTURE id struct_body'
     p[0] = Node('STRUCTURE', [p[2], p[3]], p.lineno(1))
 
 
