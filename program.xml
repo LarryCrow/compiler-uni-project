@@ -1,0 +1,8 @@
+<?xml version="1.0" ?>
+<SCOPE>
+	<VARIABLE>
+		<TYPE>int</TYPE>
+		<ID>a</ID>
+		<INT>1</INT>
+	</VARIABLE>
+</SCOPE>
