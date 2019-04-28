@@ -113,7 +113,7 @@ def p_loop_error(p):
           | DO basic_block WHILE expr error
     '''
     pos = p.lexer.lineno
-    if p[1] == 'WHILE':
+    if p[1] == 'while':
         if str(p.slice[2]) == 'error':
             error(pos, 'Unexpected symbol \'%s\'. Expected conditional expression' % p[2].value)
         else:
@@ -641,7 +641,8 @@ def p_id(p):
 
 def p_error(p):
     if p:
-        error('kl', 'klj')
+        # error('kl', 'klj')
+        pass
     else:
         error("End of file", "Probably there will be ',' or closing bracket")
 
