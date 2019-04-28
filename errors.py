@@ -85,7 +85,6 @@ def find_errors(ast, inside_func=False, inside_loop=False):
                     find_errors(node.parts[1], inside_func=inside_func, inside_loop=True)
                 else:
                     find_errors(node.parts[0], inside_func=inside_func, inside_loop=True)
-                already_called = True
                 _cur_scope = new_scope.scope
             elif node.type == 'BREAK' or node.type == 'CONTINUE':
                 if not inside_loop:
@@ -260,7 +259,7 @@ def check_assignment(assignment_node):
         return
     if var['type'] == 'struct':
         error(assignment_node.row_pos, 'Unexpected symbol \'=\'. Expected a variable name')
-    if var['options'] is None and var['type'] in ['int', 'double', 'bool', 'string']:
+    if not hasattr(var, 'type') and var['type'] in ['int', 'double', 'bool', 'string']:
         assign_to_var(var, assignment_node.parts[1])
     elif var['options'] is not None and 'size' in var['options']:
         if not len(assignment_node.parts) == 3:
@@ -355,29 +354,31 @@ def check_function_returns(func_type, body_node, func_level=True):
     :param returns_list: List with all 'return' and their scopes
     :return:
     """
+
     for part in body_node.parts:
-        if part.type == 'WHILE' or part.type == 'IF':
-            check_function_returns(func_type, part.parts[1], False)
-        elif part.type == 'DO_WHILE':
-            check_function_returns(func_type, part.parts[0], False)
-        elif part.type == 'IF_ELSE':
-            check_function_returns(func_type, part.parts[1], False)
-            check_function_returns(func_type, part.parts[2], False)
-        elif part.type == 'RETURN':
-            if len(part.parts) > 0:
-                return_type = get_value_type(part.parts[0])
-                if func_type == return_type and not func_type == 'void':
-                    return True
+        if hasattr(part, 'type'):
+            if part.type == 'WHILE' or part.type == 'IF':
+                check_function_returns(func_type, part.parts[1], False)
+            elif part.type == 'DO_WHILE':
+                check_function_returns(func_type, part.parts[0], False)
+            elif part.type == 'IF_ELSE':
+                check_function_returns(func_type, part.parts[1], False)
+                check_function_returns(func_type, part.parts[2], False)
+            elif part.type == 'RETURN':
+                if len(part.parts) > 0:
+                    return_type = get_value_type(part.parts[0])
+                    if func_type == return_type and not func_type == 'void':
+                        return True
+                    else:
+                        error(part.row_pos,
+                              'The return value "%s" is different from what is declared in the function "%s"' % (
+                                return_type, func_type))
+                        return False
                 else:
-                    error(part.row_pos,
-                          'The return value "%s" is different from what is declared in the function "%s"' % (
-                            return_type, func_type))
-                    return False
-            else:
-                if func_type.lower() == 'void':
-                    return True
-                else:
-                    error(part.row_pos, 'Function have to return a "%s" value' % func_type)
+                    if func_type.lower() == 'void':
+                        return True
+                    else:
+                        error(part.row_pos, 'Function have to return a "%s" value' % func_type)
     if not func_type == 'void' and func_level:
         if func_type == 'int' or func_type == 'double':
             possible_value = '0'

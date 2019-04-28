@@ -209,15 +209,16 @@ def p_func_declaration(p):
 def p_func_declaration_error(p):
     '''
     func_declaration : FUNCTION error
-                     | FUNCTION datatype error
-                     | FUNCTION datatype id error
+                     | FUNCTION datatype error func_params_paren basic_block
+                     | FUNCTION datatype id error basic_block
+                     | FUNCTION datatype id func_params_paren error
     '''
     pos = p.lexer.lineno
-    if len(p) == 3:
+    if str(p.slice[2]) == 'error':
         error(pos, 'Unexpected symbol \'%s\'. Expected return type' % p[2].value)
-    elif len(p) == 4:
+    elif str(p.slice[3]) == 'error':
         error(pos, 'Unexpected symbol \'%s\'. Expected function name' % p[3].value)
-    elif len(p) == 5:
+    elif str(p.slice[4]) == 'error':
         error(pos, 'Unexpected symbol \'%s\'. Expected return function params' % p[4].value)
     else:
         error(pos, 'Unexpected symbol \'%s\'. Expected \'{\'' % p[5].value)
@@ -279,6 +280,11 @@ def p_arguments_braced(p):
     p[0] = p[2]
 
 
+def p_argumantes_braced(p):
+    'args_braced : LBRACE args error'
+    error(p.lexer.lineno, 'Unexpected symbol \'%s\'. Expected \',\' or closing bracket' % p[3].value)
+
+
 def p_arguments(p):
     '''
     args :
@@ -295,8 +301,7 @@ def p_arguments(p):
 
 def p_arguments_error(p):
     '''
-    args : args error
-         | args COMMA error
+    args : args COMMA error
     '''
     pos = p.lexer.lineno
     if len(p) == 3:
@@ -343,7 +348,7 @@ def p_var_declaration_error(p):
 
 def p_var_assign(p):
     'assign : id EQUALS expr'
-    if len(p) == 5:
+    if len(p) == 4:
         p[0] = Node('ASSIGN', [p[1], p[3]], p.lineno(1))
 
 
@@ -555,12 +560,12 @@ def p_array_init(p):
     '''
     if len(p) == 4:
         if hasattr(p[1], 'type'):
-            p[0] = Node('ARRAY', [p[1], p[2], Node('SIZE', [p[3]])], p.lineno(1))
+            p[0] = Node('ARRAY', [p[1], p[2], Node('SIZE', [p[3]])], p.lexer.lineno)
         else:
             p[0] = Node('ARRAY', [Node('TYPE', [p[1]]), p[2], Node('SIZE', [p[3]])], p.lineno(1))
     else:
         if hasattr(p[1], 'type'):
-            p[0] = Node('ARRAY', [p[1], p[2], Node('SIZE', [p[3]]), p[5]], p.lineno(1))
+            p[0] = Node('ARRAY', [p[1], p[2], Node('SIZE', [p[3]]), p[5]], p.lexer.lineno)
         else:
             p[0] = Node('ARRAY', [Node('TYPE',[p[1]]), p[2], Node('SIZE', [p[3]]), p[5]], p.lineno(1))
 
@@ -601,7 +606,7 @@ def p_index_error(p):
 
 def p_struct_field(p):
     'expr : id DOT ID'
-    p[0] = Node('STRUCT_FIELD', [p[1], Node('FIELD', [p[3]])])
+    p[0] = Node('STRUCT_FIELD', [p[1], Node('FIELD', [p[3]])], p.lineno(2))
 
 
 def p_struct_field_error(p):
