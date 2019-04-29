@@ -45,8 +45,8 @@ def prettify(elem):
 pr = create_params_parser()
 namespace = pr.parse_args(sys.argv[1:])
 lexer = lex.lex()
-file_name = namespace.parameters
-is_xml = bool(namespace.xml)
+file_name = namespace.parameters if namespace.parameters else 'sample.doh'
+is_xml = bool(namespace.xml) if namespace.xml else False
 with open(file_name, 'r', encoding="UTF-8") as r:
     data = r.read()
     lexer.start_row_pos = 0
@@ -58,7 +58,7 @@ with open(file_name, 'r', encoding="UTF-8") as r:
         program = parser.parse()
         if errors_reported() == 0:
             find_semantic_errors(program)
-            if errors_reported() == 0:
+            if errors_reported() == 0 and not data == '':
                 if is_xml:
                     res = convert_to_xml(program)
                     xml_file = open('program.xml', 'w')

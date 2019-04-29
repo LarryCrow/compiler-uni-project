@@ -2,6 +2,7 @@ sample.doh
 result.txt
 parser.out
 parsetab.py
+program.xml
 
 # IDEs and editors
 /.idea

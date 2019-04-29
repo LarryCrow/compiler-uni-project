@@ -176,6 +176,20 @@ def p_struct_declaration_body(p):
     p[0] = p[2]
 
 
+def p_struct_declarartion_body_error(p):
+    '''struct_body : LBRACE struct_fields error
+                   | error struct_fields RBRACE'''
+    if str(p.slice[1]) == 'error':
+        error(p.lexer.lineno, 'Unexpected symbol \'%s\'. Expected \'{\'' % p[1].value)
+    else:
+        error(p.lexer.lineno, 'Unexpected symbol \'%s\'. Expected \',\' or closing bracket' % p[3].value)
+
+
+# def p_struct_declarartion_body_error(p):
+#     'struct_body : LBRACE struct_fields error'
+#     error(p.lexer.lineno, 'Unexpected symbol \'%s\'. Expected \',\' or closing bracket' % p[3].value)
+
+
 def p_struct_fields(p):
     '''
     struct_fields : param
@@ -189,14 +203,14 @@ def p_struct_fields(p):
 
 def p_struct_fields_error(p):
     '''
-    struct_fields : struct_fields error
-                  | struct_fields COMMA error
+    struct_fields : struct_fields COMMA error
     '''
     pos = p.lexer.lineno
     if len(p) == 3:
         error(pos, 'Unexpected symbol \'%s\'. Expected \',\' or closing bracket' % p[2].value)
     else:
         error(pos, 'Unexpected symbol \'%s\'. Expected field' % p[3].value)
+
 
 ###### FUNCTION DECLARATION ######
 
