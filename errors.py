@@ -41,7 +41,6 @@ def find_errors(ast, inside_func=False, inside_loop=False):
     global _cur_scope
     for node in ast.parts:
         if hasattr(node, 'type'):
-            already_called = False
             if node.type == 'VARIABLE':
                 declare_variable(node)
             elif node.type == 'STRUCT_VAR':
@@ -57,7 +56,6 @@ def find_errors(ast, inside_func=False, inside_loop=False):
                     _scopes.append(f_scope)
                     _cur_scope = f_scope
                     find_errors(node.parts[3], inside_func=True, inside_loop=inside_loop)
-                    already_called = True
                     check_function_returns(node.parts[0].parts[0], node.parts[3])
                     _cur_scope = f_scope.scope
             elif node.type == 'RETURN':
@@ -138,6 +136,13 @@ def declare_function(function_node):
         error(function_node.row_pos, 'Function \'%s\' already exists')
         return None
     params = get_function_params(function_node.parts[2])
+    param_types = list(map(lambda x: x['type'], params))
+    for param_type in param_types:
+        if not param_type in ['int', 'bool', 'double', 'string']:
+            is_structure_type_exist = _cur_scope.is_variable_exist(param_type.title(), True)
+            if is_structure_type_exist is None:
+                error(function_node.row_pos, 'Structure \'%s\' is not defined above by code' % param_type)
+                return None
     _cur_scope.add_variable(func_name, func_type, params)
     return params.copy()
 
@@ -259,7 +264,7 @@ def check_assignment(assignment_node):
         return
     if var['type'] == 'struct':
         error(assignment_node.row_pos, 'Unexpected symbol \'=\'. Expected a variable name')
-    if not hasattr(var, 'type') and var['type'] in ['int', 'double', 'bool', 'string']:
+    if var['options'] == None and var['type'] in ['int', 'double', 'bool', 'string']:
         assign_to_var(var, assignment_node.parts[1])
     elif var['options'] is not None and 'size' in var['options']:
         if not len(assignment_node.parts) == 3:
@@ -329,7 +334,7 @@ def check_function_call(func_node):
     func_args = func_node.parts[1].parts
     func = _cur_scope.is_variable_exist(func_name)
     if func is None:
-        error(func_node.row_pos, 'Function \'%s\' does not exist' % func_name)
+        error(func_node.row_pos, 'Function \'%s\' is not declared above by code' % func_name)
         return
     args_types = get_function_arguments_types(func_args)
     func_params = func['options']

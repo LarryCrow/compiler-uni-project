@@ -9,6 +9,7 @@ program.xml
 .project
 .classpath
 .vs/
+.vscode/
 .c9/
 *.launch
 .settings/

@@ -185,11 +185,6 @@ def p_struct_declarartion_body_error(p):
         error(p.lexer.lineno, 'Unexpected symbol \'%s\'. Expected \',\' or closing bracket' % p[3].value)
 
 
-# def p_struct_declarartion_body_error(p):
-#     'struct_body : LBRACE struct_fields error'
-#     error(p.lexer.lineno, 'Unexpected symbol \'%s\'. Expected \',\' or closing bracket' % p[3].value)
-
-
 def p_struct_fields(p):
     '''
     struct_fields : param
@@ -275,12 +270,15 @@ def p_func_params_error(p):
 
 
 def p_param_declaration(p):
-    'param : DATATYPE ID'
+    """
+    param : ID ID
+          | DATATYPE ID
+    """
     p[0] = Node(p[1], [p[2]], p.lineno(1))
 
 
 def p_param_declaration_error(p):
-    'param : DATATYPE error'
+    'param : ID error'
     error(p.lexer.lineno, 'Unexpected symbol \'%s\'. Expected variable name' % p[2].value)
 
 
