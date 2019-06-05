@@ -3,6 +3,7 @@ result.txt
 parser.out
 parsetab.py
 program.xml
+code.ll
 
 # IDEs and editors
 /.idea
