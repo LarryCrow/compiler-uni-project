@@ -30,7 +30,7 @@ def create_llvm(ast):
                 funcs.append(decl_func_llvm(node))
             if node.type == 'STRUCTURE':
                 structure.append(decl_struct_llvm(node)) # TODO вот сюда нужно вставить функцию, которая будет возвращать код реализации структуры
-                code += decl_struct_llvm(node)
+                code += decl_struct_llvm(node) + '\n'
     #res = str(funcs) + code
     return code
 
