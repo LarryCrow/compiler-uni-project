@@ -30,20 +30,28 @@ def create_llvm(ast):
                 funcs.append(decl_func_llvm(node))
             if node.type == 'STRUCTURE':
                 structure.append() # TODO вот сюда нужно вставить функцию, которая будет возвращать код реализации структуры
-    res = funcs + code
+    functions = '\n'.join(funcs)
+    res = functions + code
     return res
 
 
 def decl_func_llvm(node):
 
-    def get_func_params(params):
-        return list(map(lambda x: {'type': x.type, 'name': x.parts[0]}, params))
+    def get_func_llvm_params(params):
+        return list(map(lambda x: {'type': Datatype[x.type].value,'name': x.parts[0]}, params))
 
     global binding
     func_type = node.parts[0].parts[0]
     func_name = node.parts[1].parts[0]
-    func_params = get_func_params(node.parts[2].parts)
-    return ''
+    func_params = get_func_llvm_params(node.parts[2].parts)
+    llvm_params = []
+    for p in func_params:
+        llvm_params.append(f'{p["type"]} %{p["name"]}') 
+    llvm_type = Datatype[func_type].value
+    func_title = f'define {llvm_type} @{func_name}({", ".join(llvm_params)}){{\n'
+    func_code = create_llvm(node.parts[3])
+    code = func_title + func_code + '\n}'
+    return code
 
 
 def decl_var_llvm(node):
