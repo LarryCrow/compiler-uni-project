@@ -28,6 +28,7 @@ def create_llvm(ast):
     code = ''
     funcs = []
     structure = []
+    arrays = []
     for node in ast.parts:
         if hasattr(node, 'type'):
             if node.type == 'VARIABLE':
@@ -47,6 +48,10 @@ def create_llvm(ast):
                 code = code + llvm_goto(node)
             if node.type == 'GOTO_MARK':
                 code = code + llvm_goto_mark(node)
+            if node.type == 'ARRAY':
+                arrays.append(decl_array_llvm(node))
+
+
     res = '\n'.join(structure) + '\n'.join(funcs) + code
     return res
 
@@ -56,14 +61,31 @@ def decl_struct_llvm(node):
         return list(map(lambda x: Datatype[x.type].value, params))
 
     global _cur_scope
-    name = node.parts[0].parts[0]
     llvm_params_list = get_struct_llvm_params(node.parts[1].parts)
     llvm_params_string = ', '.join(llvm_params_list)
     code = f'%{node.parts[0].parts[0]} = type {{ {llvm_params_string} }}'
     _cur_scope.add_variable('struct', name, f'%{name}', llvm_params_list)
     return code
 
-
+def decl_array_llvm(node):
+    name_array = get_llvm_var_name()
+    type = Datatype[node.parts[0].parts[0]].value
+    size = node.parts[2].parts[0]
+    _cur_scope.add_variable(f'{type} array', node.parts[1].parts[0], name_array)
+    code = f'{name_array} = alloca [{size} x {type}]\n'
+    try:
+        node.parts[3]
+    except Exception:
+        return code
+    else:
+        elems = list(map(lambda x: x.parts, node.parts[3].parts))
+        elems = list(map(lambda x: x[0], elems))
+        for i in range(len(elems)):
+            name = get_llvm_var_name()
+            str = f'{name} = getelementptr inbounds [{size} x {type}], [{size} x {type}]* {name_array}, i8 0, i8 {i} \n' \
+                f'store {type} {elems[i]}, {type}* {name} \n'
+            code += str
+        return code
 def decl_func_llvm(node):
 
     def get_func_llvm_params(params):
