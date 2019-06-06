@@ -38,26 +38,20 @@ def create_llvm(ast):
                 funcs.append(decl_func_llvm(node))
             if node.type == 'STRUCTURE':
                 structure.append(decl_struct_llvm(node)) # TODO вот сюда нужно вставить функцию, которая будет возвращать код реализации структуры
-                code += decl_struct_llvm(node) + '\n'
-    #res = str(funcs) + code
-    return code
+    res = code + '\n'.join(structure)
+    return res
 
 def decl_struct_llvm(node):
-    global binding
+
+    def get_struct_llvm_params(params):
+        return list(map(lambda x: Datatype[x.type].value, params))
+
+    global _cur_scope
     name = get_llvm_var_name()
-    binding[node.parts[0].parts[0]] = name
-    fields_types = []
-    fields = '{'
-    for i in range(len(node.parts[1].parts)):
-        fields_types.append(node.parts[1].parts[i].type)
-    for j in range(len(fields_types)):
-        dtype = Datatype[fields_types[j]].value
-        if (j == len(fields_types)-1):
-            fields += dtype
-        else:
-            fields += dtype + ', '
-    fields += '}'
-    code = f'{name} = type {fields}'
+    _cur_scope.add_variable('struct', node.parts[0].parts[0], '')
+    llvm_params_list = get_struct_llvm_params(node.parts[1].parts)
+    llvm_params_string = ', '.join(llvm_params_list)
+    code = f'%{node.parts[0].parts[0]} = type {{ {llvm_params_string} }}'
     return code
 
 
