@@ -37,7 +37,11 @@ def create_llvm(ast):
             if node.type == 'FUNCTION':
                 funcs.append(decl_func_llvm(node))
             if node.type == 'STRUCTURE':
-                structure.append(decl_struct_llvm(node)) # TODO вот сюда нужно вставить функцию, которая будет возвращать код реализации структуры
+                structure.append(decl_struct_llvm(node))
+            if node.type == 'GOTO':
+                code = code + llvm_goto(node)
+            if node.type == 'GOTO_MARK':
+                code = code + llvm_goto_mark(node)
     res = code + '\n'.join(structure)
     return res
 
@@ -104,6 +108,18 @@ def decl_var_llvm(node):
 def assign_llvm(node):
     global binding
     
+
+def llvm_goto(node):
+    global _cur_scope
+    mark_name = node.parts[0].parts[0]
+    return f'br label %{mark_name}\n'
+    print(node)
+
+
+def llvm_goto_mark(node):
+    global _cur_scope
+    mark_name = node.parts[0]
+    return f'{mark_name}:\n'
 
 
 def decl_const(v_type, value):
@@ -206,6 +222,7 @@ def llvm_mul(llvm_type, l_oper, r_oper):
 def llvm_div(llvm_type, l_oper, r_oper):
     llvm_oper = 'sdiv' if llvm_type == 'i32' else 'fdiv'
     return f'{llvm_oper} {llvm_type} {l_oper}, {r_oper}'
+
 
 def llvm_pow(l_oper, r_oper):
     return f'call double @llvm.powi.f64(double {l_oper}, i32 {r_oper})'
