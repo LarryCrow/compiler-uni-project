@@ -1,7 +1,9 @@
 from enum import Enum
+from models.llvm_scope import Scope_llvm
 iter_name = 1
-binding = {}
 strings = []
+_scopes = []
+_cur_scope = None
 
 class Datatype(Enum):
     int = 'i32'
@@ -12,6 +14,10 @@ class Datatype(Enum):
 # Функция, которая вызывается из main.py
 # Возвращает сгенерированный код
 def generate_code(ast):
+    global _scopes
+    global _cur_scope
+    _cur_scope = Scope_llvm()
+    _scopes.append(_cur_scope)
     commands = create_llvm(ast)
     return commands
 
@@ -26,6 +32,8 @@ def create_llvm(ast):
         if hasattr(node, 'type'):
             if node.type == 'VARIABLE':
                 code = code + decl_var_llvm(node)
+            if node.type == 'ASSIGN':
+                code = code + assign_llvm(node)
             if node.type == 'FUNCTION':
                 funcs.append(decl_func_llvm(node))
             if node.type == 'STRUCTURE':
@@ -38,37 +46,52 @@ def create_llvm(ast):
 def decl_func_llvm(node):
 
     def get_func_llvm_params(params):
-        return list(map(lambda x: {'type': Datatype[x.type].value,'name': x.parts[0]}, params))
+        return list(map(lambda x: {'type': Datatype[x.type].value,'name': x.parts[0], 'llvm_name': get_llvm_var_name()}, params))
 
-    global binding
+    def add_params_in_scope(params):
+        global _cur_scope
+        for p in params:
+            _cur_scope.add_variable(p['type'], p['name'], p['llvm_name'])
+
+    global _cur_scope
+    global _scopes
+    f = _cur_scope
+    _cur_scope = Scope_llvm(f)
+    _scopes.append(_cur_scope)
     func_type = node.parts[0].parts[0]
     func_name = node.parts[1].parts[0]
     func_params = get_func_llvm_params(node.parts[2].parts)
     llvm_params = []
     for p in func_params:
-        llvm_params.append(f'{p["type"]} %{p["name"]}') 
+        llvm_params.append(f'{p["type"]} {p["llvm_name"]}')
+    add_params_in_scope(func_params)
     llvm_type = Datatype[func_type].value
-    func_title = f'define {llvm_type} @{func_name}({", ".join(llvm_params)}){{\n'
+    func_title = f'define {llvm_type} @{func_name}({", ".join(llvm_params)}) {{\n'
     func_code = create_llvm(node.parts[3])
-    code = func_title + func_code + '\n}'
+    code = func_title + func_code + '}\n'
     return code
 
 
 def decl_var_llvm(node):
-    global binding
+    global _cur_scope
     value_type = node.parts[2].type.lower()
     if value_type in ['int', 'string', 'double', 'bool']:
         llvm_name, code = decl_const(node.parts[0].parts[0].lower(), node.parts[2].parts[0])
-        binding[node.parts[1].parts[0]] = llvm_name
+        _cur_scope.add_variable(node.parts[0].parts[0], node.parts[1].parts[0], llvm_name)
         return code
     elif value_type == 'id':
         llvm_name, code = decl_var_id(node.parts[0].parts[0].lower(), node.parts[2].parts[0])
-        binding[node.parts[1].parts[0]] = llvm_name
+        _cur_scope.add_variable(node.parts[0].parts[0], node.parts[1].parts[0], llvm_name)
         return code
     else:
         llvm_name, code = math_operations(node.parts[0].parts[0].lower(), node.parts[2])
-        binding[node.parts[1].parts[0]] = llvm_name
+        _cur_scope.add_variable(node.parts[0].parts[0], node.parts[1].parts[0], llvm_name)
         return code
+
+
+def assign_llvm(node):
+    global binding
+    
 
 
 def decl_const(v_type, value):
@@ -84,8 +107,8 @@ def decl_const(v_type, value):
 
 
 def decl_var_id(v_type, var_name):
-    global binding
-    llvm_var_load_name = binding[var_name]
+    global _cur_scope
+    llvm_var_load_name = _cur_scope.get_llvm_name(var_name, True)
     name = get_llvm_var_name()
     load_name = get_llvm_var_name()
     if not v_type == 'string':
