@@ -35,6 +35,13 @@ class Scope_llvm:
           return cur_scope.get_llvm_name(name, one_level_search, cur_scope.scope)
       return None
 
+
+  def change_llvm_name(self, name, llvm_name):
+      for el in self.variables:
+          if el['name'] == name:
+              el['llvm_name'] = llvm_name
+              break
+
   def __init__(self, scope=None, variables=None):
       self.scope = scope
       self.variables = variables if variables is not None else []
