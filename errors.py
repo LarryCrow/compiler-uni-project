@@ -3,7 +3,6 @@ from models.scope import Scope
 
 _subscribers = []
 _num_errors = 0
-_values_table = {}
 _scopes = []
 _cur_scope = None
 
@@ -399,7 +398,7 @@ def check_structure_field(str_node):
     global _cur_scope
     str_var = str_node.parts[0].parts[0]
     str_field = str_node.parts[1].parts[0]
-    is_var_exist = _cur_scope.is_variable_exist(str_var)
+    is_var_exist = _cur_scope.is_variable_exist(str_var, True)
     if is_var_exist is None:
         error(str_node.row_pos, 'Variable \'%s\' does not exist' % str_var)
         return
@@ -414,7 +413,7 @@ def check_array_element(arr_elem_node):
     global _cur_scope
     arr_var = arr_elem_node.parts[0].parts[0]
     arr_index = arr_elem_node.parts[1]
-    array = _cur_scope.is_variable_exist(arr_var)
+    array = _cur_scope.is_variable_exist(arr_var, True)
     if array is None:
         error(arr_elem_node.row_pos, 'Array \'%s\' does not exist' % arr_var)
         return
@@ -478,7 +477,7 @@ def get_value_type(value_node):
 
 def get_id_type(id_node):
     global _cur_scope
-    var_id = _cur_scope.is_variable_exist(id_node.parts[0])
+    var_id = _cur_scope.is_variable_exist(id_node.parts[0], True)
     if var_id is None:
         error(id_node.row_pos, 'Variable \'%s\' does not exitst' % id_node.parts[0])
     return var_id['type'] if var_id is not None else None
