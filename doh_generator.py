@@ -37,10 +37,28 @@ def create_llvm(ast):
             if node.type == 'FUNCTION':
                 funcs.append(decl_func_llvm(node))
             if node.type == 'STRUCTURE':
-                structure.append() # TODO вот сюда нужно вставить функцию, которая будет возвращать код реализации структуры
-    functions = '\n'.join(funcs)
-    res = functions + code
-    return res
+                structure.append(decl_struct_llvm(node)) # TODO вот сюда нужно вставить функцию, которая будет возвращать код реализации структуры
+                code += decl_struct_llvm(node) + '\n'
+    #res = str(funcs) + code
+    return code
+
+def decl_struct_llvm(node):
+    global binding
+    name = get_llvm_var_name()
+    binding[node.parts[0].parts[0]] = name
+    fields_types = []
+    fields = '{'
+    for i in range(len(node.parts[1].parts)):
+        fields_types.append(node.parts[1].parts[i].type)
+    for j in range(len(fields_types)):
+        dtype = Datatype[fields_types[j]].value
+        if (j == len(fields_types)-1):
+            fields += dtype
+        else:
+            fields += dtype + ', '
+    fields += '}'
+    code = f'{name} = type {fields}'
+    return code
 
 
 def decl_func_llvm(node):
