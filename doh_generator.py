@@ -36,13 +36,18 @@ def create_llvm(ast):
                 code = code + assign_llvm(node)
             if node.type == 'FUNCTION':
                 funcs.append(decl_func_llvm(node))
+            if node.type == 'FUNCTION_CALL':
+                func_code, var = llvm_func_call(node)
+                code = code + func_code
+            if node.type == 'RETURN':
+                code = code + llvm_return(node)
             if node.type == 'STRUCTURE':
                 structure.append(decl_struct_llvm(node))
             if node.type == 'GOTO':
                 code = code + llvm_goto(node)
             if node.type == 'GOTO_MARK':
                 code = code + llvm_goto_mark(node)
-    res = code + '\n'.join(structure)
+    res = '\n'.join(structure) + '\n'.join(funcs) + code
     return res
 
 def decl_struct_llvm(node):
@@ -51,11 +56,11 @@ def decl_struct_llvm(node):
         return list(map(lambda x: Datatype[x.type].value, params))
 
     global _cur_scope
-    name = get_llvm_var_name()
-    _cur_scope.add_variable('struct', node.parts[0].parts[0], '')
+    name = node.parts[0].parts[0]
     llvm_params_list = get_struct_llvm_params(node.parts[1].parts)
     llvm_params_string = ', '.join(llvm_params_list)
     code = f'%{node.parts[0].parts[0]} = type {{ {llvm_params_string} }}'
+    _cur_scope.add_variable('struct', name, f'%{name}', llvm_params_list)
     return code
 
 
@@ -71,19 +76,21 @@ def decl_func_llvm(node):
 
     global _cur_scope
     global _scopes
-    f = _cur_scope
-    _cur_scope = Scope_llvm(f)
-    _scopes.append(_cur_scope)
     func_type = node.parts[0].parts[0]
     func_name = node.parts[1].parts[0]
     func_params = get_func_llvm_params(node.parts[2].parts)
     llvm_params = []
     for p in func_params:
         llvm_params.append(f'{p["type"]} {p["llvm_name"]}')
-    add_params_in_scope(func_params)
     llvm_type = Datatype[func_type].value
+    _cur_scope.add_variable(llvm_type, func_name, f'@{func_name}', llvm_params)
     func_title = f'define {llvm_type} @{func_name}({", ".join(llvm_params)}) {{\n'
+    f = _cur_scope
+    _cur_scope = Scope_llvm(f)
+    _scopes.append(_cur_scope)
+    add_params_in_scope(func_params)
     func_code = create_llvm(node.parts[3])
+    _cur_scope = _cur_scope.scope
     code = func_title + func_code + '}\n'
     return code
 
@@ -108,6 +115,41 @@ def decl_var_llvm(node):
 def assign_llvm(node):
     global binding
     
+
+def llvm_func_call(node, res_var=None):
+    
+    def get_args(args):
+        global _cur_scope
+        res = []
+        res_code = ''
+        for arg in args:
+            code = ''
+            a_type = arg.type.lower()
+            if a_type in ['int', 'string', 'double', 'bool']:
+                val = arg.parts[0]
+            elif a_type == 'id':
+                llvm_var = _cur_scope.get_llvm_var(arg.parts[0])
+                val = llvm_var['llvm_name']
+                a_type = llvm_var['type']
+            res.append(f'{Datatype[a_type].value} {val}')
+            if not code == '':
+                res_code = res_code + code + '\n'
+        return (res, res_code)
+
+    global _cur_scope
+    func_name = node.parts[0].parts[0]
+    func_type = _cur_scope.get_llvm_var(func_name)['type']
+    args, code = get_args(node.parts[1].parts)
+    if res_var is None:
+        res_var = get_llvm_var_name()
+    res = f'{code}\n{res_var} = call {func_type} {func_name}({", ".join(args)})'
+    return(res, res_var)
+
+
+def llvm_return(node):
+    global _cur_scope
+    print(node)
+
 
 def llvm_goto(node):
     global _cur_scope
