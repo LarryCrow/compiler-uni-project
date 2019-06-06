@@ -121,6 +121,11 @@ def decl_var_llvm(node):
     global _cur_scope
     value_type = node.parts[2].type.lower()
     if value_type in ['int', 'string', 'double', 'bool']:
+        # TODO
+        # Вот сюда вернётся строка и название регистра
+        # Название регистра ты пихаешь в _cur_scope
+        # А код добавляешь в массив strings, так как они являются глобальными и нам не нужно их в общий потом добавлять
+        # В этом случае, соответственно, функция вернёт пустую строку
         llvm_name, code = decl_const(node.parts[0].parts[0].lower(), node.parts[2].parts[0])
         _cur_scope.add_variable(node.parts[0].parts[0], node.parts[1].parts[0], llvm_name)
         return code
@@ -198,6 +203,8 @@ def llvm_goto_mark(node):
 
 def decl_const(v_type, value):
     name = get_llvm_var_name()
+    # TODO В общем, вот тут тебе нужно в else состряпать строку и вернуть кортеж
+    # где первый элемент - название переменной в ллвм, второй - код, который получился
     if not v_type == 'string':
         if v_type in ['int', 'double', 'bool']:
             llvm_type = Datatype[v_type].value
