@@ -28,7 +28,6 @@ def create_llvm(ast):
     code = ''
     funcs = []
     structure = []
-    arrays = []
     for node in ast.parts:
         if hasattr(node, 'type'):
             if node.type == 'VARIABLE':
@@ -49,7 +48,7 @@ def create_llvm(ast):
             if node.type == 'GOTO_MARK':
                 code = code + llvm_goto_mark(node)
             if node.type == 'ARRAY':
-                arrays.append(decl_array_llvm(node))
+                code = code + decl_array_llvm(node)
 
 
     res = '\n'.join(structure) + '\n'.join(funcs) + code
@@ -140,7 +139,23 @@ def decl_var_llvm(node):
 
 
 def assign_llvm(node):
-    global binding
+    global _cur_scope
+    var_name = node.parts[0].parts[0]
+    value = node.parts[1]
+    if value.type.lower() in ['int', 'string', 'double', 'bool']:
+        llvm_name, code = decl_const(value.type.lower(), value.parts[0])
+        _cur_scope.change_llvm_name(var_name, llvm_name)
+        return code
+    elif value.type.lower() == 'id':
+        v_type = _cur_scope.get_llvm_var(var_name)['type']
+        llvm_name, code = decl_var_id(v_type, value.parts[0])
+        _cur_scope.change_llvm_name(var_name, llvm_name)
+        return code
+    else:
+        v_type = _cur_scope.get_llvm_var(var_name)['type']
+        llvm_name, code = math_operations(v_type, value)
+        _cur_scope.change_llvm_name(var_name, llvm_name)
+        return code
     
 
 def llvm_func_call(node, res_var=None):
