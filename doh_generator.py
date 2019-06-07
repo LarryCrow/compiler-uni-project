@@ -96,7 +96,7 @@ def decl_array_llvm(node):
     name_array = get_llvm_var_name()
     type = Datatype[node.parts[0].parts[0]].value
     size = node.parts[2].parts[0]
-    _cur_scope.add_variable(f'{type} array', node.parts[1].parts[0], name_array)
+    _cur_scope.add_variable(f'{size} x {type}', node.parts[1].parts[0], name_array, {'size': size})
     code = f'{name_array} = alloca [{size} x {type}]\n'
     try:
         node.parts[3]
@@ -162,10 +162,15 @@ def decl_var_llvm(node):
 def assign_llvm(node):
     global _cur_scope
     var_name = node.parts[0].parts[0]
-    var_type = _cur_scope.get_llvm_var(var_name)['type']
+    var = _cur_scope.get_llvm_var(var_name)
     value = node.parts[1]
-    llvm_name, code = llvm_expression(var_type, value)
-    _cur_scope.change_llvm_name(var_name, llvm_name)
+    if 'x' in var['type']:
+        code = update_array_elem(var, node.parts[1].parts[0], node.parts[2])
+    elif 'struct' in var['type']:
+        pass
+    else:
+        llvm_name, code = llvm_expression(var['type'], value)
+        _cur_scope.change_llvm_name(var_name, llvm_name)
     return code
 
 
@@ -232,8 +237,35 @@ def llvm_func_call(node, res_var=None):
 def llvm_return(node):
     global _cur_scope
     print(node)
-    return ''
+    val_type = node.parts[0].type.lower()
+    if val_type in ['int', 'double', 'string', 'bool']:
+        value = node.parts[0].parts[0]
+        return f'ret {Datatype[val_type].value} {value}\n'
+    elif val_type == 'id':
+        var = node.parts[0].parts[0]
+        llvm_var = _cur_scope.get_llvm_var(var)
+        return f'ret {llvm_var["type"]} {llvm_var["llvm_name"]}\n'
+    else:
+        # TODO Написать функцию для получения типа
+        llvm_name, code = llvm_expression(node.parts[0])
+        
 
+def update_array_elem(array_obj, index, value):
+    global _cur_scope
+    size = int(array_obj['options']['size'])
+    if int(index) >= size:
+        raise NameError('Out of range')
+    name = array_obj['llvm_name']
+    a_type = array_obj['type']
+    ptr = get_llvm_var_name()
+    el_ptr = f'{ptr} = getelementptr inbounds [{a_type}], [{a_type}]* {name}, i8 0, i8 {index}\n'
+    el_type = a_type.split()[2]
+    val_ptr, expr_code = llvm_expression(el_type, value)
+    el_var = get_llvm_var_name()
+    el_val = f'{el_var} = {llvm_load(el_type, val_ptr)}\n'
+    store = f'store {el_type} {el_var}, {el_type}* {ptr}\n'
+    code = expr_code + el_val + el_ptr + store
+    return code
 
 def llvm_goto(node):
     global _cur_scope
