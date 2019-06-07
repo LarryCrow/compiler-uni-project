@@ -541,7 +541,7 @@ def is_operation_possible(a, b, type_operation):
         return True if val == 'int' or val == 'double' else False
 
     def is_logical_operation(op):
-        tokens = ['LOR', 'LAND', 'LESS', 'LESS OR EQ', 'GREATER', 'GREATER OR EQ', 'EQUALS', 'NOT EQUALS', 'LNOT']
+        tokens = ['LOR', 'LAND', 'LT', 'LE', 'GT', 'GE', 'EQ', 'NE', 'LNOT']
         return op in tokens
 
     def is_bitwise_operation(op):
