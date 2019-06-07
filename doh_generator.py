@@ -11,6 +11,32 @@ class Datatype(Enum):
     bool = 'i8'
     string = 'i8*'
 
+i_operators = {
+    'plus' : 'add',
+    'minus' : 'sub',
+    'mul' : 'mul',
+    'div' : 'sdiv',
+    'eq' : 'eq',
+    'ne' : 'ne',
+    'gt' : 'sgt',
+    'ge' : 'sge',
+    'lt' : 'slt',
+    'le' : 'sle'
+}
+
+f_operators = {
+    'plus' : 'fadd',
+    'munis' : 'fsub',
+    'mul' : 'fmul',
+    'div' : 'fdiv',
+    'eq' : 'oeq',
+    'ne' : 'one',
+    'gt' : 'ogt',
+    'ge' : 'oge',
+    'lt' : 'olt',
+    'le' : 'ole'
+}
+
 # Функция, которая вызывается из main.py
 # Возвращает сгенерированный код
 def generate_code(ast):
@@ -85,6 +111,8 @@ def decl_array_llvm(node):
                 f'store {type} {elems[i]}, {type}* {name} \n'
             code += str
         return code
+
+
 def decl_func_llvm(node):
 
     def get_func_llvm_params(params):
@@ -129,11 +157,15 @@ def decl_var_llvm(node):
         _cur_scope.add_variable(node.parts[0].parts[0], node.parts[1].parts[0], llvm_name)
         return code
     elif value_type == 'id':
-        llvm_name, code = decl_var_id(node.parts[0].parts[0].lower(), node.parts[2].parts[0])
+        llvm_name, code = decl_var_id(node.parts[2].parts[0])
         _cur_scope.add_variable(node.parts[0].parts[0], node.parts[1].parts[0], llvm_name)
         return code
-    else:
+    elif is_math_oper(value_type):
         llvm_name, code = math_operations(node.parts[0].parts[0].lower(), node.parts[2])
+        _cur_scope.add_variable(node.parts[0].parts[0], node.parts[1].parts[0], llvm_name)
+        return code
+    elif is_logical_oper(value_type):
+        llvm_name, code = logical_operations(node.parts[2])
         _cur_scope.add_variable(node.parts[0].parts[0], node.parts[1].parts[0], llvm_name)
         return code
 
@@ -147,16 +179,18 @@ def assign_llvm(node):
         _cur_scope.change_llvm_name(var_name, llvm_name)
         return code
     elif value.type.lower() == 'id':
-        v_type = _cur_scope.get_llvm_var(var_name)['type']
-        llvm_name, code = decl_var_id(v_type, value.parts[0])
+        llvm_name, code = decl_var_id(value.parts[0])
         _cur_scope.change_llvm_name(var_name, llvm_name)
         return code
-    else:
+    elif is_math_oper(value.type):
         v_type = _cur_scope.get_llvm_var(var_name)['type']
         llvm_name, code = math_operations(v_type, value)
         _cur_scope.change_llvm_name(var_name, llvm_name)
         return code
-    
+    elif is_logical_oper(value.type):
+        llvm_name, code = logical_operations(value)
+        _cur_scope.change_llvm_name(var_name, llvm_name)
+        return code
 
 def llvm_func_call(node, res_var=None):
     def get_params_type(func_name):
@@ -216,7 +250,14 @@ def llvm_goto_mark(node):
     return f'{mark_name}:\n'
 
 
+
 def decl_const(v_type, value):
+    '''
+    Construct string with variable declaration
+    v_type (string) - variable type
+    value (string) - variable value
+    return - tuple with llvm variable name and code for generating
+    '''
     name = get_llvm_var_name()
     # TODO В общем, вот тут тебе нужно в else состряпать строку и вернуть кортеж
     # где первый элемент - название переменной в ллвм, второй - код, который получился
@@ -233,23 +274,34 @@ def decl_const(v_type, value):
         return ('', '')
 
 
-def decl_var_id(v_type, var_name):
+def decl_var_id(var_name):
     global _cur_scope
-    llvm_var_load_name = _cur_scope.get_llvm_name(var_name, True)
-    name = get_llvm_var_name()
-    load_name = get_llvm_var_name()
-    if not v_type == 'string':
-        if v_type in ['int', 'double', 'bool']:
-            llvm_type = Datatype[v_type].value
-        else:
-            llvm_type = v_type
-        alloca = f'{name} = {llvm_alloca(llvm_type)}\n'
-        load = f'{load_name} = {llvm_load(llvm_type, llvm_var_load_name)}\n'
-        store = f'{llvm_store(llvm_type, load_name, name)}\n'
+    id_llvm_var = _cur_scope.get_llvm_var(var_name, True)
+    id_type = id_llvm_var['type']
+    id_ptr = id_llvm_var['llvm_name']
+    res_ptr = get_llvm_var_name()
+    res_val = get_llvm_var_name()
+    if not id_type == 'string':
+        llvm_type = Datatype[id_type].value
+        alloca = f'{res_ptr} = {llvm_alloca(llvm_type)}\n'
+        load = f'{res_val} = {llvm_load(llvm_type, id_ptr)}\n'
+        store = f'{llvm_store(llvm_type, res_val, res_ptr)}\n'
         code = alloca + load + store
-        return (name, code)
+        return (res_ptr, code)
     else:
         return ('', '')
+
+
+def is_math_oper(operation):
+    return operation.lower() in ['plus', 'minus', 'mul', 'div', 'pow', 'int divide', 'modulo']
+
+
+def is_logical_oper(operation):
+    return operation.lower() in ['lor', 'land', 'lt', 'le', 'gt', 'ge', 'eq', 'ne', 'lnot']
+
+
+def is_bitwise_oper(operation):
+    return operation.lower() in ['bor', 'band']
 
 
 def math_operations(v_type, node):
@@ -289,48 +341,63 @@ def math_operations(v_type, node):
     return (res_name, code) 
 
 
+def logical_operations(node):
+    global _cur_scope
+    l_oper = node.parts[0]
+    r_oper = node.parts[1]
+
+    l_oper_type = l_oper.type.lower()
+    r_oper_type = l_oper.type.lower()
+
+    if is_atom(l_oper.type.lower()):
+        l_ptr, l_code = decl_const(l_oper_type, l_oper.parts[0])
+    elif l_oper.type.lower() == 'id':
+        l_ptr, l_code = decl_var_id(l_oper_type, l_oper.parts[0])
+    else:
+        l_ptr, l_code = logical_operations(l_oper)
+
+    if is_atom(r_oper.type.lower()):
+        r_ptr, r_code = decl_const(r_oper_type, r_oper.parts[0])
+    elif r_oper.type.lower() == 'id':
+        r_ptr, r_code = decl_var_id(r_oper_type, r_oper.parts[0])
+    else:
+        r_ptr, r_code = logical_operations(r_oper)
+
+    if l_oper_type in ['int', 'double', 'boolean']:
+        llvm_type = Datatype[l_oper_type].value
+    else:
+        llvm_type = l_oper_type
+
+    operation = node.type.lower()
+    
+    l_var_name = get_llvm_var_name()
+    r_var_name = get_llvm_var_name()
+    res_name = get_llvm_var_name()
+    l_val = f'{l_var_name} = {llvm_load(llvm_type, l_ptr)}\n'
+    r_val = f'{r_var_name} = {llvm_load(llvm_type, r_ptr)}\n'
+    res_ptr = f'{res_name} = {llvm_alloca("i1")}\n'
+    res_name_2 = get_llvm_var_name()
+    res = f'{res_name_2} = {llvm_logic_action(operation, llvm_type, l_var_name, r_var_name)}\n'
+    res_store = f'{llvm_store("i1", res_name_2, res_name)}\n'
+    code = l_code + r_code + l_val + r_val + res_ptr + res + res_store
+    return (res_name, code) 
+
+
 def is_atom(type):
     return type in ['int', 'double', 'string', 'bool']
 
 
-# Math functions
+def llvm_math_action(op, llvm_type, a, b):
+    if not op == 'pow':
+        llvm_oper = i_operators[op] if llvm_type == 'i32' else f_operators[op]
+        return f'{llvm_oper} {llvm_type} {a}, {b}'
+    else:
+        return f'call double @llvm.powi.f64(double {a}, i32 {b})'
 
 
-def llvm_math_action(operation, data_type, l_oper, r_oper):
-    if operation == 'plus':
-        return llvm_plus(data_type, l_oper, r_oper)
-    elif operation == 'minus':
-        return llvm_minus(data_type, l_oper, r_oper)
-    elif operation == 'mul':
-        return llvm_mul(data_type, l_oper, r_oper)
-    elif operation == 'div':
-        return llvm_div(data_type, l_oper, r_oper)
-    elif operation == 'pow':
-        return llvm_pow(l_oper, r_oper)
-
-
-def llvm_plus(llvm_type, l_oper, r_oper):
-    llvm_oper = 'add' if llvm_type == 'i32' else 'fadd'
-    return f'{llvm_oper} {llvm_type} {l_oper}, {r_oper}'
-
-
-def llvm_minus(llvm_type, l_oper, r_oper):
-    llvm_oper = 'sub' if llvm_type == 'i32' else 'fsub'
-    return f'{llvm_oper} {llvm_type} {l_oper}, {r_oper}'
-
-
-def llvm_mul(llvm_type, l_oper, r_oper):
-    llvm_oper = 'mul' if llvm_type == 'i32' else 'fmul'
-    return f'{llvm_oper} {llvm_type} {l_oper}, {r_oper}'
-
-
-def llvm_div(llvm_type, l_oper, r_oper):
-    llvm_oper = 'sdiv' if llvm_type == 'i32' else 'fdiv'
-    return f'{llvm_oper} {llvm_type} {l_oper}, {r_oper}'
-
-
-def llvm_pow(l_oper, r_oper):
-    return f'call double @llvm.powi.f64(double {l_oper}, i32 {r_oper})'
+def llvm_logic_action(op, llvm_type, a, b):
+    llvm_oper = f'"icmp" {i_operators[op]}' if llvm_type in ['i1', 'i32'] else f'"fcmp" {f_operators[op]}'
+    return f'{llvm_oper} {llvm_type} {a}, {b}'
 
 
 # Some helpful functions to do basic llvm operations
