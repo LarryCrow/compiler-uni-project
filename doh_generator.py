@@ -63,7 +63,7 @@ def create_llvm(ast):
             if node.type == 'FUNCTION':
                 funcs.append(decl_func_llvm(node))
             if node.type == 'FUNCTION_CALL':
-                func_code, var = llvm_func_call(node)
+                var, func_code = llvm_func_call(node)
                 code = code + func_code
             if node.type == 'RETURN':
                 code = code + llvm_return(node)
@@ -77,7 +77,7 @@ def create_llvm(ast):
                 code = code + decl_array_llvm(node)
 
 
-    res = '\n'.join(structure) + '\n'.join(funcs) + code
+    res = '\n'.join(structure) + '\n'.join(funcs) + '\n'.join(strings) + code
     return res
 
 def decl_struct_llvm(node):
@@ -134,10 +134,12 @@ def decl_func_llvm(node):
     llvm_type = Datatype[func_type].value
     _cur_scope.add_variable(llvm_type, func_name, f'@{func_name}', llvm_params)
     func_title = f'define {llvm_type} @{func_name}({", ".join(llvm_params)}) {{\n'
+
     f = _cur_scope
     _cur_scope = Scope_llvm(f)
     _scopes.append(_cur_scope)
     add_params_in_scope(func_params)
+
     func_code = create_llvm(node.parts[3])
     _cur_scope = _cur_scope.scope
     code = func_title + func_code + '}\n'
@@ -148,51 +150,40 @@ def decl_var_llvm(node):
     global _cur_scope
     global strings
     value_type = node.parts[2].type.lower()
-    if value_type in ['int', 'string', 'double', 'bool']:
-        # TODO
-        # Вот сюда вернётся строка и название регистра
-        # Название регистра ты пихаешь в _cur_scope
-        # А код добавляешь в массив strings, так как они являются глобальными и нам не нужно их в общий потом добавлять
-        # В этом случае, соответственно, функция вернёт пустую строку
-        llvm_name, code = decl_const(node.parts[0].parts[0].lower(), node.parts[2].parts[0])
-        _cur_scope.add_variable(node.parts[0].parts[0], node.parts[1].parts[0], llvm_name)
+    llvm_name, code = llvm_expression(node.parts[0].parts[0], node.parts[2])
+    _cur_scope.add_variable(node.parts[0].parts[0], node.parts[1].parts[0], llvm_name)
+    if not node.parts[0].parts[0] == 'string':
+        return code
+    else:
         strings.append(code)
         return ''
-    elif value_type == 'id':
-        llvm_name, code = decl_var_id(node.parts[2].parts[0])
-        _cur_scope.add_variable(node.parts[0].parts[0], node.parts[1].parts[0], llvm_name)
-        return code
-    elif is_math_oper(value_type):
-        llvm_name, code = math_operations(node.parts[0].parts[0].lower(), node.parts[2])
-        _cur_scope.add_variable(node.parts[0].parts[0], node.parts[1].parts[0], llvm_name)
-        return code
-    elif is_logical_oper(value_type):
-        llvm_name, code = logical_operations(node.parts[2])
-        _cur_scope.add_variable(node.parts[0].parts[0], node.parts[1].parts[0], llvm_name)
-        return code
 
 
 def assign_llvm(node):
     global _cur_scope
     var_name = node.parts[0].parts[0]
+    var_type = _cur_scope.get_llvm_var(var_name)['type']
     value = node.parts[1]
-    if value.type.lower() in ['int', 'string', 'double', 'bool']:
-        llvm_name, code = decl_const(value.type.lower(), value.parts[0])
-        _cur_scope.change_llvm_name(var_name, llvm_name)
-        return code
-    elif value.type.lower() == 'id':
-        llvm_name, code = decl_var_id(value.parts[0])
-        _cur_scope.change_llvm_name(var_name, llvm_name)
-        return code
-    elif is_math_oper(value.type):
-        v_type = _cur_scope.get_llvm_var(var_name)['type']
-        llvm_name, code = math_operations(v_type, value)
-        _cur_scope.change_llvm_name(var_name, llvm_name)
-        return code
-    elif is_logical_oper(value.type):
-        llvm_name, code = logical_operations(value)
-        _cur_scope.change_llvm_name(var_name, llvm_name)
-        return code
+    llvm_name, code = llvm_expression(var_type, value)
+    _cur_scope.change_llvm_name(var_name, llvm_name)
+    return code
+
+
+def llvm_expression(result_type, expr):
+    global _cur_scope
+    expr_type = expr.type.lower()
+    if expr_type in ['int', 'string', 'double', 'bool']:
+        llvm_name, code = decl_const(result_type, expr.parts[0])
+    elif expr_type == 'id':
+        llvm_name, code = decl_var_id(expr.parts[0])
+    elif expr_type == 'function_call':
+        llvm_name, code = llvm_func_call(expr)
+    elif is_math_oper(expr_type):
+        llvm_name, code = math_operations(result_type, expr)
+    elif is_logical_oper(expr_type):
+        llvm_name, code = logical_operations(expr)
+    return (llvm_name, code)
+
 
 def llvm_func_call(node, res_var=None):
     def get_params_type(func_name):
@@ -230,20 +221,24 @@ def llvm_func_call(node, res_var=None):
     args, code = get_args(node.parts[1].parts, func_name)
     if res_var is None:
         res_var = get_llvm_var_name()
-    res = f'{code}\n{res_var} = call {func_type} {func_name}({", ".join(args)})'
-    return(res, res_var)
+    ptr = get_llvm_var_name()
+    alloca = f'{ptr} = {llvm_alloca(func_type)}\n'
+    func_call = f'{res_var} = call {func_type} @{func_name}({", ".join(args)})\n'
+    store = f'{llvm_store(func_type, str(res_var), ptr)}\n'
+    res = code + alloca + func_call + store
+    return (ptr, res)
 
 
 def llvm_return(node):
     global _cur_scope
     print(node)
+    return ''
 
 
 def llvm_goto(node):
     global _cur_scope
     mark_name = node.parts[0].parts[0]
     return f'br label %{mark_name}\n'
-    print(node)
 
 
 def llvm_goto_mark(node):
@@ -260,10 +255,8 @@ def decl_const(v_type, value):
     value (string) - variable value
     return - tuple with llvm variable name and code for generating
     '''
-    name = get_llvm_var_name()
-    # TODO В общем, вот тут тебе нужно в else состряпать строку и вернуть кортеж
-    # где первый элемент - название переменной в ллвм, второй - код, который получился
     if not v_type == 'string':
+        name = get_llvm_var_name()
         if v_type in ['int', 'double', 'bool']:
             llvm_type = Datatype[v_type].value
         else:
@@ -273,7 +266,8 @@ def decl_const(v_type, value):
         code = alloca + store
         return (name, code)
     else:
-        code = f'{name} = constant [{len(value)+1} x i8] c"{value}\\00", align 1'
+        name = get_llvm_global_name()
+        code = f'{name} = constant [{len(value)+2} x i8] c"{value}\\0A\\00"\n'
         return (name, code)
 
 
@@ -311,19 +305,8 @@ def math_operations(v_type, node):
     l_oper = node.parts[0]
     r_oper = node.parts[1]
 
-    if is_atom(l_oper.type.lower()):
-        l_ptr, l_code = decl_const(v_type, l_oper.parts[0])
-    elif l_oper.type.lower() == 'id':
-        l_ptr, l_code = decl_var_id(v_type, l_oper.parts[0])
-    else:
-        l_ptr, l_code = math_operations(v_type, l_oper)
-
-    if is_atom(r_oper.type.lower()):
-        r_ptr, r_code = decl_const(v_type, r_oper.parts[0])
-    elif r_oper.type.lower() == 'id':
-        r_ptr, r_code = decl_var_id(v_type, r_oper.parts[0])
-    else:
-        r_ptr, r_code = math_operations(v_type, r_oper)
+    l_ptr, l_code = llvm_expression(v_type, l_oper)
+    r_ptr, r_code = llvm_expression(v_type, r_oper)
 
     if v_type in ['int', 'double', 'string', 'boolean']:
         llvm_type = Datatype[v_type].value
@@ -419,5 +402,11 @@ def llvm_alloca(v_type):
 def get_llvm_var_name():
     global iter_name
     name = f'%.{iter_name}'
+    iter_name += 1
+    return name
+
+def get_llvm_global_name():
+    global iter_name
+    name = f'@.{iter_name}'
     iter_name += 1
     return name
