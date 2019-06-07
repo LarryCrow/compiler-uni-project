@@ -84,7 +84,7 @@ def decl_struct_llvm(node):
 
     def get_struct_llvm_params(params):
         return list(map(lambda x: Datatype[x.type].value, params))
-
+    name = get_llvm_var_name()
     global _cur_scope
     llvm_params_list = get_struct_llvm_params(node.parts[1].parts)
     llvm_params_string = ', '.join(llvm_params_list)
@@ -146,6 +146,7 @@ def decl_func_llvm(node):
 
 def decl_var_llvm(node):
     global _cur_scope
+    global strings
     value_type = node.parts[2].type.lower()
     if value_type in ['int', 'string', 'double', 'bool']:
         # TODO
@@ -155,7 +156,8 @@ def decl_var_llvm(node):
         # В этом случае, соответственно, функция вернёт пустую строку
         llvm_name, code = decl_const(node.parts[0].parts[0].lower(), node.parts[2].parts[0])
         _cur_scope.add_variable(node.parts[0].parts[0], node.parts[1].parts[0], llvm_name)
-        return code
+        strings.append(code)
+        return ''
     elif value_type == 'id':
         llvm_name, code = decl_var_id(node.parts[2].parts[0])
         _cur_scope.add_variable(node.parts[0].parts[0], node.parts[1].parts[0], llvm_name)
@@ -271,7 +273,8 @@ def decl_const(v_type, value):
         code = alloca + store
         return (name, code)
     else:
-        return ('', '')
+        code = f'{name} = constant [{len(value)+1} x i8] c"{value}\\00", align 1'
+        return (name, code)
 
 
 def decl_var_id(var_name):
