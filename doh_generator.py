@@ -1,6 +1,7 @@
 from enum import Enum
 from models.llvm_scope import Scope_llvm
 iter_name = 1
+label_name = 1
 strings = []
 _scopes = []
 _cur_scope = None
@@ -79,6 +80,16 @@ def create_llvm(ast):
 
     res = '\n'.join(structure) + '\n'.join(funcs) + '\n'.join(strings) + code
     return res
+
+def llvm_if(node):
+    global _cur_scope
+    global _scopes
+    f = _cur_scope
+    _cur_scope = Scope_llvm(f)
+    _scopes.append(_cur_scope)
+    if_condition = llvm_logic_action()
+
+
 
 def decl_struct_llvm(node):
 
@@ -409,4 +420,10 @@ def get_llvm_global_name():
     global iter_name
     name = f'@.{iter_name}'
     iter_name += 1
+    return name
+
+def get_llvm_label_name():
+    global label_name
+    name = f'label{label_name}: \n'
+    label_name += 1
     return name
