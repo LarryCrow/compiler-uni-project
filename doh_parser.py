@@ -445,17 +445,17 @@ def p_conditionals(p):
          | expr NE expr
     '''
     if p[2] == '<=':
-        p[0] = Node('LESS OR EQ', [p[1], p[3]], p.lineno(2))
+        p[0] = Node('LE', [p[1], p[3]], p.lineno(2))
     elif p[2] == '>=':
-        p[0] = Node('GREATER OR EQ', [p[1], p[3]], p.lineno(2))
+        p[0] = Node('GE', [p[1], p[3]], p.lineno(2))
     elif p[2] == '<':
-        p[0] = Node('LESS', [p[1], p[3]], p.lineno(2))
+        p[0] = Node('LT', [p[1], p[3]], p.lineno(2))
     elif p[2] == '>':
-        p[0] = Node('GREATER', [p[1], p[3]], p.lineno(2))
+        p[0] = Node('GT', [p[1], p[3]], p.lineno(2))
     elif p[2] == '==':
-        p[0] = Node('EQUALS', [p[1], p[3]], p.lineno(2))
+        p[0] = Node('EQ', [p[1], p[3]], p.lineno(2))
     elif p[2] == '!=':
-        p[0] = Node('NOT EQUALS', [p[1], p[3]], p.lineno(2))
+        p[0] = Node('NE', [p[1], p[3]], p.lineno(2))
 
 
 def p_logical_operation(p):
