@@ -1,6 +1,7 @@
 from enum import Enum
 from models.llvm_scope import Scope_llvm
 iter_name = 1
+label_name = 1
 strings = []
 _scopes = []
 _cur_scope = None
@@ -75,10 +76,53 @@ def create_llvm(ast):
                 code = code + llvm_goto_mark(node)
             if node.type == 'ARRAY':
                 code = code + decl_array_llvm(node)
-
-
+            if node.type == 'IF' or node.type == 'IF_ELSE':
+                code += llvm_if(node)
     res = '\n'.join(structure) + '\n'.join(funcs) + '\n'.join(strings) + code
     return res
+
+def llvm_if(node):
+
+    global _cur_scope
+    global _scopes
+    f = _cur_scope
+    _cur_scope = Scope_llvm(f, _cur_scope.variables.copy())
+    _scopes.append(_cur_scope)
+    #print(10)
+    name = get_llvm_var_name()
+    code_if = create_llvm(node.parts[1])
+    _cur_scope = _cur_scope.scope
+    code = f'{name} = icmp eq i32 10, 100 \n'
+    try:
+        node.parts[2]
+    except Exception:
+        label_if = get_llvm_label_name()
+        label_end = get_llvm_label_name()
+        code += f'br i1 {name}, Label {label_if}, Label {label_end} \n' \
+                f'{label_if}: \n' \
+                f'{code_if}' \
+                f'br Label {label_end} \n' \
+                f'{label_end}: \n'
+    else:
+        label_if = get_llvm_label_name()
+        label_else = get_llvm_label_name()
+        label_end = get_llvm_label_name()
+        code_else = create_llvm(node.parts[2])
+        _cur_scope = _cur_scope.scope
+        code += f'br i1 {name}, Label {label_if}, Label {label_else} \n' \
+                f'{label_if}: \n' \
+                f'{code_if}' \
+                f'br Label {label_else} \n' \
+                f'{label_else}: \n' \
+                f'{code_else}' \
+                f'br Label {label_end} \n' \
+                f'{label_end}: \n'
+    return code
+
+
+
+
+
 
 def decl_struct_llvm(node):
 
@@ -414,7 +458,7 @@ def llvm_math_action(op, llvm_type, a, b):
 
 
 def llvm_logic_action(op, llvm_type, a, b):
-    llvm_oper = f'"icmp" {i_operators[op]}' if llvm_type in ['i1', 'i32'] else f'"fcmp" {f_operators[op]}'
+    llvm_oper = f'icmp {i_operators[op]}' if llvm_type in ['i1', 'i32'] else f'fcmp {f_operators[op]}'
     return f'{llvm_oper} {llvm_type} {a}, {b}'
 
 
@@ -441,4 +485,10 @@ def get_llvm_global_name():
     global iter_name
     name = f'@.{iter_name}'
     iter_name += 1
+    return name
+
+def get_llvm_label_name():
+    global label_name
+    name = f'label{label_name}'
+    label_name += 1
     return name
