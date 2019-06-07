@@ -88,7 +88,6 @@ def llvm_if(node):
     f = _cur_scope
     _cur_scope = Scope_llvm(f, _cur_scope.variables.copy())
     _scopes.append(_cur_scope)
-    #print(10)
     name = get_llvm_var_name()
     code_if = create_llvm(node.parts[1])
     _cur_scope = _cur_scope.scope
@@ -98,28 +97,29 @@ def llvm_if(node):
     except Exception:
         label_if = get_llvm_label_name()
         label_end = get_llvm_label_name()
-        code += f'br i1 {name}, Label {label_if}, Label {label_end} \n' \
+        code += f'br i1 {name}, label %{label_if}, label %{label_end} \n' \
                 f'{label_if}: \n' \
                 f'{code_if}' \
-                f'br Label {label_end} \n' \
+                f'br label {label_end} \n' \
                 f'{label_end}: \n'
     else:
         label_if = get_llvm_label_name()
         label_else = get_llvm_label_name()
         label_end = get_llvm_label_name()
+        f = _cur_scope
+        _cur_scope = Scope_llvm(f, _cur_scope.variables.copy())
+        _scopes.append(_cur_scope)
         code_else = create_llvm(node.parts[2])
         _cur_scope = _cur_scope.scope
-        code += f'br i1 {name}, Label {label_if}, Label {label_else} \n' \
+        code += f'br i1 {name}, label %{label_if}, label %{label_else} \n' \
                 f'{label_if}: \n' \
                 f'{code_if}' \
-                f'br Label {label_else} \n' \
+                f'br label %{label_end} \n' \
                 f'{label_else}: \n' \
                 f'{code_else}' \
-                f'br Label {label_end} \n' \
+                f'br label %{label_end} \n' \
                 f'{label_end}: \n'
     return code
-
-
 
 
 
@@ -489,6 +489,6 @@ def get_llvm_global_name():
 
 def get_llvm_label_name():
     global label_name
-    name = f'label{label_name}'
+    name = f'lab{label_name}'
     label_name += 1
     return name
