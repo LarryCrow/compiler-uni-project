@@ -13,7 +13,7 @@ end_label_while = ''
 class Datatype(Enum):
     int = 'i32'
     double = 'double'
-    bool = 'i8'
+    bool = 'i1'
     string = 'i8*'
 
 i_operators = {
@@ -63,6 +63,8 @@ def create_llvm(ast):
         if hasattr(node, 'type'):
             if node.type == 'VARIABLE':
                 code = code + decl_var_llvm(node)
+            if node.type == 'STRUCT_VAR':
+                code = code + decl_struct_var_llvm(node)
             if node.type == 'ASSIGN':
                 code = code + assign_llvm(node)
             if node.type == 'FUNCTION':
@@ -131,12 +133,20 @@ def llvm_if(node):
                 f'br label %{label_end} \n' \
                 f'{label_end}: \n'
     return code
+
+
 def llvm_break():
+    global end_label_while
     code = f'br label %{end_label_while} \n'
     return code
+
+
 def llvm_continue():
+    global start_label_while
     code = f'br label %{start_label_while} \n'
     return code
+
+
 def llvm_while(node):
     global _cur_scope
     global _scopes
@@ -185,12 +195,16 @@ def llvm_while(node):
 def decl_struct_llvm(node):
 
     def get_struct_llvm_params(params):
-        return list(map(lambda x: Datatype[x.type].value, params))
-    name = get_llvm_var_name()
+        return list(map(lambda x: {'type': Datatype[x.type].value, 'name': x.parts[0]}, params))
+
+    def get_struct_params_type(params):
+        return list(map(lambda x: x['type'] ,params))
+
     global _cur_scope
+    name = node.parts[0].parts[0]
     llvm_params_list = get_struct_llvm_params(node.parts[1].parts)
-    llvm_params_string = ', '.join(llvm_params_list)
-    code = f'%{node.parts[0].parts[0]} = type {{ {llvm_params_string} }}'
+    llvm_params_string = ', '.join(get_struct_params_type(llvm_params_list))
+    code = f'%{node.parts[0].parts[0]} = type {{ {llvm_params_string} }}\n'
     _cur_scope.add_variable('struct', name, f'%{name}', llvm_params_list)
     return code
 
@@ -261,6 +275,27 @@ def decl_var_llvm(node):
         return ''
 
 
+def decl_struct_var_llvm(node):
+    
+    def get_struct_args(args):
+        return list(map(lambda x: {'type': Datatype[x.type.lower()].value, 'val': x.parts[0]}, args))
+
+    global _cur_scope
+    v_type = node.parts[0].parts[0]
+    v_name = node.parts[1].parts[0]
+    var_ptr = get_llvm_var_name()
+    code = f'{var_ptr} = {llvm_alloca("%" + v_type)}\n'
+    if len(node.parts) == 3:
+        v_args = get_struct_args(node.parts[2].parts)
+        for i in range(len(v_args)):
+            param_ptr = get_llvm_var_name()
+            get_ptr = f'{param_ptr} = getelementptr inbounds %{v_type}, %{v_type}* {var_ptr}, i32 0, i32 {i}\n'
+            store = f'{llvm_store(v_args[i]["type"], v_args[i]["val"], param_ptr)}'
+            code += get_ptr + store + '\n'
+    _cur_scope.add_variable(v_type, v_name, var_ptr)
+    return code
+
+
 def assign_llvm(node):
     global _cur_scope
     var_name = node.parts[0].parts[0]
@@ -268,8 +303,8 @@ def assign_llvm(node):
     value = node.parts[1]
     if 'x' in var['type']:
         code = update_array_elem(var, node.parts[1].parts[0], node.parts[2])
-    elif 'struct' in var['type']:
-        pass
+    elif not is_atom(var['type']):
+        code = update_struct_field(var, node.parts[1].parts[0], node.parts[2])
     else:
         llvm_name, code = llvm_expression(var['type'], value)
         _cur_scope.change_llvm_name(var_name, llvm_name)
@@ -285,6 +320,8 @@ def llvm_expression(result_type, expr):
         llvm_name, code = decl_var_id(expr.parts[0])
     elif expr_type == 'function_call':
         llvm_name, code = llvm_func_call(expr)
+    elif expr_type == 'array_element':
+        llvm_name, code = llvm_arr_elem(expr)
     elif is_math_oper(expr_type):
         llvm_name, code = math_operations(result_type, expr)
     elif is_logical_oper(expr_type):
@@ -352,6 +389,7 @@ def llvm_return(node):
         llvm_name, code = llvm_expression(node.parts[0])
         
 
+
 def update_array_elem(array_obj, index, value):
     global _cur_scope
     size = int(array_obj['options']['size'])
@@ -369,6 +407,30 @@ def update_array_elem(array_obj, index, value):
     code = expr_code + el_val + el_ptr + store
     return code
 
+
+def update_struct_field(struct_obj, field, value):
+
+    def get_field_number(fields, f):
+        for i in range(len(fields)):
+            if f == fields[i]['name']:
+                return i
+
+    global _cur_scope
+    struct = struct_obj['type']
+    str_var = _cur_scope.get_llvm_var(struct)
+    idx = get_field_number(str_var['options'], field)
+    ptr_name = get_llvm_var_name()
+    ptr_field = f'{ptr_name} = getelementptr inbounds %{struct}, %{struct}* {struct_obj["llvm_name"]}, i32 0, i32 {idx}\n'
+    field_llvm_type = str_var['options'][idx]['type']
+    field_type = get_common_type(field_llvm_type)
+    val_ptr, expr_code = llvm_expression(field_type, value)
+    val_val = get_llvm_var_name()
+    load = f'{val_val} = {llvm_load(field_llvm_type, val_ptr)}\n'
+    store = f'{llvm_store(field_llvm_type, val_val, ptr_name)}\n'
+    code = ptr_field + expr_code + load + store
+    return code
+
+
 def llvm_goto(node):
     global _cur_scope
     mark_name = node.parts[0].parts[0]
@@ -379,6 +441,28 @@ def llvm_goto_mark(node):
     global _cur_scope
     mark_name = node.parts[0]
     return f'{mark_name}:\n'
+
+
+def llvm_arr_elem(node):
+    global _cur_scope
+    arr_name = node.parts[0].parts[0]
+    idx = node.parts[1].parts[0]
+    llvm_arr = _cur_scope.get_llvm_var(arr_name)
+    arr_size = llvm_arr['options']['size']
+    arr_type = llvm_arr['type']
+    arr_llvm_name = llvm_arr['llvm_name']
+    el_type = arr_type.split()[2]
+    if int(idx) >= int(arr_size):
+        raise NameError('Out of range')
+    el_ptr_name = get_llvm_var_name()
+    res_val = get_llvm_var_name()
+    res_ptr = get_llvm_var_name()
+    el_ptr = f'{el_ptr_name} = getelementptr inbounds [{arr_type}], [{arr_type}]* {arr_llvm_name}, i32 0, i32 {idx}\n'
+    load_el = f'{res_val} = {llvm_load(el_type, el_ptr_name)}\n'
+    alloca = f'{res_ptr} = {llvm_alloca(el_type)}\n'
+    store = f'{llvm_store(el_type, res_val, res_ptr)}\n'
+    code = el_ptr + load_el + alloca + store
+    return (res_ptr, code)
 
 
 
@@ -469,19 +553,8 @@ def logical_operations(node):
     l_oper_type = l_oper.type.lower()
     r_oper_type = l_oper.type.lower()
 
-    if is_atom(l_oper.type.lower()):
-        l_ptr, l_code = decl_const(l_oper_type, l_oper.parts[0])
-    elif l_oper.type.lower() == 'id':
-        l_ptr, l_code = decl_var_id(l_oper_type, l_oper.parts[0])
-    else:
-        l_ptr, l_code = logical_operations(l_oper)
-
-    if is_atom(r_oper.type.lower()):
-        r_ptr, r_code = decl_const(r_oper_type, r_oper.parts[0])
-    elif r_oper.type.lower() == 'id':
-        r_ptr, r_code = decl_var_id(r_oper_type, r_oper.parts[0])
-    else:
-        r_ptr, r_code = logical_operations(r_oper)
+    l_ptr, l_code = llvm_expression(l_oper_type, l_oper)
+    r_ptr, r_code = llvm_expression(r_oper_type, r_oper)
 
     if l_oper_type in ['int', 'double', 'boolean']:
         llvm_type = Datatype[l_oper_type].value
@@ -525,6 +598,8 @@ def llvm_load(v_type, ptr):
     return f'load {v_type}, {v_type}* {ptr}'
 
 def llvm_store(v_type, value, ptr):
+    if v_type == 'i1':
+        value = '0' if value == 'false' else '1'
     return f'store {v_type} {value}, {v_type}* {ptr}'
 
 def llvm_alloca(v_type):
@@ -550,3 +625,12 @@ def get_llvm_label_name():
     name = f'lab{label_name}'
     label_name += 1
     return name
+
+
+def get_common_type(llvm_type):
+    if llvm_type == 'i32':
+        return 'int'
+    elif llvm_type == 'i1':
+        return 'bool'
+    elif llvm_type == 'double':
+        return 'double'
