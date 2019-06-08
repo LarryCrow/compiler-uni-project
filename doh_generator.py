@@ -6,6 +6,10 @@ strings = []
 _scopes = []
 _cur_scope = None
 
+start_label_while = ''
+end_label_while = ''
+
+
 class Datatype(Enum):
     int = 'i32'
     double = 'double'
@@ -78,11 +82,18 @@ def create_llvm(ast):
                 code = code + decl_array_llvm(node)
             if node.type == 'IF' or node.type == 'IF_ELSE':
                 code += llvm_if(node)
+            if node.type == 'WHILE' or node.type == 'DO_WHILE':
+                code += llvm_while(node)
+            if node.type == 'BREAK':
+                code += llvm_break()
+            if node.type == 'CONTINUE':
+                code += llvm_continue()
+
+
     res = '\n'.join(structure) + '\n'.join(funcs) + '\n'.join(strings) + code
     return res
 
 def llvm_if(node):
-
     global _cur_scope
     global _scopes
     f = _cur_scope
@@ -120,9 +131,56 @@ def llvm_if(node):
                 f'br label %{label_end} \n' \
                 f'{label_end}: \n'
     return code
-
-
-
+def llvm_break():
+    code = f'br label %{end_label_while} \n'
+    return code
+def llvm_continue():
+    code = f'br label %{start_label_while} \n'
+    return code
+def llvm_while(node):
+    global _cur_scope
+    global _scopes
+    global start_label_while
+    global end_label_while
+    start_label = get_llvm_label_name()
+    while_label = get_llvm_label_name()
+    end_label = get_llvm_label_name()
+    start_label_while, end_label_while = start_label, end_label
+    name = get_llvm_var_name()
+    if node.parts[1].type == 'SCOPE':
+        #TODO WHILE
+        f = _cur_scope
+        _cur_scope = Scope_llvm(f, _cur_scope.variables.copy())
+        _scopes.append(_cur_scope)
+        code_while = create_llvm(node.parts[1])
+        start_label_while, end_label_while = start_label, end_label
+        _cur_scope = _cur_scope.scope
+        code = f'br label %{start_label} \n' \
+               f'{start_label}: \n' \
+               f'{name} = icmp eq i32 10, 100 \n' \
+               f'br i1 {name}, label %{while_label}, label %{end_label} \n' \
+               f'{while_label}: \n' \
+               f'{code_while}' \
+               f'br label %{start_label} \n' \
+               f'{end_label}: \n'
+        return code
+    else:
+        #TODO DO_WHILE
+        f = _cur_scope
+        _cur_scope = Scope_llvm(f, _cur_scope.variables.copy())
+        _scopes.append(_cur_scope)
+        code_while = create_llvm(node.parts[0])
+        start_label_while, end_label_while = start_label, end_label
+        _cur_scope = _cur_scope.scope
+        code = f'br label %{start_label} \n' \
+               f'{start_label}: \n' \
+               f'{code_while}' \
+               f'br label %{while_label} \n' \
+               f'{while_label}: \n' \
+               f'{name} = icmp eq i32 10, 100 \n' \
+               f'br i1 {name}, label %{start_label}, label %{end_label} \n' \
+               f'{end_label}: \n'
+        return code
 
 def decl_struct_llvm(node):
 
