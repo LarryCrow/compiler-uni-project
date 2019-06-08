@@ -9,6 +9,8 @@ _cur_scope = None
 start_label_while = ''
 end_label_while = ''
 
+print_dec = f'declare i32 @printf(i8*, ...)'
+strings.append(print_dec)
 
 class Datatype(Enum):
     int = 'i32'
@@ -70,8 +72,11 @@ def create_llvm(ast):
             if node.type == 'FUNCTION':
                 funcs.append(decl_func_llvm(node))
             if node.type == 'FUNCTION_CALL':
-                var, func_code = llvm_func_call(node)
-                code = code + func_code
+                if (node.parts[0].parts[0] == 'print'):
+                    code += llvm_print(node)
+                else:
+                    var, func_code = llvm_func_call(node)
+                    code = code + func_code
             if node.type == 'RETURN':
                 code = code + llvm_return(node)
             if node.type == 'STRUCTURE':
@@ -94,6 +99,15 @@ def create_llvm(ast):
 
     res = '\n'.join(structure) + '\n'.join(funcs) + '\n'.join(strings) + code
     return res
+def llvm_print(node):
+    argument = node.parts[1].parts[0].parts[0]
+    str_name = get_llvm_global_name()
+    str_code = f'{str_name} = private constant [{len(argument)+1} x i8] c\"%d\\00\" \n'
+    strings.append(str_code)
+
+    code = f'{get_llvm_var_name()} = call i32 (i8*, ...) @printf(i8* getelementptr inbounds' \
+        f' ([{len(argument)+1} x i8], [{len(argument)+1} x i8]* {str_name}, i32 0, i32 0), i32 {argument} \n'
+    return code
 
 def llvm_if(node):
     global _cur_scope
