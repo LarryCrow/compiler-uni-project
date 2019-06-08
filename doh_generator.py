@@ -304,7 +304,7 @@ def assign_llvm(node):
     var = _cur_scope.get_llvm_var(var_name)
     value = node.parts[1]
     if 'x' in var['type']:
-        code = update_array_elem(var, node.parts[1].parts[0], node.parts[2])
+        code = update_array_elem(var, node.parts[1], node.parts[2])
     elif not is_atom(var['type']):
         code = update_struct_field(var, node.parts[1].parts[0], node.parts[2])
     else:
@@ -390,27 +390,27 @@ def llvm_return(node):
     elif val_type == 'id':
         var = node.parts[0].parts[0]
         llvm_var = _cur_scope.get_llvm_var(var)
-        return f'ret {llvm_var["type"]} {llvm_var["llvm_name"]}\n'
+        return f'ret {Datatype[llvm_var["type"]].value} {llvm_var["llvm_name"]}\n'
     else:
         # TODO Написать функцию для получения типа
-        llvm_name, code = llvm_expression(node.parts[0])
+        llvm_name, code, v_type = llvm_expression(node.parts[0])
         
 
 def update_array_elem(array_obj, index, value):
     global _cur_scope
-    size = int(array_obj['options']['size'])
-    if int(index) >= size:
-        raise NameError('Out of range')
+    idx_ptr, idx_code = get_arr_index(index)
     name = array_obj['llvm_name']
     a_type = array_obj['type']
     ptr = get_llvm_var_name()
-    el_ptr = f'{ptr} = getelementptr inbounds [{a_type}], [{a_type}]* {name}, i8 0, i8 {index}\n'
+    idx = get_llvm_var_name()
+    idx_load = f'{idx} = {llvm_load("i32", idx_ptr)}\n'
+    el_ptr = f'{ptr} = getelementptr inbounds [{a_type}], [{a_type}]* {name}, i32 0, i32 {idx}\n'
     el_type = a_type.split()[2]
-    val_ptr, expr_code = llvm_expression(el_type, value)
+    val_ptr, expr_code, val_type = llvm_expression(el_type, value)
     el_var = get_llvm_var_name()
     el_val = f'{el_var} = {llvm_load(el_type, val_ptr)}\n'
     store = f'store {el_type} {el_var}, {el_type}* {ptr}\n'
-    code = expr_code + el_val + el_ptr + store
+    code = idx_code + idx_load + expr_code + el_val + el_ptr + store
     return code
 
 
@@ -453,13 +453,12 @@ def llvm_arr_elem(node, llvm_name):
     global _cur_scope
     arr_name = node.parts[0].parts[0]
     idx = node.parts[1].parts[0]
+    idx_ptr, idx_code = get_arr_index(node.parts[1])
     llvm_arr = _cur_scope.get_llvm_var(arr_name)
     arr_size = llvm_arr['options']['size']
     arr_type = llvm_arr['type']
     arr_llvm_name = llvm_arr['llvm_name']
     el_type = arr_type.split()[2]
-    if int(idx) >= int(arr_size):
-        raise NameError('Out of range')
     el_ptr_name = get_llvm_var_name()
     res_val = get_llvm_var_name()
     if llvm_name == '':
@@ -468,10 +467,12 @@ def llvm_arr_elem(node, llvm_name):
     else:
         res_ptr = llvm_name
         alloca = ''
+    idx = get_llvm_var_name()
+    idx_load = f'{idx} = {llvm_load("i32", idx_ptr)}\n'
     el_ptr = f'{el_ptr_name} = getelementptr inbounds [{arr_type}], [{arr_type}]* {arr_llvm_name}, i32 0, i32 {idx}\n'
     load_el = f'{res_val} = {llvm_load(el_type, el_ptr_name)}\n'
     store = f'{llvm_store(el_type, res_val, res_ptr)}\n'
-    code = el_ptr + load_el + alloca + store
+    code = idx_code + idx_load + el_ptr + load_el + alloca + store
     return (res_ptr, code, el_type)
 
 
@@ -539,7 +540,10 @@ def decl_var_id(var_name, llvm_name = ''):
     res_ptr = get_llvm_var_name()
     res_val = get_llvm_var_name()
     if not id_type == 'string':
-        llvm_type = Datatype[id_type].value
+        if not id_type in ['int', 'double', 'bool']:
+            llvm_type = id_type
+        else: 
+            llvm_type = Datatype[id_type].value
         if llvm_name == '':
             res_ptr = get_llvm_var_name()
             alloca = f'{res_ptr} = {llvm_alloca(llvm_type)}\n'
@@ -552,6 +556,22 @@ def decl_var_id(var_name, llvm_name = ''):
         return (res_ptr, code, llvm_type)
     else:
         return ('', '', '')
+
+
+def get_arr_index(expr):
+    global _cur_scope
+    idx_ptr = get_llvm_var_name()
+    idx_code = f'{idx_ptr} = {llvm_alloca("i32")}\n'
+    if expr.type.lower() == 'int':
+        idx_code += f'{llvm_store("i32", expr.parts[0], idx_ptr)}\n'
+    else:
+        i_ptr, i_code, i_type = llvm_expression('i32', expr)
+        val = get_llvm_var_name()
+        idx_code += f'{i_code}' \
+                    f'{val} = {llvm_load("i32", i_ptr)}\n' \
+                    f'{llvm_store("i32", val, idx_ptr)}\n'
+    return (idx_ptr, idx_code)
+
 
 
 def is_math_oper(operation):
