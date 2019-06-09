@@ -332,6 +332,7 @@ def assign_to_structure(assignment_node):
                 error(assignment_node.row_pos, 'Value can\'t be assigned in to \'%s\' field' % str_field_type)
 
 
+
 def check_function_call(func_node):
     """
     Check function call
@@ -341,7 +342,13 @@ def check_function_call(func_node):
     global _cur_scope
     func_name = func_node.parts[0].parts[0]
     func_args = func_node.parts[1].parts
+    if func_name == 'print':
+        return 'int'
     func = _cur_scope.is_variable_exist(func_name)
+
+    #if func_name == 'print':
+        #return 'int'
+
     if func is None:
         error(func_node.row_pos, 'Function \'%s\' is not declared above by code' % func_name)
         return
