@@ -1,7 +1,7 @@
 declare i32 @printf(i8*, ...)
 declare double @llvm.powi.f64(double %Val, i32 %power)
 
-@.result = private constant [13 x i8] c"Result = %d\0A\00"
+@.result = private constant [14 x i8] c"Result = %lf\0A\00"
 @.2 = constant [6 x i8] c"test\0A\00"
 
 %Person = type {i32}
@@ -55,8 +55,8 @@ store i32 %.31, i32* %.20
 %.100 = getelementptr inbounds %Person, %Person* %.18, i32 0, i32 0
 %.1000 = load i32, i32* %.100
 
-  %out = getelementptr inbounds [13 x i8], [13 x i8]* @.result, i32 0, i32 0
-	call i32 (i8*, ...) @printf(i8* %out, i32 %.1000)
+  %out = getelementptr inbounds [14 x i8], [14 x i8]* @.result, i32 0, i32 0
+	call i32 (i8*, ...) @printf(i8* %out, double 5.0)
 
   ret i32 0
 }

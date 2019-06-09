@@ -11,8 +11,8 @@ _cur_scope = None
 start_label_while = ''
 end_label_while = ''
 
-# print_dec = f'declare i32 @printf(i8*, ...)'
-# strings.append(print_dec)
+print_dec = f'declare i32 @printf(i8*, ...)'
+funcs.append(print_dec)
 
 class Datatype(Enum):
     int = 'i32'
@@ -110,15 +110,35 @@ def create_llvm(ast):
     return code
 
 
-# def llvm_print(node):
-#     argument = node.parts[1].parts[0]
-#     str_name = get_llvm_global_name()
-#     str_code = f'{str_name} = private constant [{len(argument)+1} x i8] c\"%d\\00\" \n'
-#     strings.append(str_code)
+def llvm_print(node):
+    out_format = {'i32': '%d', 'double': '%lf', 'i8*': '%s', 'i1': '%d'}
+    args = node.parts[1].parts
+    printf_params = []
+    str_values = []
+    result_str = ''
+    for arg in args:
+        if is_atom(arg.type):
+            result_str += arg.parts[0]
+        else:
+            ptr, code, v_type = llvm_expression(arg)
+            try:
+                print_format = out_format[v_type]
+            except:
+                raise NameError("This type can't be printed")
+            else:
+                str_values.append(print_format)
+                result_str += print_format
+                val_el = get_llvm_var_name()
+                code += f'{val_el} = {llvm_load(v_type, ptr)}\n'
+                printf_params.append(f'{v_type} {val_el}')
+    size = len(result_str)
+    str_name = get_llvm_global_name()
+    str_code = f'{str_name} = private constant [{size + 2} x i8] c\"{result_str}\\0A\\00\" \n'
+    strings.append(str_code)
 
-#     code = f'{get_llvm_var_name()} = call i32 (i8*, ...) @printf(i8* getelementptr inbounds' \
-#         f' ([{len(argument)+1} x i8], [{len(argument)+1} x i8]* {str_name}, i32 0, i32 0), i32 {argument} \n'
-#     return code
+    printf_params = [f'i8* getelementptr inbounds ([{size + 2} x i8], [{size + 2} x i8]* {str_name}, i32 0, i32 0)'] + printf_params
+    code += f'call i32 (i8*, ...) @printf({", ".join(printf_params)}) \n'
+    return code
 
 
 def llvm_if(node):
@@ -725,6 +745,7 @@ def is_bitwise_oper(operation):
 
 
 def is_atom(type):
+    type = type.lower()
     return type in ['int', 'double', 'string', 'bool'] or type in ['i32', 'i1', 'double', 'i8*']
 
 
