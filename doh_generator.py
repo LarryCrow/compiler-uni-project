@@ -116,11 +116,12 @@ def llvm_print(node):
     printf_params = []
     str_values = []
     result_str = ''
+    code = ''
     for arg in args:
         if is_atom(arg.type):
             result_str += arg.parts[0]
         else:
-            ptr, code, v_type = llvm_expression(arg)
+            ptr, expr_code, v_type = llvm_expression(arg)
             try:
                 print_format = out_format[v_type]
             except:
@@ -129,6 +130,7 @@ def llvm_print(node):
                 str_values.append(print_format)
                 result_str += print_format
                 val_el = get_llvm_var_name()
+                code += expr_code
                 code += f'{val_el} = {llvm_load(v_type, ptr)}\n'
                 printf_params.append(f'{v_type} {val_el}')
     size = len(result_str)
