@@ -381,7 +381,7 @@ def p_struct_assign(p):
            | id DOT ID EQUALS expr
     '''
     if not p[2] == '.':
-        p[0] = Node('ASSIGN', [p[1], p[3]], p.lieno(2))
+        p[0] = Node('ASSIGN', [p[1], p[3]], p.lineno(2))
     else:
         p[0] = Node('ASSIGN', [p[1], Node('FIELD', [p[3]]), p[5]], p.lineno(2))
 

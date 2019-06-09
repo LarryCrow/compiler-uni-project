@@ -306,16 +306,17 @@ def assign_to_structure(assignment_node):
     struct = _cur_scope.is_variable_exist(_cur_scope.is_variable_exist(var_name)['type'])
     if len(assignment_node.parts) == 2:
         if assignment_node.parts[1].type == 'ARGUMENTS':
-            str_args = get_function_arguments_types(assignment_node.parts[1].parts)
-            str_params = struct['options']
-            if not len(str_args) == len(str_params):
-                error(assignment_node.row_pos, 'Numbers of arguments are not the same numbers of structure fields')
-                return
-            for i in range(0, len(str_args)):
-                if not str_args[i] == str_params[i]['type']:
-                    error(assignment_node.row_pos, 'Field \'%s\', expected \'%s\' but received \'%s\'' %
-                          (str_params[i]['name'], str_params[i]['type'], str_args[i]))
-                    return
+            # str_args = get_function_arguments_types(assignment_node.parts[1].parts)
+            # str_params = struct['options']
+            # if not len(str_args) == len(str_params):
+            #     error(assignment_node.row_pos, 'Numbers of arguments are not the same numbers of structure fields')
+            #     return
+            # for i in range(0, len(str_args)):
+            #     if not str_args[i] == str_params[i]['type']:
+            #         error(assignment_node.row_pos, 'Field \'%s\', expected \'%s\' but received \'%s\'' %
+            #               (str_params[i]['name'], str_params[i]['type'], str_args[i]))
+            #         return
+            error(assignment_node.row_pos, 'Provide values during variable declaration.')
         else:
             value_type = get_value_type(assignment_node.parts[1])
             if not struct['name'] == value_type:
