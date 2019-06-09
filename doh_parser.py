@@ -278,8 +278,14 @@ def p_param_declaration(p):
     """
     param : ID ID
           | DATATYPE ID
+          | ID ID LBRACKET RBRACKET
+          | DATATYPE ID LBRACKET RBRACKET
     """
-    p[0] = Node(p[1], [p[2]], p.lineno(1))
+    if len(p) == 3:
+        p[0] = Node(p[1], [p[2]], p.lineno(1))
+    else:
+        p[0] = Node(Node('ARRAY', [p[1], p[2], Node('SIZE', '-1')], p.lexer.lineno),
+                    [p[2]], p.lineno(1))
 
 
 def p_param_declaration_error(p):

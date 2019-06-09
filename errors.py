@@ -135,13 +135,17 @@ def declare_function(function_node):
         error(function_node.row_pos, 'Function \'%s\' already exists')
         return None
     params = get_function_params(function_node.parts[2])
+    if params is None:
+        error(function_node.row_pos, 'Array can not be function parameters')
+        return None
     param_types = list(map(lambda x: x['type'], params))
     if not func_type in ['int', 'bool', 'double', 'string']:
         is_structure_type_exist = _cur_scope.is_variable_exist(func_type)
         if is_structure_type_exist is None:
             error(function_node.row_pos, 'Structure \'%s\' is not defined above by code' % func_type)
     for param_type in param_types:
-        if not param_type in ['int', 'bool', 'double', 'string']:
+        if not (param_type in ['int', 'bool', 'double', 'string'] or
+                param_type in ['int[]', 'bool[]', 'double[]', 'string[]']):
             is_structure_type_exist = _cur_scope.is_variable_exist(param_type.title(), True)
             if is_structure_type_exist is None:
                 error(function_node.row_pos, 'Structure \'%s\' is not defined above by code' % param_type)
@@ -162,6 +166,8 @@ def define_structure(structure_node):
     if is_structure_type_exist is not None:
         error(structure_node.row_pos, 'Structure \'%s\' is already defined' % structure_name)
     structure_params = get_function_params(structure_node.parts[1])
+    if structure_params is None:
+        error(structure_node.row_pos, 'Structure can not contain array as field')
     import collections
     param_names = list(map(lambda x: x['name'], structure_params))
     param_types = list(map(lambda x: x['type'], structure_params))
@@ -495,6 +501,8 @@ def get_function_params(params_node):
     """
     params = []
     for param in params_node.parts:
+        if hasattr(param.type, 'type'):
+            return None
         if param.type.lower() in ['int', 'double', 'string', 'bool']:
             params.append({'name': param.parts[0], 'type': param.type.lower(), 'options': None})
         else:
