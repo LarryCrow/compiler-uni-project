@@ -32,7 +32,7 @@ class Scope_llvm:
           if el['name'] == name:
               return el
       if not one_level_search and cur_scope.scope is not None:
-          return cur_scope.get_llvm_name(name, one_level_search, cur_scope.scope)
+          return cur_scope.get_llvm_var(name, one_level_search, cur_scope.scope)
       return None
 
 
