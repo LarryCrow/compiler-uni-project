@@ -472,16 +472,22 @@ def get_value_type(value_node):
         if is_expression(value_node.type):
             if value_node.type == 'UMINUS':
                 return value_node.parts[0].type.lower()
-            first = get_value_type(value_node.parts[0])
-            if not first:
-                return False
-            second = get_value_type(value_node.parts[1])
-            if not second:
-                return False
-            compare = is_operation_possible(first, second, value_node.type)
-            if not compare['is_possible']:
-                error(value_node.row_pos, compare['message'])
-                return False
+            if value_node.type == 'LNOT':
+                first = get_value_type(value_node.parts[0])
+                if not first or not first == 'bool':
+                    return False
+                return first
+            else:
+                first = get_value_type(value_node.parts[0])
+                if not first:
+                    return False
+                second = get_value_type(value_node.parts[1])
+                if not second:
+                    return False
+                compare = is_operation_possible(first, second, value_node.type)
+                if not compare['is_possible']:
+                    error(value_node.row_pos, compare['message'])
+                    return False
             return compare['message']
         elif value_node.type == 'ID':
             return get_id_type(value_node)

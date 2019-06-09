@@ -396,6 +396,10 @@ def llvm_expression(expr, llvm_name = ''):
     expr_type = expr.type.lower()
     if expr_type in ['int', 'string', 'double', 'bool']:
         llvm_name, code, llvm_type = decl_const(expr_type, expr.parts[0], llvm_name)
+    elif expr_type == 'uminus':
+        llvm_name, code, llvm_type = decl_var_uminus(expr.parts[0], llvm_name)
+    elif expr_type == 'lnot':
+        llvm_name, code, llvm_type = logic_lnot(expr.parts[0], llvm_name)
     elif expr_type == 'id':
         llvm_name, code, llvm_type = decl_var_id(expr.parts[0], llvm_name)
     elif expr_type == 'function_call':
@@ -624,6 +628,26 @@ def decl_const(v_type, value, llvm_name = ''):
         return (name, code, f'{len(value)+2} x i8')
 
 
+def decl_var_uminus(expr, llvm_name = ''):
+    ptr, code, v_type = llvm_expression(expr, llvm_name)
+    val = get_llvm_var_name()
+    val_neg = get_llvm_var_name()
+    load = f'{val} = {llvm_load(v_type, ptr)}\n'
+    if v_type == 'i32':
+        neg = f'{val_neg} = {llvm_math_action("minus", v_type, "0", val)}\n'
+    elif v_type == 'double':
+        neg = f'{val_neg} = {llvm_math_action("minus", v_type, "0.0", val)}\n'
+    if llvm_name == '':
+        res_ptr = get_llvm_var_name()
+        alloca = f'{res_ptr} = {llvm_alloca(v_type)}\n'
+    else:
+        res_ptr = llvm_name
+        alloca = ''
+    store = f'{llvm_store(v_type, val_neg, res_ptr)}\n'
+    res_code = code + load + neg + alloca + store
+    return res_ptr, res_code, v_type
+
+
 def decl_var_id(var_name, llvm_name = ''):
     global _cur_scope
     id_llvm_var = _cur_scope.get_llvm_var(var_name, True)
@@ -725,9 +749,26 @@ def logical_operations(node, llvm_name = ''):
     return (res_name, code, 'i1') 
 
 
+def logic_lnot(expr, llvm_name = ''):
+    ptr, code, v_type = llvm_expression(expr, llvm_name)
+    val = get_llvm_var_name()
+    val_neg = get_llvm_var_name()
+    load = f'{val} = {llvm_load(v_type, ptr)}\n'
+    neg = f'{val_neg} = {llvm_math_action("minus", v_type, "1", val)}\n'
+    if llvm_name == '':
+        res_ptr = get_llvm_var_name()
+        alloca = f'{res_ptr} = {llvm_alloca(v_type)}\n'
+    else:
+        res_ptr = llvm_name
+        alloca = ''
+    store = f'{llvm_store(v_type, val_neg, res_ptr)}\n'
+    res_code = code + load + neg + alloca + store
+    return res_ptr, res_code, v_type
+
+
 def llvm_math_action(op, llvm_type, a, b):
     if not op == 'pow':
-        llvm_oper = i_operators[op] if llvm_type == 'i32' else f_operators[op]
+        llvm_oper = i_operators[op] if llvm_type in ['i1', 'i32'] else f_operators[op]
         return f'{llvm_oper} {llvm_type} {a}, {b}'
     else:
         return f'call double @llvm.powi.f64(double {a}, i32 {b})'
