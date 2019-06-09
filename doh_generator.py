@@ -30,7 +30,9 @@ i_operators = {
     'gt' : 'sgt',
     'ge' : 'sge',
     'lt' : 'slt',
-    'le' : 'sle'
+    'le' : 'sle',
+    'land': 'and',
+    'lor': 'or'
 }
 
 f_operators = {
@@ -43,7 +45,9 @@ f_operators = {
     'gt' : 'ogt',
     'ge' : 'oge',
     'lt' : 'olt',
-    'le' : 'ole'
+    'le' : 'ole',
+    'land': 'and',
+    'lor': 'or'
 }
 
 # Main function calling from main.py
@@ -730,7 +734,10 @@ def llvm_math_action(op, llvm_type, a, b):
 
 
 def llvm_logic_action(op, llvm_type, a, b):
-    llvm_oper = f'icmp {i_operators[op]}' if llvm_type in ['i1', 'i32'] else f'fcmp {f_operators[op]}'
+    if op == 'land' or op == 'lor':
+        llvm_oper = f'{i_operators[op]}'
+    else:
+        llvm_oper = f'icmp {i_operators[op]}' if llvm_type in ['i1', 'i32'] else f'fcmp {f_operators[op]}'
     return f'{llvm_oper} {llvm_type} {a}, {b}'
 
 

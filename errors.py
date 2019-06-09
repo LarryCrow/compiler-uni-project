@@ -77,6 +77,10 @@ def find_errors(ast, inside_func=False, inside_loop=False):
                     find_errors(node.parts[1], inside_func=inside_func, inside_loop=inside_loop)
                 elif node.type == 'IF_ELSE':
                     find_errors(node.parts[1], inside_func=inside_func, inside_loop=inside_loop)
+                    _cur_scope = new_scope.scope
+                    new_scope = Scope(hash(node), _cur_scope, _cur_scope.variables.copy())
+                    _scopes.append(new_scope)
+                    _cur_scope = new_scope
                     find_errors(node.parts[2], inside_func=inside_func, inside_loop=inside_loop)
                 elif node.type == 'WHILE':
                     find_errors(node.parts[1], inside_func=inside_func, inside_loop=True)
