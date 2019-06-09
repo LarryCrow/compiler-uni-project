@@ -215,6 +215,11 @@ def p_func_declaration(p):
     p[0] = Node('FUNCTION', [p[2], p[3], p[4], p[5]], p.lineno(1))
 
 
+def p_func_declaration_str(p):
+    'func_declaration : FUNCTION ID id func_params_paren basic_block'
+    p[0] = Node('FUNCTION', [Node('TYPE', [p[2]], p.lineno(1)), p[3], p[4], p[5]], p.lineno(1))
+
+
 def p_func_declaration_error(p):
     '''
     func_declaration : FUNCTION error

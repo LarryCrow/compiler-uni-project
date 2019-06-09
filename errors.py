@@ -136,6 +136,10 @@ def declare_function(function_node):
         return None
     params = get_function_params(function_node.parts[2])
     param_types = list(map(lambda x: x['type'], params))
+    if not func_type in ['int', 'bool', 'double', 'string']:
+        is_structure_type_exist = _cur_scope.is_variable_exist(func_type)
+        if is_structure_type_exist is None:
+            error(function_node.row_pos, 'Structure \'%s\' is not defined above by code' % func_type)
     for param_type in param_types:
         if not param_type in ['int', 'bool', 'double', 'string']:
             is_structure_type_exist = _cur_scope.is_variable_exist(param_type.title(), True)
@@ -491,7 +495,10 @@ def get_function_params(params_node):
     """
     params = []
     for param in params_node.parts:
-        params.append({'name': param.parts[0], 'type': param.type.lower()})
+        if param.type.lower() in ['int', 'double', 'string', 'bool']:
+            params.append({'name': param.parts[0], 'type': param.type.lower(), 'options': None})
+        else:
+            params.append({'name': param.parts[0], 'type': param.type, 'options': None})
     return params
 
 
