@@ -215,6 +215,11 @@ def p_func_declaration(p):
     p[0] = Node('FUNCTION', [p[2], p[3], p[4], p[5]], p.lineno(1))
 
 
+def p_func_declaration_str(p):
+    'func_declaration : FUNCTION ID id func_params_paren basic_block'
+    p[0] = Node('FUNCTION', [Node('TYPE', [p[2]], p.lineno(1)), p[3], p[4], p[5]], p.lineno(1))
+
+
 def p_func_declaration_error(p):
     '''
     func_declaration : FUNCTION error
@@ -273,8 +278,13 @@ def p_param_declaration(p):
     """
     param : ID ID
           | DATATYPE ID
+          | ID ID LBRACKET RBRACKET
+          | DATATYPE ID LBRACKET RBRACKET
     """
-    p[0] = Node(p[1], [p[2]], p.lineno(1))
+    if len(p) == 3:
+        p[0] = Node(p[1], [p[2]], p.lineno(1))
+    else:
+        p[0] = Node(p[1] + '[]', [p[2]], p.lineno(1))
 
 
 def p_param_declaration_error(p):
@@ -370,7 +380,7 @@ def p_struct_assign(p):
            | id DOT ID EQUALS expr
     '''
     if not p[2] == '.':
-        p[0] = Node('ASSIGN', [p[1], p[3]], p.lieno(2))
+        p[0] = Node('ASSIGN', [p[1], p[3]], p.lineno(2))
     else:
         p[0] = Node('ASSIGN', [p[1], Node('FIELD', [p[3]]), p[5]], p.lineno(2))
 
@@ -445,17 +455,17 @@ def p_conditionals(p):
          | expr NE expr
     '''
     if p[2] == '<=':
-        p[0] = Node('LESS OR EQ', [p[1], p[3]], p.lineno(2))
+        p[0] = Node('LE', [p[1], p[3]], p.lineno(2))
     elif p[2] == '>=':
-        p[0] = Node('GREATER OR EQ', [p[1], p[3]], p.lineno(2))
+        p[0] = Node('GE', [p[1], p[3]], p.lineno(2))
     elif p[2] == '<':
-        p[0] = Node('LESS', [p[1], p[3]], p.lineno(2))
+        p[0] = Node('LT', [p[1], p[3]], p.lineno(2))
     elif p[2] == '>':
-        p[0] = Node('GREATER', [p[1], p[3]], p.lineno(2))
+        p[0] = Node('GT', [p[1], p[3]], p.lineno(2))
     elif p[2] == '==':
-        p[0] = Node('EQUALS', [p[1], p[3]], p.lineno(2))
+        p[0] = Node('EQ', [p[1], p[3]], p.lineno(2))
     elif p[2] == '!=':
-        p[0] = Node('NOT EQUALS', [p[1], p[3]], p.lineno(2))
+        p[0] = Node('NE', [p[1], p[3]], p.lineno(2))
 
 
 def p_logical_operation(p):

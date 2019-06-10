@@ -1,5 +1,6 @@
 from doh_lexer import *
 from doh_parser import *
+from doh_generator import generate_code
 import sys
 import argparse
 
@@ -64,5 +65,9 @@ with open(file_name, 'r', encoding="UTF-8") as r:
                     xml_file = open('program.xml', 'w')
                     xml_file.write(prettify(res))
                 else:
+                    code = generate_code(program)
+                    if not code == '':
+                        with open('code.ll', 'w') as code_file:
+                            code_file.write(code)
                     with open('result.txt', 'w') as w:
                         w.write(str(program))

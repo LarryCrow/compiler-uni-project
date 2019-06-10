@@ -3,7 +3,6 @@ from models.scope import Scope
 
 _subscribers = []
 _num_errors = 0
-_values_table = {}
 _scopes = []
 _cur_scope = None
 
@@ -78,6 +77,10 @@ def find_errors(ast, inside_func=False, inside_loop=False):
                     find_errors(node.parts[1], inside_func=inside_func, inside_loop=inside_loop)
                 elif node.type == 'IF_ELSE':
                     find_errors(node.parts[1], inside_func=inside_func, inside_loop=inside_loop)
+                    _cur_scope = new_scope.scope
+                    new_scope = Scope(hash(node), _cur_scope, _cur_scope.variables.copy())
+                    _scopes.append(new_scope)
+                    _cur_scope = new_scope
                     find_errors(node.parts[2], inside_func=inside_func, inside_loop=inside_loop)
                 elif node.type == 'WHILE':
                     find_errors(node.parts[1], inside_func=inside_func, inside_loop=True)
@@ -136,9 +139,17 @@ def declare_function(function_node):
         error(function_node.row_pos, 'Function \'%s\' already exists')
         return None
     params = get_function_params(function_node.parts[2])
+    if params is None:
+        error(function_node.row_pos, 'Array can not be function parameters')
+        return None
     param_types = list(map(lambda x: x['type'], params))
+    if not func_type in ['int', 'bool', 'double', 'string']:
+        is_structure_type_exist = _cur_scope.is_variable_exist(func_type)
+        if is_structure_type_exist is None:
+            error(function_node.row_pos, 'Structure \'%s\' is not defined above by code' % func_type)
     for param_type in param_types:
-        if not param_type in ['int', 'bool', 'double', 'string']:
+        if not (param_type in ['int', 'bool', 'double', 'string'] or
+                param_type in ['int[]', 'bool[]', 'double[]', 'string[]']):
             is_structure_type_exist = _cur_scope.is_variable_exist(param_type.title(), True)
             if is_structure_type_exist is None:
                 error(function_node.row_pos, 'Structure \'%s\' is not defined above by code' % param_type)
@@ -159,6 +170,8 @@ def define_structure(structure_node):
     if is_structure_type_exist is not None:
         error(structure_node.row_pos, 'Structure \'%s\' is already defined' % structure_name)
     structure_params = get_function_params(structure_node.parts[1])
+    if structure_params is None:
+        error(structure_node.row_pos, 'Structure can not contain array as field')
     import collections
     param_names = list(map(lambda x: x['name'], structure_params))
     param_types = list(map(lambda x: x['type'], structure_params))
@@ -297,16 +310,17 @@ def assign_to_structure(assignment_node):
     struct = _cur_scope.is_variable_exist(_cur_scope.is_variable_exist(var_name)['type'])
     if len(assignment_node.parts) == 2:
         if assignment_node.parts[1].type == 'ARGUMENTS':
-            str_args = get_function_arguments_types(assignment_node.parts[1].parts)
-            str_params = struct['options']
-            if not len(str_args) == len(str_params):
-                error(assignment_node.row_pos, 'Numbers of arguments are not the same numbers of structure fields')
-                return
-            for i in range(0, len(str_args)):
-                if not str_args[i] == str_params[i]['type']:
-                    error(assignment_node.row_pos, 'Field \'%s\', expected \'%s\' but received \'%s\'' %
-                          (str_params[i]['name'], str_params[i]['type'], str_args[i]))
-                    return
+            # str_args = get_function_arguments_types(assignment_node.parts[1].parts)
+            # str_params = struct['options']
+            # if not len(str_args) == len(str_params):
+            #     error(assignment_node.row_pos, 'Numbers of arguments are not the same numbers of structure fields')
+            #     return
+            # for i in range(0, len(str_args)):
+            #     if not str_args[i] == str_params[i]['type']:
+            #         error(assignment_node.row_pos, 'Field \'%s\', expected \'%s\' but received \'%s\'' %
+            #               (str_params[i]['name'], str_params[i]['type'], str_args[i]))
+            #         return
+            error(assignment_node.row_pos, 'Provide values during variable declaration.')
         else:
             value_type = get_value_type(assignment_node.parts[1])
             if not struct['name'] == value_type:
@@ -323,6 +337,7 @@ def assign_to_structure(assignment_node):
                 error(assignment_node.row_pos, 'Value can\'t be assigned in to \'%s\' field' % str_field_type)
 
 
+
 def check_function_call(func_node):
     """
     Check function call
@@ -332,7 +347,13 @@ def check_function_call(func_node):
     global _cur_scope
     func_name = func_node.parts[0].parts[0]
     func_args = func_node.parts[1].parts
+    if func_name == 'print':
+        return 'int'
     func = _cur_scope.is_variable_exist(func_name)
+
+    #if func_name == 'print':
+        #return 'int'
+
     if func is None:
         error(func_node.row_pos, 'Function \'%s\' is not declared above by code' % func_name)
         return
@@ -399,7 +420,7 @@ def check_structure_field(str_node):
     global _cur_scope
     str_var = str_node.parts[0].parts[0]
     str_field = str_node.parts[1].parts[0]
-    is_var_exist = _cur_scope.is_variable_exist(str_var)
+    is_var_exist = _cur_scope.is_variable_exist(str_var, True)
     if is_var_exist is None:
         error(str_node.row_pos, 'Variable \'%s\' does not exist' % str_var)
         return
@@ -414,7 +435,7 @@ def check_array_element(arr_elem_node):
     global _cur_scope
     arr_var = arr_elem_node.parts[0].parts[0]
     arr_index = arr_elem_node.parts[1]
-    array = _cur_scope.is_variable_exist(arr_var)
+    array = _cur_scope.is_variable_exist(arr_var, True)
     if array is None:
         error(arr_elem_node.row_pos, 'Array \'%s\' does not exist' % arr_var)
         return
@@ -451,16 +472,22 @@ def get_value_type(value_node):
         if is_expression(value_node.type):
             if value_node.type == 'UMINUS':
                 return value_node.parts[0].type.lower()
-            first = get_value_type(value_node.parts[0])
-            if not first:
-                return False
-            second = get_value_type(value_node.parts[1])
-            if not second:
-                return False
-            compare = is_operation_possible(first, second, value_node.type)
-            if not compare['is_possible']:
-                error(value_node.row_pos, compare['message'])
-                return False
+            if value_node.type == 'LNOT':
+                first = get_value_type(value_node.parts[0])
+                if not first or not first == 'bool':
+                    return False
+                return first
+            else:
+                first = get_value_type(value_node.parts[0])
+                if not first:
+                    return False
+                second = get_value_type(value_node.parts[1])
+                if not second:
+                    return False
+                compare = is_operation_possible(first, second, value_node.type)
+                if not compare['is_possible']:
+                    error(value_node.row_pos, compare['message'])
+                    return False
             return compare['message']
         elif value_node.type == 'ID':
             return get_id_type(value_node)
@@ -478,7 +505,7 @@ def get_value_type(value_node):
 
 def get_id_type(id_node):
     global _cur_scope
-    var_id = _cur_scope.is_variable_exist(id_node.parts[0])
+    var_id = _cur_scope.is_variable_exist(id_node.parts[0], True)
     if var_id is None:
         error(id_node.row_pos, 'Variable \'%s\' does not exitst' % id_node.parts[0])
     return var_id['type'] if var_id is not None else None
@@ -492,7 +519,12 @@ def get_function_params(params_node):
     """
     params = []
     for param in params_node.parts:
-        params.append({'name': param.parts[0], 'type': param.type.lower()})
+        if param.type.lower() in ['int[]', 'double[]', 'string[]', 'bool[]']:
+            params.append({'name': param.parts[0], 'type': param.type[:-2].lower() , 'options': {'size' : 0}})
+        elif param.type.lower() in ['int', 'double', 'string', 'bool']:
+            params.append({'name': param.parts[0], 'type': param.type.lower(), 'options': None})
+        else:
+            params.append({'name': param.parts[0], 'type': param.type, 'options': None})
     return params
 
 
@@ -542,7 +574,7 @@ def is_operation_possible(a, b, type_operation):
         return True if val == 'int' or val == 'double' else False
 
     def is_logical_operation(op):
-        tokens = ['LOR', 'LAND', 'LESS', 'LESS OR EQ', 'GREATER', 'GREATER OR EQ', 'EQUALS', 'NOT EQUALS', 'LNOT']
+        tokens = ['LOR', 'LAND', 'LT', 'LE', 'GT', 'GE', 'EQ', 'NE', 'LNOT']
         return op in tokens
 
     def is_bitwise_operation(op):
@@ -556,23 +588,26 @@ def is_operation_possible(a, b, type_operation):
     elif a == 'null' or b == 'null':
         msg = "One of operand '%s' and '%s' is null" % (a, b)
     elif is_logical_operation(type_operation):
-        if a == b:
-            is_possible = True
-            msg = 'bool'
+        if a == 'string' and b == 'string':
+            msg = 'Can\'t compare strings'
         else:
-            msg = 'Can\'t compare values of different types'
+            if a == b:
+                is_possible = True
+                msg = 'bool'
+            else:
+                msg = 'Can\'t compare values of different types'
     elif is_bitwise_operation(type_operation):
         if (a == "bool" or a == "int") and a == b:
             is_possible = True
             msg = a
         else:
             msg = 'Can\'t do bitwise operation "%s" between types "%s" and "%s"' % (type_operation, a, b)
-    elif a == 'string' and type_operation == 'PLUS':
-        is_possible = True
-        msg = 'string'
     elif is_number(a) and is_number(b):
-        is_possible = True
-        msg = 'int'
+        if a == b:
+            is_possible = True
+            msg = a
+        else:
+            msg = 'Can\'t do math operation "%s" between types "%s" and "%s"' % (type_operation, a, b)
     elif a == b:
         is_possible = True
     else:
