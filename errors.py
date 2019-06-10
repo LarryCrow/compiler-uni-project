@@ -519,9 +519,9 @@ def get_function_params(params_node):
     """
     params = []
     for param in params_node.parts:
-        if hasattr(param.type, 'type'):
-            return None
-        if param.type.lower() in ['int', 'double', 'string', 'bool']:
+        if param.type.lower() in ['int[]', 'double[]', 'string[]', 'bool[]']:
+            params.append({'name': param.parts[0], 'type': param.type[:-2].lower() , 'options': {'size' : 0}})
+        elif param.type.lower() in ['int', 'double', 'string', 'bool']:
             params.append({'name': param.parts[0], 'type': param.type.lower(), 'options': None})
         else:
             params.append({'name': param.parts[0], 'type': param.type, 'options': None})
@@ -588,23 +588,26 @@ def is_operation_possible(a, b, type_operation):
     elif a == 'null' or b == 'null':
         msg = "One of operand '%s' and '%s' is null" % (a, b)
     elif is_logical_operation(type_operation):
-        if a == b:
-            is_possible = True
-            msg = 'bool'
+        if a == 'string' and b == 'string':
+            msg = 'Can\'t compare strings'
         else:
-            msg = 'Can\'t compare values of different types'
+            if a == b:
+                is_possible = True
+                msg = 'bool'
+            else:
+                msg = 'Can\'t compare values of different types'
     elif is_bitwise_operation(type_operation):
         if (a == "bool" or a == "int") and a == b:
             is_possible = True
             msg = a
         else:
             msg = 'Can\'t do bitwise operation "%s" between types "%s" and "%s"' % (type_operation, a, b)
-    elif a == 'string' and type_operation == 'PLUS':
-        is_possible = True
-        msg = 'string'
     elif is_number(a) and is_number(b):
-        is_possible = True
-        msg = 'int'
+        if a == b:
+            is_possible = True
+            msg = a
+        else:
+            msg = 'Can\'t do math operation "%s" between types "%s" and "%s"' % (type_operation, a, b)
     elif a == b:
         is_possible = True
     else:
