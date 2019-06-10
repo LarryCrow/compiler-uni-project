@@ -290,20 +290,25 @@ def decl_func_llvm(node):
     def get_func_llvm_params(params):
         pars = []
         for p in params:
-            if is_atom(p.type):
+            if p.type in ['int[]', 'double[]', 'string[]', 'bool[]']:
+                p_type = Datatype[p.type[:-2].lower()].value
+            elif is_atom(p.type):
                 p_type = Datatype[p.type].value
             else:
                 p_type = p.type
             if p_type in ['i32', 'i8', 'i1', 'double']:
-                pars.append({'type': p_type, 'name': p.parts[0], 'llvm_name': get_llvm_var_name()})
+                if p.type in ['int[]', 'double[]', 'string[]', 'bool[]']:
+                    pars.append({'type': p_type, 'name': p.parts[0], 'llvm_name': get_llvm_var_name(), 'options': 'array'})
+                else:
+                    pars.append({'type': p_type, 'name': p.parts[0], 'llvm_name': get_llvm_var_name(), 'options': None})
             else:
-                pars.append({'type': '%' + p_type, 'name': p.parts[0], 'llvm_name': get_llvm_var_name()})
+                pars.append({'type': '%' + p_type, 'name': p.parts[0], 'llvm_name': get_llvm_var_name(), 'options': None})
         return pars
 
     def add_params_in_scope(params):
         global _cur_scope
         for p in params:
-            _cur_scope.add_variable(p['type'], p['name'], p['llvm_name'])
+            _cur_scope.add_variable(p['type'], p['name'], p['llvm_name'], p['options'])
 
     global _cur_scope
     global _scopes
@@ -379,7 +384,7 @@ def assign_llvm(node):
     var_name = node.parts[0].parts[0]
     var = _cur_scope.get_llvm_var(var_name)
     value = node.parts[1]
-    if 'x' in var['type']:
+    if 'x' in var['type'] or var['options'] == 'array':
         # Change array value
         code = update_array_elem(var, node.parts[1], node.parts[2])
     elif len(node.parts) == 3:
@@ -462,8 +467,12 @@ def create_arg(args, func_name):
     for i in range(len(args)):
         a_type = args[i].type.lower()
         par_ptr, par_code, par_type = llvm_expression(args[i])
-        dubl_ptr, dubl_code = dublicate_param(par_ptr, params_type[i])
-        res.append(f'{params_type[i]}* {dubl_ptr}')
+        if not 'x' in par_type:
+            dubl_ptr, dubl_code = dublicate_param(par_ptr, params_type[i])
+            res.append(f'{params_type[i]}* {dubl_ptr}')
+        else:
+            res.append(f'{params_type[i]}* {par_ptr}')
+            dubl_code = ''
         res_code += par_code + dubl_code
     return (res, res_code)
 
@@ -491,8 +500,12 @@ def update_array_elem(array_obj, index, value):
     ptr = get_llvm_var_name()
     idx = get_llvm_var_name()
     idx_load = f'{idx} = {llvm_load("i32", idx_ptr)}\n'
-    el_ptr = f'{ptr} = getelementptr inbounds [{a_type}], [{a_type}]* {name}, i32 0, i32 {idx}\n'
-    el_type = a_type.split()[2]
+    if a_type in ['i32', 'i1', 'i8*', 'double']:
+        el_type = a_type
+        el_ptr = f'{ptr} = getelementptr inbounds {a_type}, {a_type}* {name}, i32 {idx}\n'
+    else:
+        el_type = a_type.split()[2]
+        el_ptr = f'{ptr} = getelementptr inbounds [{a_type}], [{a_type}]* {name}, i32 0, i32 {idx}\n'
     val_ptr, expr_code, val_type = llvm_expression(value)
     el_var = get_llvm_var_name()
     el_val = f'{el_var} = {llvm_load(el_type, val_ptr)}\n'
@@ -550,11 +563,17 @@ def llvm_arr_elem(node, llvm_name):
     idx = node.parts[1].parts[0]
     idx_ptr, idx_code = get_arr_index(node.parts[1])
     llvm_arr = _cur_scope.get_llvm_var(arr_name)
-    arr_size = llvm_arr['options']['size']
     arr_type = llvm_arr['type']
     arr_llvm_name = llvm_arr['llvm_name']
-    el_type = arr_type.split()[2]
+    idx = get_llvm_var_name()
     el_ptr_name = get_llvm_var_name()
+    idx_load = f'{idx} = {llvm_load("i32", idx_ptr)}\n'
+    if arr_type in ['i32', 'i1', 'double', 'string']:
+        el_type = arr_type
+        el_ptr = f'{el_ptr_name} = getelementptr inbounds {arr_type}, {arr_type}* {arr_llvm_name}, i32 {idx}\n'
+    else:
+        el_type = arr_type.split()[2]
+        el_ptr = f'{el_ptr_name} = getelementptr inbounds [{arr_type}], [{arr_type}]* {arr_llvm_name}, i32 0, i32 {idx}\n'
     res_val = get_llvm_var_name()
     if llvm_name == '':
         res_ptr = get_llvm_var_name()
@@ -562,9 +581,6 @@ def llvm_arr_elem(node, llvm_name):
     else:
         res_ptr = llvm_name
         alloca = ''
-    idx = get_llvm_var_name()
-    idx_load = f'{idx} = {llvm_load("i32", idx_ptr)}\n'
-    el_ptr = f'{el_ptr_name} = getelementptr inbounds [{arr_type}], [{arr_type}]* {arr_llvm_name}, i32 0, i32 {idx}\n'
     load_el = f'{res_val} = {llvm_load(el_type, el_ptr_name)}\n'
     store = f'{llvm_store(el_type, res_val, res_ptr)}\n'
     code = idx_code + idx_load + el_ptr + load_el + alloca + store
@@ -660,16 +676,22 @@ def decl_var_id(var_name, llvm_name = ''):
             llvm_type = id_type
         else: 
             llvm_type = Datatype[id_type].value
-        if llvm_name == '':
+        if 'x' in id_llvm_var['type']:
             res_ptr = get_llvm_var_name()
-            alloca = f'{res_ptr} = {llvm_alloca(llvm_type)}\n'
-        else:
-            res_ptr = llvm_name
-            alloca = ''
-        load = f'{res_val} = {llvm_load(llvm_type, id_ptr)}\n'
-        store = f'{llvm_store(llvm_type, res_val, res_ptr)}\n'
-        code = alloca + load + store
-        return (res_ptr, code, llvm_type)
+            get_ptr = f'{res_ptr} = getelementptr inbounds [{id_llvm_var["type"]}],' \
+                      f'[{id_llvm_var["type"]}]* {id_llvm_var["llvm_name"]}, i32 0, i32 0\n'
+            return (res_ptr, get_ptr, id_llvm_var["type"])
+        else:    
+            if llvm_name == '':
+                res_ptr = get_llvm_var_name()
+                alloca = f'{res_ptr} = {llvm_alloca(llvm_type)}\n'
+            else:
+                res_ptr = llvm_name
+                alloca = ''
+            load = f'{res_val} = {llvm_load(llvm_type, id_ptr)}\n'
+            store = f'{llvm_store(llvm_type, res_val, res_ptr)}\n'
+            code = alloca + load + store
+            return (res_ptr, code, llvm_type)
     else:
         return ('', '', '')
 
@@ -813,9 +835,6 @@ def llvm_store(v_type, value, ptr):
 
 def llvm_alloca(v_type):
     return f'alloca {v_type}'
-
-def llvm_getptr(v_type, ptr, idx):
-    return f'getelementptr inbounds [{v_type}], [{v_type}]* {ptr}, i32 0, i32 {idx}'
 
 
 # Create variable name for llvm code using global variable 'iter_name'
