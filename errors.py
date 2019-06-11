@@ -203,9 +203,9 @@ def declare_array(array_node):
         error(array_node.row_pos, 'Array size can\'t be equals 0')
         return
     if arr_type.lower() not in ['int', 'string', 'bool', 'double']:
-        if _cur_scope.is_variable_exist(arr_type) is None:
-            error(array_node.row_pos, 'Type \'%s\' does not exist' % arr_type)
-            return
+        # if _cur_scope.is_variable_exist(arr_type) is None:
+        error(array_node.row_pos, 'You can\'t create array non-basic type' % arr_type)
+        return
     if len(array_node.parts) == 4:
         arr_values_type = get_function_arguments_types(array_node.parts[3].parts)
         is_same_type = all(x == arr_type for x in arr_values_type)
