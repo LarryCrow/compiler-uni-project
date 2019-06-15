@@ -144,7 +144,7 @@ def llvm_print(node):
     size = len(result_str)
     str_name = get_llvm_global_name()
     str_code = f'{str_name} = private constant [{size + 2} x i8] c\"{result_str}\\0A\\00\" \n'
-    strings.append(str_code)
+    strings.append({'name': str_name, 'code': str_code, 'length': size+2})
 
     printf_params = [f'i8* getelementptr inbounds ([{size + 2} x i8], [{size + 2} x i8]* {str_name}, i32 0, i32 0)'] + printf_params
     code += f'call i32 (i8*, ...) @printf({", ".join(printf_params)}) \n'
@@ -392,8 +392,6 @@ def assign_llvm(node):
         code = update_struct_field(var, node.parts[1].parts[0], node.parts[2])
     else:
         llvm_name, code, llvm_type = llvm_expression(value, var['llvm_name'])
-        if llvm_type == 'i8*':
-            _cur_scope.change_llvm_name(var_name, llvm_name)
     return code
 
 
@@ -418,8 +416,6 @@ def llvm_expression(expr, llvm_name = ''):
         llvm_name, code, llvm_type = math_operations(expr, llvm_name)
     elif is_logical_oper(expr_type):
         llvm_name, code, llvm_type = logical_operations(expr, llvm_name)
-    else:
-        llvm_name, code, llvm_type = llvm_struct(expr, llvm_name)
     return (llvm_name, code, llvm_type)
 
 
@@ -535,15 +531,6 @@ def update_struct_field(struct_obj, field, value):
     store = f'{llvm_store(field_llvm_type, val_val, ptr_name)}\n'
     code = ptr_field + expr_code + load + store
     return code
-
-
-def llvm_struct(expr, llvm_name):
-    global _cur_scope
-    print(expr)
-    if expr.type == 'ARGUMENTS':
-        pass
-    else:
-        pass
 
 
 def llvm_goto(node):
