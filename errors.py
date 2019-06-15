@@ -347,7 +347,7 @@ def check_function_call(func_node):
     global _cur_scope
     func_name = func_node.parts[0].parts[0]
     func_args = func_node.parts[1].parts
-    if func_name == 'print':
+    if func_name == 'print' or func_name == 'scan':
         return 'int'
     func = _cur_scope.is_variable_exist(func_name)
 
