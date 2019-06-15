@@ -11,8 +11,12 @@ _cur_scope = None
 start_label_while = ''
 end_label_while = ''
 
+out_format = {'i32': '%d', 'double': '%lf', 'i8*': '%s', 'i1': '%d'}
+
 print_dec = f'declare i32 @printf(i8*, ...)'
+scan_dec = f'declare i32 @scanf(i8*, ...)'
 funcs.append(print_dec)
+funcs.append(scan_dec)
 
 class Datatype(Enum):
     int = 'i32'
@@ -92,6 +96,8 @@ def create_llvm(ast):
             if node.type == 'FUNCTION_CALL':
                 if (node.parts[0].parts[0] == 'print'):
                     code += llvm_print(node)
+                elif (node.parts[0].parts[0] == 'scan'):
+                    code += llvm_scan(node)
                 else:
                     var, func_code = llvm_func_call(node)
                     code = code + func_code
@@ -113,13 +119,25 @@ def create_llvm(ast):
                 code += llvm_break()
             if node.type == 'CONTINUE':
                 code += llvm_continue()
-
     return code
 
+def llvm_scan(node):
+    global out_format
+    global strings
+    var_name = node.parts[1].parts[0].parts[0]
+    var_type = Datatype[_cur_scope.get_llvm_var(var_name)['type']].value
+    llvm_name = _cur_scope.get_llvm_var(var_name)['llvm_name']
+    var_type = out_format[var_type]
+    str_name = get_llvm_global_name()
+    str_code = f'{str_name} = private constant [3 x i8] c\"{var_type}\\00\"'
+    strings.append(str_code)
+    code = f'{get_llvm_var_name()} = call i32 (i8*, ...) ' \
+           f'@scanf(i8* getelementptr inbounds ([3 x i8], [3 x i8]* {str_name}, ' \
+           f'i32 0, i32 0), i32* {llvm_name})'
+    return code
 
 def llvm_print(node):
-    global strings
-    out_format = {'i32': '%d', 'double': '%lf', 'i8*': '%s', 'i1': '%d'}
+    global out_format
     args = node.parts[1].parts
     printf_params = []
     str_values = []
