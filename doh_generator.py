@@ -300,7 +300,7 @@ def decl_func_llvm(node):
                 p_type = Datatype[p.type].value
             else:
                 p_type = p.type
-            if p_type in ['i32', 'i8', 'i1', 'double']:
+            if p_type in ['i32', 'i8*', 'i1', 'double']:
                 if p.type in ['int[]', 'double[]', 'string[]', 'bool[]']:
                     pars.append({'type': p_type, 'name': p.parts[0], 'llvm_name': get_llvm_var_name(), 'options': 'array'})
                 else:
@@ -820,6 +820,13 @@ def llvm_store(v_type, value, ptr):
 
 def llvm_alloca(v_type):
     return f'alloca {v_type}'
+
+
+def llvm_create_string(value):
+    global strings
+    name = get_llvm_global_name()
+    code = f'{name} = constant [{len(value)+2} x i8] c"{value}\\0A\\00"\n'
+    strings.append({'name': name, 'code': code, 'length': len(value) + 2})
 
 
 # Create variable name for llvm code using global variable 'iter_name'
