@@ -67,7 +67,10 @@ def wrapper(main):
     global strings
     global funcs
     global structures
-    result = '\n'.join(structures) + '\n' + '\n'.join(funcs) + '\n' +  '\n'.join(strings) + '\n'
+    str = []
+    for s in strings:
+        str.append(s['code'])
+    result = '\n'.join(structures) + '\n' + '\n'.join(funcs) + '\n' + '\n'.join(str) + '\n'
     result += f'\ndefine i32 @main() {{ \n{main}\nret i32 0\n}}'
     return result
 
@@ -115,6 +118,7 @@ def create_llvm(ast):
 
 
 def llvm_print(node):
+    global strings
     out_format = {'i32': '%d', 'double': '%lf', 'i8*': '%s', 'i1': '%d'}
     args = node.parts[1].parts
     printf_params = []
@@ -388,7 +392,8 @@ def assign_llvm(node):
         code = update_struct_field(var, node.parts[1].parts[0], node.parts[2])
     else:
         llvm_name, code, llvm_type = llvm_expression(value, var['llvm_name'])
-        _cur_scope.change_llvm_name(var_name, llvm_name)
+        if llvm_type == 'i8*':
+            _cur_scope.change_llvm_name(var_name, llvm_name)
     return code
 
 
@@ -620,27 +625,24 @@ def decl_const(v_type, value, llvm_name = ''):
     value (string) - variable value
     return - tuple with llvm variable name and code for generating
     '''
-    if not v_type == 'string':
-        if v_type in ['int', 'double', 'bool']:
-            llvm_type = Datatype[v_type].value
-        else:
-            llvm_type = v_type
-        if llvm_name == '':
-            name = get_llvm_var_name()
-            alloca = f'{name} = {llvm_alloca(llvm_type)}\n'
-        else:
-            name = llvm_name
-            alloca = ''
-        store = f'{llvm_store(llvm_type, str(value), name)}\n'
-        code = alloca + store
-        return (name, code, llvm_type)
+    if v_type in ['int', 'double', 'bool', 'string']:
+        llvm_type = Datatype[v_type].value
     else:
-        name = get_llvm_global_name()
-        code = f'{name} = constant [{len(value)+2} x i8] c"{value}\\0A\\00"\n'
-        strings.append(code)
-        ptr = llvm_name if not llvm_name == '' else get_llvm_var_name()
-        code = f'{ptr} = getelementptr [{len(value)+2} x i8], [{len(value)+2} x i8]* {name}, i64 0, i64 0\n'
-        return (ptr, code, 'i8*')
+        llvm_type = v_type
+    if llvm_name == '':
+        name = get_llvm_var_name()
+        alloca = f'{name} = {llvm_alloca(llvm_type)}\n'
+    else:
+        name = llvm_name
+        alloca = ''
+    if llvm_type == 'i8*':
+        str_name = get_llvm_global_name()
+        str_code = f'{str_name} = constant [{len(value)+2} x i8] c"{value}\\0A\\00"\n'
+        strings.append({'name': str_name, 'code': str_code, 'length': len(value) + 2})
+        value = f'getelementptr inbounds ([{len(value)+2} x i8], [{len(value)+2} x i8]* {str_name}, i32 0, i32 0)'
+    store = f'{llvm_store(llvm_type, str(value), name)}\n'
+    code = alloca + store
+    return (name, code, llvm_type)
 
 
 def decl_var_uminus(expr, llvm_name = ''):
@@ -680,23 +682,16 @@ def decl_var_id(var_name, llvm_name = ''):
                     f'[{id_llvm_var["type"]}]* {id_llvm_var["llvm_name"]}, i32 0, i32 0\n'
         return (res_ptr, get_ptr, id_llvm_var["type"])
     else:
-        if llvm_type == 'i8*':
-            if llvm_name == '':
-                res_ptr = get_llvm_var_name()
-            else:
-                res_ptr = llvm_name
-            return (res_ptr, '', llvm_type)
-        else:    
-            if llvm_name == '':
-                res_ptr = get_llvm_var_name()
-                alloca = f'{res_ptr} = {llvm_alloca(llvm_type)}\n'
-            else:
-                res_ptr = llvm_name
-                alloca = ''
-            load = f'{res_val} = {llvm_load(llvm_type, id_ptr)}\n'
-            store = f'{llvm_store(llvm_type, res_val, res_ptr)}\n'
-            code = alloca + load + store
-            return (res_ptr, code, llvm_type)
+        if llvm_name == '':
+            res_ptr = get_llvm_var_name()
+            alloca = f'{res_ptr} = {llvm_alloca(llvm_type)}\n'
+        else:
+            res_ptr = llvm_name
+            alloca = ''
+        load = f'{res_val} = {llvm_load(llvm_type, id_ptr)}\n'
+        store = f'{llvm_store(llvm_type, res_val, res_ptr)}\n'
+        code = alloca + load + store
+        return (res_ptr, code, llvm_type)
 
 
 def get_arr_index(expr):

@@ -1,22 +1,14 @@
 
 declare i32 @printf(i8*, ...)
-@.7 = private constant [4 x i8] c"%d\0A\00" 
+@.2 = constant [5 x i8] c"123\0A\00"
 
 
 define i32 @main() { 
-label2:
-%.1 = alloca i32
-store i32 5, i32* %.1
-br label %label
-%.2 = alloca i32
-store i32 6, i32* %.2
-label:
-br label %label2
-%.5 = alloca i32
-%.4 = load i32, i32* %.1
-store i32 %.4, i32* %.5
-%.6 = load i32, i32* %.5
-call i32 (i8*, ...) @printf(i8* getelementptr inbounds ([4 x i8], [4 x i8]* @.7, i32 0, i32 0), i32 %.6) 
+%.1 = alloca i8*
+store i8* getelementptr inbounds ([5 x i8], [5 x i8]* @.2, i32 0, i32 0), i8** %.1
+%.5 = alloca i8*
+%.4 = load i8*, i8** %.1
+store i8* %.4, i8** %.5
 
 ret i32 0
 }
