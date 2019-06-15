@@ -372,10 +372,31 @@ def decl_func_llvm(node):
 
 def decl_var_llvm(node):
     global _cur_scope
-    value_type = node.parts[2].type.lower()
-    llvm_name, code, llvm_type = llvm_expression(node.parts[2])
+    if len(node.parts) == 3:
+        value_type = node.parts[2].type.lower()
+        llvm_name, code, llvm_type = llvm_expression(node.parts[2])
+    else:
+        llvm_name, code, llvm_type = decl_empty_var(node.parts[0].parts[0])
     _cur_scope.add_variable(node.parts[0].parts[0], node.parts[1].parts[0], llvm_name)
     return code
+
+
+def decl_empty_var(v_type):
+    llvm_type = Datatype[v_type].value
+    name = get_llvm_var_name()
+    alloca = f'{name} = {llvm_alloca(llvm_type)}\n'
+    if llvm_type == 'i8*':
+        str_name = get_llvm_global_name()
+        str_code = f'{str_name} = constant [2 x i8] c"\\0A\\00"\n'
+        strings.append({'name': str_name, 'code': str_code, 'length': 2})
+        value = f'getelementptr inbounds ([2 x i8], [2 x i8]* {str_name}, i32 0, i32 0)'
+    elif llvm_type == 'i32' or llvm_type == 'i1':
+        value = 0
+    else:
+        value = 0.0
+    store = f'{llvm_store(llvm_type, str(value), name)}\n'
+    code = alloca + store
+    return (name, code, llvm_type)
 
 
 def decl_struct_var_llvm(node):
