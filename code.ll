@@ -17,7 +17,7 @@ store i32 %.7, i32* %.8
 %.9 = load i32, i32* %.5
 %.10 = load i32, i32* %.8
 %.11 = alloca i32
-%.12 = srem i32 %.9, %.10
+%.12 = sdiv i32 %.9, %.10
 store i32 %.12, i32* %.11
 %.15 = alloca i32
 %.14 = load i32, i32* %.11

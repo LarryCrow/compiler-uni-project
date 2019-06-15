@@ -23,8 +23,7 @@ precedence = (
     ('nonassoc', 'EQ', 'NE'),
     ('nonassoc', 'LE', 'GE', 'LT', 'GT'),
     ('left', 'PLUS', 'MINUS'),
-    ('left', 'MUL', 'DIVIDE', 'INTDIVIDE', 'MODULO'),
-    ('right', 'POW'),
+    ('left', 'MUL', 'DIVIDE', 'MODULO'),
     ('right', 'UMINUS', 'LNOT'),
     ('left', 'LBRACE', 'RBRACE', 'LPAREN', 'RPAREN', 'LBRACKET', 'RBRACKET', 'DOT')
 )
@@ -422,9 +421,7 @@ def p_math_expressions(p):
          | expr MINUS expr
          | expr MUL expr
          | expr DIVIDE expr
-         | expr INTDIVIDE expr
          | expr MODULO expr
-         | expr POW expr
     '''
     if len(p) == 2:
         p[0] = p[1]
@@ -437,12 +434,8 @@ def p_math_expressions(p):
             p[0] = Node('MUL', [p[1], p[3]], p.lineno(2))
         elif p[2] == '/':
             p[0] = Node('DIV', [p[1], p[3]], p.lineno(2))
-        elif p[2] == '%':
-            p[0] = Node('INT DIVIDE', [p[1], p[3]], p.lineno(2))
         elif p[2] == '%%':
             p[0] = Node('MODULO', [p[1], p[3]], p.lineno(2))
-        elif p[2] == '**':
-            p[0] = Node('POW', [p[1], p[3]], p.lineno(2))
 
 
 def p_conditionals(p):
@@ -502,9 +495,7 @@ def p_operation_error(p):
          | expr MINUS error
          | expr MUL error
          | expr DIVIDE error
-         | expr INTDIVIDE error
          | expr MODULO error
-         | expr POW error
          | expr LE error
          | expr GE error
          | expr LT error
@@ -526,8 +517,6 @@ def p_literals(p):
          | double
          | bool
          | str
-         | void
-         | NULL
          | LPAREN expr RPAREN
     '''
     if len(p) == 2:
@@ -566,11 +555,6 @@ def p_const_bool(p):
 def p_const_string(p):
     'str : STRING'
     p[0] = Node('STRING', [p[1]], p.lineno(1))
-
-
-def p_void(p):
-    'void : VOID'
-    p[0] = Node('VOID', [p[1]], p.lineno(1))
 
 
 def p_array_init(p):
