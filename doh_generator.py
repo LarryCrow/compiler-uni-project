@@ -70,8 +70,6 @@ def wrapper(main):
     return result
 
 
-# Функция, для прохода по первому уровню дерева
-# И всяким доп.штукам, который пока не реализованы
 def create_llvm(ast):
     code = ''
     global funcs
