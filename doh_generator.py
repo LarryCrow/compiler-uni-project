@@ -70,8 +70,6 @@ def wrapper(main):
     return result
 
 
-# Функция, для прохода по первому уровню дерева
-# И всяким доп.штукам, который пока не реализованы
 def create_llvm(ast):
     code = ''
     global funcs
@@ -344,11 +342,7 @@ def decl_var_llvm(node):
     value_type = node.parts[2].type.lower()
     llvm_name, code, llvm_type = llvm_expression(node.parts[2])
     _cur_scope.add_variable(node.parts[0].parts[0], node.parts[1].parts[0], llvm_name)
-    if not node.parts[0].parts[0] == 'string':
-        return code
-    else:
-        strings.append(code)
-        return ''
+    return code
 
 
 def decl_struct_var_llvm(node):
@@ -639,9 +633,12 @@ def decl_const(v_type, value, llvm_name = ''):
         code = alloca + store
         return (name, code, llvm_type)
     else:
-        name = llvm_name if not llvm_name == '' else get_llvm_global_name()
+        name = get_llvm_global_name()
         code = f'{name} = constant [{len(value)+2} x i8] c"{value}\\0A\\00"\n'
-        return (name, code, f'{len(value)+2} x i8')
+        strings.append(code)
+        ptr = llvm_name if not llvm_name == '' else get_llvm_var_name()
+        code = f'{ptr} = getelementptr [{len(value)+2} x i8], [{len(value)+2} x i8]* {name}, i64 0, i64 0\n'
+        return (ptr, code, 'i8*')
 
 
 def decl_var_uminus(expr, llvm_name = ''):
@@ -671,16 +668,22 @@ def decl_var_id(var_name, llvm_name = ''):
     id_ptr = id_llvm_var['llvm_name']
     res_ptr = get_llvm_var_name()
     res_val = get_llvm_var_name()
-    if not id_type == 'string':
-        if not id_type in ['int', 'double', 'bool']:
-            llvm_type = id_type
-        else: 
-            llvm_type = Datatype[id_type].value
-        if 'x' in id_llvm_var['type']:
-            res_ptr = get_llvm_var_name()
-            get_ptr = f'{res_ptr} = getelementptr inbounds [{id_llvm_var["type"]}],' \
-                      f'[{id_llvm_var["type"]}]* {id_llvm_var["llvm_name"]}, i32 0, i32 0\n'
-            return (res_ptr, get_ptr, id_llvm_var["type"])
+    if not id_type in ['int', 'double', 'bool', 'string']:
+        llvm_type = id_type
+    else: 
+        llvm_type = Datatype[id_type].value
+    if 'x' in id_llvm_var['type']:
+        res_ptr = get_llvm_var_name()
+        get_ptr = f'{res_ptr} = getelementptr inbounds [{id_llvm_var["type"]}],' \
+                    f'[{id_llvm_var["type"]}]* {id_llvm_var["llvm_name"]}, i32 0, i32 0\n'
+        return (res_ptr, get_ptr, id_llvm_var["type"])
+    else:
+        if llvm_type == 'i8*':
+            if llvm_name == '':
+                res_ptr = get_llvm_var_name()
+            else:
+                res_ptr = llvm_name
+            return (res_ptr, '', llvm_type)
         else:    
             if llvm_name == '':
                 res_ptr = get_llvm_var_name()
@@ -692,8 +695,6 @@ def decl_var_id(var_name, llvm_name = ''):
             store = f'{llvm_store(llvm_type, res_val, res_ptr)}\n'
             code = alloca + load + store
             return (res_ptr, code, llvm_type)
-    else:
-        return ('', '', '')
 
 
 def get_arr_index(expr):
