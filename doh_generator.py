@@ -1,5 +1,6 @@
 from enum import Enum
 from models.llvm_scope import Scope_llvm
+errors = False
 iter_name = 1
 label_name = 1
 strings = []
@@ -124,16 +125,24 @@ def create_llvm(ast):
 def llvm_scan(node):
     global out_format
     global strings
+    global errors
+    t = node.parts[1].parts[0].type.lower()
+    code = ''
+    if not t == 'id':
+        print("Illegal argument. Write only to a regular variable")
+        errors = True
+        return ''
     var_name = node.parts[1].parts[0].parts[0]
     var_type = Datatype[_cur_scope.get_llvm_var(var_name)['type']].value
     llvm_name = _cur_scope.get_llvm_var(var_name)['llvm_name']
-    var_type = out_format[var_type]
+    str_format = out_format[var_type]
     str_name = get_llvm_global_name()
-    str_code = f'{str_name} = private constant [3 x i8] c\"{var_type}\\00\"'
-    strings.append(str_code)
-    code = f'{get_llvm_var_name()} = call i32 (i8*, ...) ' \
-           f'@scanf(i8* getelementptr inbounds ([3 x i8], [3 x i8]* {str_name}, ' \
-           f'i32 0, i32 0), i32* {llvm_name})'
+    str_code = f'{str_name} = private constant [{len(str_format)+2} x i8] c\"{str_format}\\00\\0A"'
+    strings.append({'name': str_name, 'code': str_code, 'length': {len(str_format)+2}})
+    code = f'{code}' \
+           f'{get_llvm_var_name()} = call i32 (i8*, ...) ' \
+           f'@scanf(i8* getelementptr inbounds ([{len(str_format)+2} x i8], [{len(str_format)+2} x i8]* {str_name}, ' \
+           f'i32 0, i32 0), {var_type}* {llvm_name})\n'
     return code
 
 def llvm_print(node):
