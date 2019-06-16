@@ -479,7 +479,7 @@ def get_value_type(value_node):
     if hasattr(value_node, 'type'):
         if is_expression(value_node.type):
             if value_node.type == 'UMINUS':
-                return value_node.parts[0].type.lower()
+                return get_value_type(value_node.parts[0]).lower()
             if value_node.type == 'LNOT':
                 first = get_value_type(value_node.parts[0])
                 if not first or not first == 'bool':
