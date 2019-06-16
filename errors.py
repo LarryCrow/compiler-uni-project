@@ -5,6 +5,7 @@ _subscribers = []
 _num_errors = 0
 _scopes = []
 _cur_scope = None
+_goto_marks = []
 
 
 def error(lineno, message, filename=None):
@@ -31,6 +32,7 @@ def find_semantic_errors(ast):
         _cur_scope = Scope(hash(ast))
         _scopes.append(_cur_scope)
         find_errors(ast)
+        check_goto_labels()
     else:
         print('File is empty')
 
@@ -257,12 +259,17 @@ def declare_structure_variable(str_var_node):
 
 def declare_goto_mark(mark_node):
     global _cur_scope
+    global _goto_marks
     mark_name = mark_node.parts[0]
     mark = _cur_scope.is_variable_exist(mark_name)
     if mark is not None:
         error(mark_node.row_pos, 'Variable \'%s\' already exists' % mark_name)
         return
     _cur_scope.add_variable(mark_node.parts[0], 'mark')
+    for m in _goto_marks:
+        if m['name'] == mark_name:
+            m['check'] = True
+    
 
 
 ######################################
@@ -347,7 +354,7 @@ def check_function_call(func_node):
     global _cur_scope
     func_name = func_node.parts[0].parts[0]
     func_args = func_node.parts[1].parts
-    if func_name == 'print':
+    if func_name == 'print' or func_name == 'scan':
         return 'int'
     func = _cur_scope.is_variable_exist(func_name)
 
@@ -447,9 +454,10 @@ def check_array_element(arr_elem_node):
 
 def check_goto_call(goto_node):
     global _cur_scope
+    global _goto_marks
     mark = _cur_scope.is_variable_exist(goto_node.parts[0].parts[0])
     if mark is None or not mark['type'] == 'mark':
-        error(goto_node.row_pos, 'Label \'%s\' for \'goto\' operator does not exist' % goto_node.parts[0].parts[0])
+        _goto_marks.append({'name': goto_node.parts[0].parts[0], 'pos': goto_node.row_pos, 'check': False})
 
 
 def check_conditional_or_loop(node):
@@ -471,7 +479,7 @@ def get_value_type(value_node):
     if hasattr(value_node, 'type'):
         if is_expression(value_node.type):
             if value_node.type == 'UMINUS':
-                return value_node.parts[0].type.lower()
+                return get_value_type(value_node.parts[0]).lower()
             if value_node.type == 'LNOT':
                 first = get_value_type(value_node.parts[0])
                 if not first or not first == 'bool':
@@ -617,6 +625,13 @@ def is_operation_possible(a, b, type_operation):
         'is_possible': is_possible,
         'message': msg
     }
+
+
+def check_goto_labels():
+    global _goto_marks
+    for m in _goto_marks:
+        if m['check'] == False:
+            error(m['pos'], 'Label %s doesn\'t exist' % m['name'])
 
 
 def errors_reported():

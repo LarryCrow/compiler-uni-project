@@ -5,14 +5,14 @@ import re as re
 # An array of tokens that need complex regular expressions to define
 tokens = [
              # Literals (identifier, integer, double, string, boolean, array)
-             'ID', 'INTEGER', 'DOUBLE', 'STRING', 'BOOL', 'VOID',
+             'ID', 'INTEGER', 'DOUBLE', 'STRING', 'BOOL',
 
              # Operators
-             # +, -, *, **, /, %, %%
+             # +, -, *, /, %%
              # ||, &&, !
              # |, &
              # <, <=, >, >=, ==, !=)
-             'PLUS', 'MINUS', 'POW', 'MUL', 'DIVIDE', 'INTDIVIDE', 'MODULO',
+             'PLUS', 'MINUS', 'MUL', 'DIVIDE', 'MODULO',
              'LOR', 'LAND', 'LNOT',
              'BOR', 'BAND',
              'LT', 'LE', 'GT', 'GE', 'EQ', 'NE',
@@ -36,16 +36,14 @@ tokens = [
              # Comments
              'COMMENT', 'NEWLINE',
              # Other
-             'ERROR', 'FUNCTION', 'RETURN', 'STRUCTURE', 'DO', 'WHILE', 'BREAK', 'CONTINUE', 'GOTO', 'IF', 'ELSE', 'NULL'
+             'ERROR', 'FUNCTION', 'RETURN', 'STRUCTURE', 'DO', 'WHILE', 'BREAK', 'CONTINUE', 'GOTO', 'IF', 'ELSE',
          ]
 
 # Operators
 t_PLUS = r'\+'
 t_MINUS = r'-'
-t_POW = r'\*{2}'
 t_MUL = r'\*'
 t_DIVIDE = r'/'
-t_INTDIVIDE = r'%'
 t_MODULO = r'%%'
 t_LOR = r'\|\|'
 t_LAND = r'&&'
@@ -75,7 +73,7 @@ t_COLON = r':'
 # Identifiers
 def t_ID(t):
     r'[A-Za-z_][A-Za-z0-9_]*'
-    if(re.match(r'(\bint\b|\bstring\b|\bdouble\b|\bbool\b|\bvoid\b)', t.value)):
+    if(re.match(r'(\bint\b|\bstring\b|\bdouble\b|\bbool\b)', t.value)):
         t.type = 'DATATYPE'
     elif(re.match(r'(\btrue\b|\bfalse\b)', t.value)):
         t.type = 'BOOL'
@@ -99,8 +97,6 @@ def t_ID(t):
         t.type = 'IF'
     elif re.match(r'(\belse\b)', t.value):
         t.type = 'ELSE'
-    elif re.match(r'(\bnull\b)', t.value):
-        t.type = 'NULL'
     else:
         t.type = 'ID'
     return t

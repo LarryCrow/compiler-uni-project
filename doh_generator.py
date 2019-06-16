@@ -1,5 +1,6 @@
 from enum import Enum
 from models.llvm_scope import Scope_llvm
+errors = False
 iter_name = 1
 label_name = 1
 strings = []
@@ -11,8 +12,12 @@ _cur_scope = None
 start_label_while = ''
 end_label_while = ''
 
+out_format = {'i32': '%d', 'double': '%lf', 'i8*': '%s', 'i1': '%d'}
+
 print_dec = f'declare i32 @printf(i8*, ...)'
+scan_dec = f'declare i32 @scanf(i8*, ...)'
 funcs.append(print_dec)
+funcs.append(scan_dec)
 
 class Datatype(Enum):
     int = 'i32'
@@ -25,6 +30,7 @@ i_operators = {
     'minus' : 'sub',
     'mul' : 'mul',
     'div' : 'sdiv',
+    'modulo': 'srem',
     'eq' : 'eq',
     'ne' : 'ne',
     'gt' : 'sgt',
@@ -40,6 +46,7 @@ f_operators = {
     'munis' : 'fsub',
     'mul' : 'fmul',
     'div' : 'fdiv',
+    'modulo': 'frem',
     'eq' : 'oeq',
     'ne' : 'one',
     'gt' : 'ogt',
@@ -65,7 +72,10 @@ def wrapper(main):
     global strings
     global funcs
     global structures
-    result = '\n'.join(structures) + '\n' + '\n'.join(funcs) + '\n' +  '\n'.join(strings) + '\n'
+    str = []
+    for s in strings:
+        str.append(s['code'])
+    result = '\n'.join(structures) + '\n' + '\n'.join(funcs) + '\n' + '\n'.join(str) + '\n'
     result += f'\ndefine i32 @main() {{ \n{main}\nret i32 0\n}}'
     return result
 
@@ -87,6 +97,8 @@ def create_llvm(ast):
             if node.type == 'FUNCTION_CALL':
                 if (node.parts[0].parts[0] == 'print'):
                     code += llvm_print(node)
+                elif (node.parts[0].parts[0] == 'scan'):
+                    code += llvm_scan(node)
                 else:
                     var, func_code = llvm_func_call(node)
                     code = code + func_code
@@ -108,12 +120,37 @@ def create_llvm(ast):
                 code += llvm_break()
             if node.type == 'CONTINUE':
                 code += llvm_continue()
-
     return code
 
+def llvm_scan(node):
+    global out_format
+    global strings
+    global errors
+    t = node.parts[1].parts[0].type.lower()
+    code = ''
+    if not t == 'id':
+        print("Illegal argument. Write only to a regular variable")
+        errors = True
+        return ''
+    var_name = node.parts[1].parts[0].parts[0]
+    var_type = Datatype[_cur_scope.get_llvm_var(var_name)['type']].value
+    if var_type == 'i8*':
+        print("Illegal argument. Write only to number or bool variable")
+        errors = True
+        return ''
+    llvm_name = _cur_scope.get_llvm_var(var_name)['llvm_name']
+    str_format = out_format[var_type]
+    str_name = get_llvm_global_name()
+    str_code = f'{str_name} = private constant [{len(str_format)+2} x i8] c\"{str_format}\\00\\0A"'
+    strings.append({'name': str_name, 'code': str_code, 'length': {len(str_format)+2}})
+    code = f'{code}' \
+           f'{get_llvm_var_name()} = call i32 (i8*, ...) ' \
+           f'@scanf(i8* getelementptr inbounds ([{len(str_format)+2} x i8], [{len(str_format)+2} x i8]* {str_name}, ' \
+           f'i32 0, i32 0), {var_type}* {llvm_name})\n'
+    return code
 
 def llvm_print(node):
-    out_format = {'i32': '%d', 'double': '%lf', 'i8*': '%s', 'i1': '%d'}
+    global out_format
     args = node.parts[1].parts
     printf_params = []
     str_values = []
@@ -138,7 +175,7 @@ def llvm_print(node):
     size = len(result_str)
     str_name = get_llvm_global_name()
     str_code = f'{str_name} = private constant [{size + 2} x i8] c\"{result_str}\\0A\\00\" \n'
-    strings.append(str_code)
+    strings.append({'name': str_name, 'code': str_code, 'length': size+2})
 
     printf_params = [f'i8* getelementptr inbounds ([{size + 2} x i8], [{size + 2} x i8]* {str_name}, i32 0, i32 0)'] + printf_params
     code += f'call i32 (i8*, ...) @printf({", ".join(printf_params)}) \n'
@@ -294,7 +331,7 @@ def decl_func_llvm(node):
                 p_type = Datatype[p.type].value
             else:
                 p_type = p.type
-            if p_type in ['i32', 'i8', 'i1', 'double']:
+            if p_type in ['i32', 'i8*', 'i1', 'double']:
                 if p.type in ['int[]', 'double[]', 'string[]', 'bool[]']:
                     pars.append({'type': p_type, 'name': p.parts[0], 'llvm_name': get_llvm_var_name(), 'options': 'array'})
                 else:
@@ -339,10 +376,31 @@ def decl_func_llvm(node):
 
 def decl_var_llvm(node):
     global _cur_scope
-    value_type = node.parts[2].type.lower()
-    llvm_name, code, llvm_type = llvm_expression(node.parts[2])
+    if len(node.parts) == 3:
+        value_type = node.parts[2].type.lower()
+        llvm_name, code, llvm_type = llvm_expression(node.parts[2])
+    else:
+        llvm_name, code, llvm_type = decl_empty_var(node.parts[0].parts[0])
     _cur_scope.add_variable(node.parts[0].parts[0], node.parts[1].parts[0], llvm_name)
     return code
+
+
+def decl_empty_var(v_type):
+    llvm_type = Datatype[v_type].value
+    name = get_llvm_var_name()
+    alloca = f'{name} = {llvm_alloca(llvm_type)}\n'
+    if llvm_type == 'i8*':
+        str_name = get_llvm_global_name()
+        str_code = f'{str_name} = constant [2 x i8] c"\\0A\\00"\n'
+        strings.append({'name': str_name, 'code': str_code, 'length': 2})
+        value = f'getelementptr inbounds ([2 x i8], [2 x i8]* {str_name}, i32 0, i32 0)'
+    elif llvm_type == 'i32' or llvm_type == 'i1':
+        value = 0
+    else:
+        value = 0.0
+    store = f'{llvm_store(llvm_type, str(value), name)}\n'
+    code = alloca + store
+    return (name, code, llvm_type)
 
 
 def decl_struct_var_llvm(node):
@@ -386,7 +444,6 @@ def assign_llvm(node):
         code = update_struct_field(var, node.parts[1].parts[0], node.parts[2])
     else:
         llvm_name, code, llvm_type = llvm_expression(value, var['llvm_name'])
-        _cur_scope.change_llvm_name(var_name, llvm_name)
     return code
 
 
@@ -411,8 +468,6 @@ def llvm_expression(expr, llvm_name = ''):
         llvm_name, code, llvm_type = math_operations(expr, llvm_name)
     elif is_logical_oper(expr_type):
         llvm_name, code, llvm_type = logical_operations(expr, llvm_name)
-    else:
-        llvm_name, code, llvm_type = llvm_struct(expr, llvm_name)
     return (llvm_name, code, llvm_type)
 
 
@@ -530,15 +585,6 @@ def update_struct_field(struct_obj, field, value):
     return code
 
 
-def llvm_struct(expr, llvm_name):
-    global _cur_scope
-    print(expr)
-    if expr.type == 'ARGUMENTS':
-        pass
-    else:
-        pass
-
-
 def llvm_goto(node):
     global _cur_scope
     mark_name = node.parts[0].parts[0]
@@ -618,27 +664,24 @@ def decl_const(v_type, value, llvm_name = ''):
     value (string) - variable value
     return - tuple with llvm variable name and code for generating
     '''
-    if not v_type == 'string':
-        if v_type in ['int', 'double', 'bool']:
-            llvm_type = Datatype[v_type].value
-        else:
-            llvm_type = v_type
-        if llvm_name == '':
-            name = get_llvm_var_name()
-            alloca = f'{name} = {llvm_alloca(llvm_type)}\n'
-        else:
-            name = llvm_name
-            alloca = ''
-        store = f'{llvm_store(llvm_type, str(value), name)}\n'
-        code = alloca + store
-        return (name, code, llvm_type)
+    if v_type in ['int', 'double', 'bool', 'string']:
+        llvm_type = Datatype[v_type].value
     else:
-        name = get_llvm_global_name()
-        code = f'{name} = constant [{len(value)+2} x i8] c"{value}\\0A\\00"\n'
-        strings.append(code)
-        ptr = llvm_name if not llvm_name == '' else get_llvm_var_name()
-        code = f'{ptr} = getelementptr [{len(value)+2} x i8], [{len(value)+2} x i8]* {name}, i64 0, i64 0\n'
-        return (ptr, code, 'i8*')
+        llvm_type = v_type
+    if llvm_name == '':
+        name = get_llvm_var_name()
+        alloca = f'{name} = {llvm_alloca(llvm_type)}\n'
+    else:
+        name = llvm_name
+        alloca = ''
+    if llvm_type == 'i8*':
+        str_name = get_llvm_global_name()
+        str_code = f'{str_name} = constant [{len(value)+2} x i8] c"{value}\\0A\\00"\n'
+        strings.append({'name': str_name, 'code': str_code, 'length': len(value) + 2})
+        value = f'getelementptr inbounds ([{len(value)+2} x i8], [{len(value)+2} x i8]* {str_name}, i32 0, i32 0)'
+    store = f'{llvm_store(llvm_type, str(value), name)}\n'
+    code = alloca + store
+    return (name, code, llvm_type)
 
 
 def decl_var_uminus(expr, llvm_name = ''):
@@ -678,23 +721,16 @@ def decl_var_id(var_name, llvm_name = ''):
                     f'[{id_llvm_var["type"]}]* {id_llvm_var["llvm_name"]}, i32 0, i32 0\n'
         return (res_ptr, get_ptr, id_llvm_var["type"])
     else:
-        if llvm_type == 'i8*':
-            if llvm_name == '':
-                res_ptr = get_llvm_var_name()
-            else:
-                res_ptr = llvm_name
-            return (res_ptr, '', llvm_type)
-        else:    
-            if llvm_name == '':
-                res_ptr = get_llvm_var_name()
-                alloca = f'{res_ptr} = {llvm_alloca(llvm_type)}\n'
-            else:
-                res_ptr = llvm_name
-                alloca = ''
-            load = f'{res_val} = {llvm_load(llvm_type, id_ptr)}\n'
-            store = f'{llvm_store(llvm_type, res_val, res_ptr)}\n'
-            code = alloca + load + store
-            return (res_ptr, code, llvm_type)
+        if llvm_name == '':
+            res_ptr = get_llvm_var_name()
+            alloca = f'{res_ptr} = {llvm_alloca(llvm_type)}\n'
+        else:
+            res_ptr = llvm_name
+            alloca = ''
+        load = f'{res_val} = {llvm_load(llvm_type, id_ptr)}\n'
+        store = f'{llvm_store(llvm_type, res_val, res_ptr)}\n'
+        code = alloca + load + store
+        return (res_ptr, code, llvm_type)
 
 
 def get_arr_index(expr):
@@ -836,6 +872,13 @@ def llvm_store(v_type, value, ptr):
 
 def llvm_alloca(v_type):
     return f'alloca {v_type}'
+
+
+def llvm_create_string(value):
+    global strings
+    name = get_llvm_global_name()
+    code = f'{name} = constant [{len(value)+2} x i8] c"{value}\\0A\\00"\n'
+    strings.append({'name': name, 'code': code, 'length': len(value) + 2})
 
 
 # Create variable name for llvm code using global variable 'iter_name'
