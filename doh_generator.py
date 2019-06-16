@@ -134,6 +134,10 @@ def llvm_scan(node):
         return ''
     var_name = node.parts[1].parts[0].parts[0]
     var_type = Datatype[_cur_scope.get_llvm_var(var_name)['type']].value
+    if var_type == 'i8*':
+        print("Illegal argument. Write only to number or bool variable")
+        errors = True
+        return ''
     llvm_name = _cur_scope.get_llvm_var(var_name)['llvm_name']
     str_format = out_format[var_type]
     str_name = get_llvm_global_name()
